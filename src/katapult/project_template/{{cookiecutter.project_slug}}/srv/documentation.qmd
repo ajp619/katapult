@@ -1,0 +1,5 @@
+---
+title: "Documentation"
+---
+
+This is where you can provide more detailed documentation about the project.

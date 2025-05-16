@@ -1,0 +1,281 @@
+#!/bin/bash
+
+# get abs path to project location
+SCRIPT_DIR=$(dirname "$0")
+PROJECT_DIR=$(dirname "$SCRIPT_DIR")
+
+# from BuildConfig
+source $PROJECT_DIR/build/BuildConfig
+
+# defaults
+BUILD_ARGS=$(awk 'NF {print "--build-arg " $0}' $PROJECT_DIR/build/BuildConfig)
+IMAGE_NAME="$IMAGE_ROOT/$PROJECT_NAME"
+CONTAINER_NAME="$IMAGE_ROOT-$PROJECT_NAME"
+USER=""
+HOST="localhost"
+
+source $PROJECT_DIR/.katapult/HOSTVARS
+
+# create a place holder for positional args
+POS_ARGS=""
+
+function clear_last_line {
+  tput cuu 1
+  tput ed
+  tput sc
+}
+
+# --------------------------------------------------------------------------------------
+# Extract flags
+#
+while (( "$#" )); do #while there are still args to parse
+  # look at the first one
+  case "$1" in
+    --build-args|-b)
+      # check that there is an argument ($2) and that it does not start with '-'
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        BUILD_ARGS="$BUILD_ARGS --build-arg $2"
+        # drop the first two arguments
+        shift 2
+      else
+        # output an error msg, (> &2 redirects to stderr)
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      ;;
+    --host|-h)
+      # check that there is an argument ($2) and that it does not start with '-'
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        HOST="$2"
+        echo "setting host to $2"
+        cat $PROJECT_DIR/.katapult/HOSTVARS \
+          | grep -v "^HOST=" \
+          > $PROJECT_DIR/.katapult/HOSTVARS
+        echo "HOST=$2" >> $PROJECT_DIR/.katapult/HOSTVARS
+      else
+        # output an error msg, (> &2 redirects to stderr)
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      shift 2
+      ;;
+    --help)
+      format='  %-20s %-s\n'
+      printf "options:\n"
+      printf "$format" "--build-args|-b" "add additional arguments to docker build."
+      printf "$format" "--help" "prints this message."
+      printf "$format" "--host|-h" "sets current hostname to use with 'server' command. Remembers setting."
+      printf "$format" "--user|-u" "set the user option to use with docker exec. Defaults to ''. Remembers setting."
+      printf "\n"
+      printf "positional commands:\n"
+      printf "$format" "build" "runs docker build."
+      printf "$format" "connect" "runs docker exec to start a shell in the project's container."
+      printf "$format" "debug" "Placeholder for custom docker run command intended for debugging."
+      printf "$format" "down" "\`docker compose down\`."
+      printf "$format" "ps" "Lists containers associated with this project."
+      printf "$format" "render" "Run 'quarto render' to create static site files."
+      printf "$format" "restart|rebuild" "Shortcut for: katx down, katx build, katx up."
+      printf "$format" "rm" "\`docker rm ...\`."
+      printf "$format" "rmf" "\`docker rm -f ...\`."
+      printf "$format" "run" "manual docker run command. Generally better to use 'up'."
+      printf "$format" "server" "lists the address (including token) of the currently running jupyter server."
+      printf "$format" "status" "supervisorctl status."
+      printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
+      printf "$format" "up" "\`docker compose up -d\`."
+      shift
+      ;;
+    --user|-u)
+      # check that there is an argument ($2) and that it does not start with '-'
+      if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
+        # set the user option to use with docker exec. Defaults to ""
+        USER="-u $2"
+        echo "setting user to $2"
+        # remove previous USER definitions
+        cat $PROJECT_DIR/.katapult/HOSTVARS \
+          | grep -v "^USER=" \
+          > $PROJECT_DIR/.katapult/HOSTVARS
+        # add user to HOSTVARS
+        echo "USER='-u $2'" >> $PROJECT_DIR/.katapult/HOSTVARS
+        # drop the first two arguments
+        shift 2
+      else
+        # output an error msg, (> &2 redirects to stderr)
+        echo "Error: Argument for $1 is missing" >&2
+        exit 1
+      fi
+      ;;
+    -*) # unsupported flags
+      # started with -*|--*=) but the second part seems unnecessary
+      # output an error msg, (> &2 redirects to stderr)
+      echo "Error: Unsupported flag $1" >&2
+      exit 1
+      ;;
+    *) # preserve positional arguments
+      POS_ARGS="$POS_ARGS $1"
+      shift
+      ;;
+  esac
+done
+# set positional arguments in their proper place -> $1 $2 ...
+eval set -- "$POS_ARGS"
+
+#echo $POS_ARGS
+
+# --------------------------------------------------------------------------------------
+# Positional args
+#
+
+while (( "$#" )); do
+  case "$1" in
+    build)
+      echo "building image $IMAGE_NAME"
+      set -x
+      docker build \
+        --tag $IMAGE_NAME \
+        -f $PROJECT_DIR/build/Dockerfile \
+        $BUILD_ARGS \
+        $PROJECT_DIR
+      set +x
+      clear_last_line
+      shift
+      ;;
+    connect)
+      clear
+      echo "connecting to $CONTAINER_NAME"
+      set -x
+      docker exec -it $USER $CONTAINER_NAME bash
+      set +x
+      clear_last_line
+      clear
+      shift
+      ;;
+    debug)
+      echo "creating container: $CONTAINER_NAME from image: $IMAGE_NAME"
+      set -x
+      docker run \
+        --name $CONTAINER_NAME \
+        -it \
+        --rm \
+        -d \
+        --volume $PROJECT_DIR/content:/content \
+        --volume /content/nbk/.venv \
+        $IMAGE_NAME \
+        bash
+      set +x
+      clear_last_line
+      shift
+      ;;
+    down)
+      set -x
+      docker compose --env-file $PROJECT_DIR/build/BuildConfig -f $PROJECT_DIR/build/docker-compose.yml down
+      set +x
+      clear_last_line
+      shift
+      ;;
+    ps)
+      docker ps -a | awk "FNR==1 || /$PROJECT_NAME/"
+      shift
+      ;;
+    render)
+      CMD='quarto render'
+      set -x
+      docker exec \
+        -it \
+        $CONTAINER_NAME \
+        bash -c "$CMD"
+      set +x
+      clear_last_line
+      shift
+      ;;
+    restart|rebuild)
+      echo "restarting $CONTAINER_NAME"
+      shift
+      set -- "down" "build" "up" $@
+      ;;
+    run)
+      echo "starting $CONTAINER_NAME"
+      shift
+      set -- "build" "up" "render" "status" $@
+      ;;
+    rm)
+      echo "removing $CONTAINER_NAME"
+      set -x
+      docker rm $CONTAINER_NAME
+      set +x
+      clear_last_line
+      shift
+      ;;
+    rmf)
+      #echo "force removing $CONTAINER_NAME"
+      set -x
+      docker rm -f $CONTAINER_NAME
+      set +x
+      clear_last_line
+      shift
+      ;;
+    run)
+      echo "creating container: $CONTAINER_NAME from image: $IMAGE_NAME"
+      set -x
+      docker run \
+        --name $CONTAINER_NAME \
+        -d \
+        -it \
+        --rm \
+        --volume $PROJECT_DIR:/content/ \
+        --volume /content/api/.venv \
+        --volume /content/app/.venv \
+        --volume /content/nbk/.venv \
+        --network katapult \
+        $IMAGE_NAME
+      set +x
+      clear_last_line
+      shift
+      ;;
+    server)
+      CMD='cd /content/nbk && uv run jupyter server list'
+      set -x
+      docker exec \
+        -it \
+        $CONTAINER_NAME \
+        bash -c "$CMD" \
+          | sed "s/\:8888//" \
+          | sed "s/localhost/$HOST/" 
+          #| sed "s/localhost/$HOST/" \
+          #| cut -d " " -f 1
+      set +x
+      clear_last_line
+      shift
+      ;;
+    status)
+      CMD='supervisorctl status'
+      set -x
+      docker exec \
+        -it \
+        $CONTAINER_NAME \
+        bash -c "$CMD"
+      set +x
+      clear_last_line
+      shift
+      ;;
+    stop)
+      set -x
+      docker stop $CONTAINER_NAME
+      set +x
+      clear_last_line
+      shift
+      ;;
+    up)
+      set -x
+      docker compose --env-file $PROJECT_DIR/build/BuildConfig -f $PROJECT_DIR/build/docker-compose.yml up -d
+      set +x
+      clear_last_line
+      shift
+      set -- "ps" $@
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+

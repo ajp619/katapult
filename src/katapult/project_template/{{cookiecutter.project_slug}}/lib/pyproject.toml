@@ -1,0 +1,14 @@
+[project]
+name = "{{cookiecutter.project_slug}}"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">={{cookiecutter.python_version}}"
+dependencies = []
+
+[project.scripts]
+{{cookiecutter.project_slug}} = "{{cookiecutter.project_slug}}:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
