@@ -1,0 +1,11 @@
+IMAGE_ROOT=katapult
+PROJECT_NAME={{cookiecutter.project_slug}}
+
+USERNAME=katapult
+USERGROUP=katapult
+
+UBUNTU_RELEASE=24.04
+
+PYTHON_VERSION={{cookiecutter.python_version}}
+NODE_VERSION=20.9.0
+QUARTO_VERSION=1.7.27
