@@ -1,0 +1,21 @@
+services:
+  katapult:
+    image: ${IMAGE_ROOT}/${PROJECT_NAME}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.katapult.rule=PathPrefix(`/katapult`)"
+      - "traefik.http.routers.katapult.entrypoints=http"
+      - "traefik.http.services.katapult.loadbalancer.server.port=80"
+    container_name: ${IMAGE_ROOT}-${PROJECT_NAME}
+    volumes:
+      - ../.:/content/
+      - /content/api/.venv
+      - /content/app/.venv
+      - /content/lib/.venv
+      - /content/nbk/.venv
+    networks:
+      - ${IMAGE_ROOT}
+networks:
+  katapult:
+    name: ${IMAGE_ROOT}
+    external: true
