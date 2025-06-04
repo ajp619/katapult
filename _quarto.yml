@@ -9,7 +9,7 @@ project:
 website:
   title: "katapult"
   site-path: "/katapult/"
-  favicon: assets/katapult_favicon.svg
+  favicon: assets/simple_catapult_favicon.svg
   navbar:
     logo: assets/katapult_logo.svg
     left:

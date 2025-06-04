@@ -1,0 +1,23 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="100" height="100" fill="transparent" />
+  
+  <!-- Base of catapult (rectangular) -->
+  <rect x="35" y="75" width="30" height="15" fill="#333" stroke="#333" stroke-width="2"/>
+  
+  <!-- Wheels (disconnected circles) -->
+  <circle cx="42" cy="95" r="6" fill="transparent" stroke="#333" stroke-width="3"/>
+  <circle cx="58" cy="95" r="6" fill="transparent" stroke="#333" stroke-width="3"/>
+  
+  <!-- Single catapult arm from center of base (pulled back 10 degrees) -->
+  <line x1="50" y1="75" x2="30" y2="30" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Basket at end of arm (semi-circle at proper angle) -->
+  <path d="M 27 32 A 4 4 0 0 1 33 28" stroke="#333" stroke-width="3" fill="transparent" stroke-linecap="round"/>
+  
+  <!-- Projectile in flight -->
+  <circle cx="70" cy="15" r="4" fill="#333"/>
+  
+  <!-- Curved cone tail from arm to projectile -->
+  <path d="M 30 30 Q 45 20, 62 17 L 64 13 Q 47 18, 32 28 Z" fill="#cc0000" stroke="none"/>
+</svg>
