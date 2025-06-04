@@ -1,0 +1,37 @@
+project:
+  type: website
+  render:
+    - README.md
+    - srv/*
+    - nbk/reports/*
+    - nbk/wip/*
+
+website:
+  title: "katapult"
+  site-path: "/katapult/"
+  favicon: assets/katapult_favicon.svg
+  navbar:
+    logo: assets/katapult_logo.svg
+    left:
+      - href: srv/services.qmd
+        text: Services
+      - href: srv/documentation.qmd
+        text: Documentation
+      - href: srv/reports.qmd
+        text: Reports
+  page-footer:
+    center: |
+      <div class="footer-item">
+        Powered by 
+        <img src="/assets/katapult_logo.svg" height="50" style="vertical-align: middle; margin-right: 5px;">
+      </div>
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+    css: srv/styles.css
+    toc: true
+
+

@@ -1,0 +1,17 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "quart>=0.20.0",
+    "quart-schema>=0.22.0",
+]
+
+[project.scripts]
+api = "api:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

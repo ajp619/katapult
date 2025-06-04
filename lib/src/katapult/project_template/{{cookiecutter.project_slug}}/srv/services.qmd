@@ -1,0 +1,9 @@
+---
+title: "Services"
+---
+
+There is a default web app here: <a href="../webapp" target="_blank">webapp</a>  
+You should provide a brief description here.
+
+The JupyterLab server is here: <a href="../jlab" target="_blank">JupyterLab</a>
+

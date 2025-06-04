@@ -1,0 +1,19 @@
+[project]
+name = "katapult"
+version = "0.1.0"
+description = "Library to create projects with the Katapult template"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.2.1",
+    "cookiecutter>=2.6.0",
+    "docker>=7.1.0",
+    "rich>=14.0.0",
+]
+
+[project.scripts]
+kat = "katapult:cli.main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
