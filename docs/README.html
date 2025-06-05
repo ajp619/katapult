@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -121,20 +156,19 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#project-title" id="toc-project-title" class="nav-link active" data-scroll-target="#project-title">Project Title</a>
+  <li><a href="#katapult" id="toc-katapult" class="nav-link active" data-scroll-target="#katapult">Katapult</a>
   <ul class="collapse">
   <li><a href="#description" id="toc-description" class="nav-link" data-scroll-target="#description">Description</a></li>
   <li><a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started">Getting Started</a>
   <ul class="collapse">
   <li><a href="#dependencies" id="toc-dependencies" class="nav-link" data-scroll-target="#dependencies">Dependencies</a></li>
   <li><a href="#installing" id="toc-installing" class="nav-link" data-scroll-target="#installing">Installing</a></li>
-  <li><a href="#executing-program" id="toc-executing-program" class="nav-link" data-scroll-target="#executing-program">Executing program</a></li>
+  <li><a href="#quickstart" id="toc-quickstart" class="nav-link" data-scroll-target="#quickstart">Quickstart</a></li>
   </ul></li>
   <li><a href="#help" id="toc-help" class="nav-link" data-scroll-target="#help">Help</a></li>
   <li><a href="#authors" id="toc-authors" class="nav-link" data-scroll-target="#authors">Authors</a></li>
   <li><a href="#version-history" id="toc-version-history" class="nav-link" data-scroll-target="#version-history">Version History</a></li>
   <li><a href="#license" id="toc-license" class="nav-link" data-scroll-target="#license">License</a></li>
-  <li><a href="#acknowledgments" id="toc-acknowledgments" class="nav-link" data-scroll-target="#acknowledgments">Acknowledgments</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -145,57 +179,102 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="project-title" class="level1">
-<h1>Project Title</h1>
-<p>Simple overview of use/purpose.</p>
+<section id="katapult" class="level1">
+<h1>Katapult</h1>
+<p>Katapult creates an isolated development environment that can be configured to include a <a href="https://jupyter.org/hub">JupyterHub</a> server, a <a href="https://palletsprojects.com/projects/quart">Quart</a> api service, a <a href="https://www.fastht.ml/">fasthtml</a> webapp, and the template for a python library. In addition, <a href="https://quarto.org/">Quarto</a> is used to create static websites that integrate easily with github pages and provide downloadable html files of jupyter notebooks.</p>
+<p><a href="https://ajp619.github.io/katapult/">view on github pages</a></p>
 <section id="description" class="level2">
 <h2 class="anchored" data-anchor-id="description">Description</h2>
-<p>An in-depth paragraph about your project and overview of use.</p>
+<p>As a data scientist, it would be nice to be able to work in an isolated environment for each of our projects that is easily portable from your laptop to any network infrastructure.</p>
+<p>Katapult provides a single container that has the following tools:</p>
+<ul>
+<li><a href="https://jupyter.org/hub">JupyterHub</a>: Explore data, prototype transformations and models, and make publishable reports.</li>
+<li><a href="https://palletsprojects.com/projects/quart">Quart</a>: Create an api that allows programmatic access to information generated by your service.</li>
+<li><a href="https://www.fastht.ml/">fasthtml</a>: Create dashboards and tools to help others gain insight from your work.</li>
+<li><a href="https://quarto.org/">Quarto</a>: Publish stand alone, interactive reports that can be downloaded and distributed in various formats. Create project documentation using Markdown and Jupyter.</li>
+</ul>
 </section>
 <section id="getting-started" class="level2">
 <h2 class="anchored" data-anchor-id="getting-started">Getting Started</h2>
 <section id="dependencies" class="level3">
 <h3 class="anchored" data-anchor-id="dependencies">Dependencies</h3>
 <ul>
-<li>Describe any prerequisites, libraries, OS version, etc., needed before installing program.</li>
-<li>ex. Windows 10</li>
+<li>*nix environment (e.g.&nbsp;linux, macOS). On Windows use wsl2.</li>
+<li>docker</li>
+<li>Python 3.12</li>
 </ul>
 </section>
 <section id="installing" class="level3">
 <h3 class="anchored" data-anchor-id="installing">Installing</h3>
 <ul>
-<li>How/where to download your program</li>
-<li>Any modifications needed to be made to files/folders</li>
+<li>pipx install “git+https://github.com/ajp619/katapult#subdirectory=lib”</li>
 </ul>
 </section>
-<section id="executing-program" class="level3">
-<h3 class="anchored" data-anchor-id="executing-program">Executing program</h3>
-<ul>
-<li>How to run the program</li>
-<li>Step-by-step bullets</li>
-</ul>
-<pre><code>code blocks for commands</code></pre>
+<section id="quickstart" class="level3">
+<h3 class="anchored" data-anchor-id="quickstart">Quickstart</h3>
+<p>Create a new project from the katapult template with:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> init</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Enter the project name and accept the rest of the defaults. This will create a new directory for your project.</p>
+<p>Change to the new project directory and use:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> run</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will build the container, launch it, render the static content, and show you the status of the services.</p>
+<p>You can now access the container at http://localhost/&lt;project name&gt;</p>
 </section>
 </section>
 <section id="help" class="level2">
 <h2 class="anchored" data-anchor-id="help">Help</h2>
-<p>Any advise for common problems or issues.</p>
-<pre><code>command to run if program contains helper info</code></pre>
+<p>There are two commands: <code>kat</code> and <code>katx</code>.</p>
+<p><code>kat</code> is for managing high level concerns such as creating projects and creating the hub container that allows you to access all of your projects as path extensions (e.g.&nbsp;http://localhost/&lt;project name&gt;).</p>
+<p>To get help use:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>katx</code> is for managing the each individual project.</p>
+<p>To enable katx use:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will add code to your .bashrc file that will dynamically add <code>katx</code> to your path when you enter a project directory.</p>
+<p>To get help with <code>katx</code> use:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>while in the project directory (or subfolder).</p>
+<p>For reference, this is the code added to you .bashrc:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Section added by katapult to dynamically add katx to path based on project</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Intended to be added to .bashrc</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">RAW_PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH</span><span class="st">"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">augment_path()</span> <span class="kw">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">target</span><span class="op">=</span><span class="st">".katapult"</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$PWD</span><span class="st">"</span> <span class="ot">=</span> <span class="st">"</span><span class="va">$LAST_WD</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span> <span class="cf">return</span> <span class="dv">0</span><span class="kw">;</span> <span class="cf">fi</span><span class="kw">;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">""</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">$PWD</span><span class="st">"</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">until</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$scandir</span><span class="st">"</span> <span class="ot">=</span> <span class="st">""</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">resolved_target</span><span class="op">=</span><span class="st">"</span><span class="va">$scandir</span><span class="st">"</span>/<span class="st">"</span><span class="va">$target</span><span class="st">"</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-d</span> <span class="st">"</span><span class="va">$resolved_target</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$resolved_target</span><span class="st">"</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">${scandir</span><span class="op">%</span>/<span class="pp">*</span><span class="va">}</span><span class="st">"</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$RAW_PATH</span><span class="st">"</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-z</span> <span class="va">${PROMPT_COMMAND</span><span class="op">+</span>x<span class="va">}</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt not found</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"augment_path"</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt found</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"</span><span class="va">$PROMPT_COMMAND</span><span class="st">; augment_path"</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="co"># End of section generated by katapult</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="authors" class="level2">
 <h2 class="anchored" data-anchor-id="authors">Authors</h2>
 <p>Contributors names and contact info</p>
-<p>ex. Dominique Pizzie<br>
-ex. <a href="https://twitter.com/dompizzie"><span class="citation" data-cites="DomPizzie">@DomPizzie</span></a></p>
+<p>Aaron Palumbo</p>
 </section>
 <section id="version-history" class="level2">
 <h2 class="anchored" data-anchor-id="version-history">Version History</h2>
 <ul>
-<li>0.2
-<ul>
-<li>Various bug fixes and optimizations</li>
-<li>See <a href="">commit change</a> or See <a href="">release history</a></li>
-</ul></li>
 <li>0.1
 <ul>
 <li>Initial Release</li>
@@ -204,11 +283,7 @@ ex. <a href="https://twitter.com/dompizzie"><span class="citation" data-cites="D
 </section>
 <section id="license" class="level2">
 <h2 class="anchored" data-anchor-id="license">License</h2>
-<p>This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details</p>
-</section>
-<section id="acknowledgments" class="level2">
-<h2 class="anchored" data-anchor-id="acknowledgments">Acknowledgments</h2>
-<p>Inspiration, code snippets, etc. * <a href="https://gist.github.com/DomPizzie/7a5ff55ffa9081f2de27c315f5018afc">DomPizzie</a> * <a href="https://github.com/matiassingers/awesome-readme">awesome-readme</a> * <a href="https://gist.github.com/PurpleBooth/109311bb0361f32d87a2">PurpleBooth</a> * <a href="https://github.com/dbader/readme-template">dbader</a> * <a href="https://gist.github.com/zenorocha/4526327">zenorocha</a> * <a href="https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46">fvcproductions</a></p>
+<p>This project is licensed under the MIT License - see the LICENSE.md file for details</p>
 
 
 </section>

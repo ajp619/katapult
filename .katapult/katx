@@ -77,7 +77,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "restart|rebuild" "Shortcut for: katx down, katx build, katx up."
       printf "$format" "rm" "\`docker rm ...\`."
       printf "$format" "rmf" "\`docker rm -f ...\`."
-      printf "$format" "run" "manual docker run command. Generally better to use 'up'."
+      printf "$format" "run" "Shortcut for: katx build, katx up, katx render, katx status."
       printf "$format" "server" "lists the address (including token) of the currently running jupyter server."
       printf "$format" "status" "supervisorctl status."
       printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
@@ -192,11 +192,6 @@ while (( "$#" )); do
       shift
       set -- "down" "build" "up" $@
       ;;
-    run)
-      echo "starting $CONTAINER_NAME"
-      shift
-      set -- "build" "up" "render" "status" $@
-      ;;
     rm)
       echo "removing $CONTAINER_NAME"
       set -x
@@ -214,22 +209,9 @@ while (( "$#" )); do
       shift
       ;;
     run)
-      echo "creating container: $CONTAINER_NAME from image: $IMAGE_NAME"
-      set -x
-      docker run \
-        --name $CONTAINER_NAME \
-        -d \
-        -it \
-        --rm \
-        --volume $PROJECT_DIR:/content/ \
-        --volume /content/api/.venv \
-        --volume /content/app/.venv \
-        --volume /content/nbk/.venv \
-        --network katapult \
-        $IMAGE_NAME
-      set +x
-      clear_last_line
+      echo "starting $CONTAINER_NAME"
       shift
+      set -- "build" "up" "render" "status" $@
       ;;
     server)
       CMD='cd /content/nbk && uv run jupyter server list'
@@ -240,8 +222,6 @@ while (( "$#" )); do
         bash -c "$CMD" \
           | sed "s/\:8888//" \
           | sed "s/localhost/$HOST/" 
-          #| sed "s/localhost/$HOST/" \
-          #| cut -d " " -f 1
       set +x
       clear_last_line
       shift

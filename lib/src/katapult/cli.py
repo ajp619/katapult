@@ -9,6 +9,6 @@ def main():
     pass
 
 
-main.add_command(commands.rich)
+# main.add_command(commands.rich)
 main.add_command(commands.init)
 main.add_command(commands.hub)
