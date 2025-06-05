@@ -166,9 +166,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#quickstart" id="toc-quickstart" class="nav-link" data-scroll-target="#quickstart">Quickstart</a></li>
   </ul></li>
   <li><a href="#help" id="toc-help" class="nav-link" data-scroll-target="#help">Help</a></li>
-  <li><a href="#authors" id="toc-authors" class="nav-link" data-scroll-target="#authors">Authors</a></li>
   <li><a href="#version-history" id="toc-version-history" class="nav-link" data-scroll-target="#version-history">Version History</a></li>
   <li><a href="#license" id="toc-license" class="nav-link" data-scroll-target="#license">License</a></li>
+  <li><a href="#appendix" id="toc-appendix" class="nav-link" data-scroll-target="#appendix">Appendix</a>
+  <ul class="collapse">
+  <li><a href="#dynamic-path-updates" id="toc-dynamic-path-updates" class="nav-link" data-scroll-target="#dynamic-path-updates">Dynamic path updates</a></li>
+  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -206,17 +209,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="installing" class="level3">
 <h3 class="anchored" data-anchor-id="installing">Installing</h3>
-<ul>
-<li>pipx install “git+https://github.com/ajp619/katapult#subdirectory=lib”</li>
-</ul>
+<p>Install from github:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pipx</span> install <span class="st">"git+https://github.com/ajp619/katapult#subdirectory=lib"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now to enable katx (see <a href="#help">Help</a>) use:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="quickstart" class="level3">
 <h3 class="anchored" data-anchor-id="quickstart">Quickstart</h3>
 <p>Create a new project from the katapult template with:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> init</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> init</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Enter the project name and accept the rest of the defaults. This will create a new directory for your project.</p>
 <p>Change to the new project directory and use:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> run</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> run</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This will build the container, launch it, render the static content, and show you the status of the services.</p>
 <p>You can now access the container at http://localhost/&lt;project name&gt;</p>
 </section>
@@ -226,51 +230,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>There are two commands: <code>kat</code> and <code>katx</code>.</p>
 <p><code>kat</code> is for managing high level concerns such as creating projects and creating the hub container that allows you to access all of your projects as path extensions (e.g.&nbsp;http://localhost/&lt;project name&gt;).</p>
 <p>To get help use:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code>katx</code> is for managing the each individual project.</p>
 <p>To enable katx use:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>This will add code to your .bashrc file that will dynamically add <code>katx</code> to your path when you enter a project directory.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> config</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will add code to your .bashrc file that will dynamically add <code>katx</code> to your path when you enter a project directory. (See <a href="#dynamic-path-updates">Dynamic Path Updates</a>).</p>
 <p>To get help with <code>katx</code> use:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>while in the project directory (or subfolder).</p>
-<p>For reference, this is the code added to you .bashrc:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Section added by katapult to dynamically add katx to path based on project</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Intended to be added to .bashrc</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">RAW_PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH</span><span class="st">"</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">augment_path()</span> <span class="kw">{</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">target</span><span class="op">=</span><span class="st">".katapult"</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$PWD</span><span class="st">"</span> <span class="ot">=</span> <span class="st">"</span><span class="va">$LAST_WD</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span> <span class="cf">return</span> <span class="dv">0</span><span class="kw">;</span> <span class="cf">fi</span><span class="kw">;</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">""</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">$PWD</span><span class="st">"</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">until</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$scandir</span><span class="st">"</span> <span class="ot">=</span> <span class="st">""</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">do</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">resolved_target</span><span class="op">=</span><span class="st">"</span><span class="va">$scandir</span><span class="st">"</span>/<span class="st">"</span><span class="va">$target</span><span class="st">"</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-d</span> <span class="st">"</span><span class="va">$resolved_target</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$resolved_target</span><span class="st">"</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">${scandir</span><span class="op">%</span>/<span class="pp">*</span><span class="va">}</span><span class="st">"</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$RAW_PATH</span><span class="st">"</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-z</span> <span class="va">${PROMPT_COMMAND</span><span class="op">+</span>x<span class="va">}</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt not found</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"augment_path"</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt found</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"</span><span class="va">$PROMPT_COMMAND</span><span class="st">; augment_path"</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="co"># End of section generated by katapult</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="authors" class="level2">
-<h2 class="anchored" data-anchor-id="authors">Authors</h2>
-<p>Contributors names and contact info</p>
-<p>Aaron Palumbo</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>while in the project directory (or any subfolder).</p>
 </section>
 <section id="version-history" class="level2">
 <h2 class="anchored" data-anchor-id="version-history">Version History</h2>
@@ -284,8 +251,45 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="license" class="level2">
 <h2 class="anchored" data-anchor-id="license">License</h2>
 <p>This project is licensed under the MIT License - see the LICENSE.md file for details</p>
+</section>
+<section id="appendix" class="level2">
+<h2 class="anchored" data-anchor-id="appendix">Appendix</h2>
+<section id="dynamic-path-updates" class="level3">
+<h3 class="anchored" data-anchor-id="dynamic-path-updates">Dynamic path updates</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Section added by katapult to dynamically add katx to path based on project</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Intended to be added to .bashrc</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="va">RAW_PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH</span><span class="st">"</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">augment_path()</span> <span class="kw">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">target</span><span class="op">=</span><span class="st">".katapult"</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$PWD</span><span class="st">"</span> <span class="ot">=</span> <span class="st">"</span><span class="va">$LAST_WD</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span> <span class="cf">return</span> <span class="dv">0</span><span class="kw">;</span> <span class="cf">fi</span><span class="kw">;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">""</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">$PWD</span><span class="st">"</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">until</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$scandir</span><span class="st">"</span> <span class="ot">=</span> <span class="st">""</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">resolved_target</span><span class="op">=</span><span class="st">"</span><span class="va">$scandir</span><span class="st">"</span>/<span class="st">"</span><span class="va">$target</span><span class="st">"</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="ot">-d</span> <span class="st">"</span><span class="va">$resolved_target</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">PATH_ADDITION</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$resolved_target</span><span class="st">"</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="va">scandir</span><span class="op">=</span><span class="st">"</span><span class="va">${scandir</span><span class="op">%</span>/<span class="pp">*</span><span class="va">}</span><span class="st">"</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">done</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">$PATH_ADDITION</span><span class="st">:</span><span class="va">$RAW_PATH</span><span class="st">"</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="va">LAST_WD</span><span class="op">=</span><span class="kw">`</span><span class="bu">pwd</span><span class="kw">`</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="ot">-z</span> <span class="va">${PROMPT_COMMAND</span><span class="op">+</span>x<span class="va">}</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt not found</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"augment_path"</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># prompt found</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="va">PROMPT_COMMAND</span><span class="op">=</span><span class="st">"</span><span class="va">$PROMPT_COMMAND</span><span class="st">; augment_path"</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co"># End of section generated by katapult</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 
 
+</section>
 </section>
 </section>
 
