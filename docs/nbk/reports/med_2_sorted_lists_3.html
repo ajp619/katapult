@@ -3891,8 +3891,18 @@ max-height: 75px;
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a>
+  <ul class="collapse">
+  <li><a href="#imports" id="toc-imports" class="nav-link" data-scroll-target="#imports">Imports</a></li>
+  <li><a href="#utils" id="toc-utils" class="nav-link" data-scroll-target="#utils">Utils</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -3916,12 +3926,19 @@ max-height: 75px;
 </header>
 
 
-<div id="69a0123e-1880-477b-8643-d04cf45056b2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:32.763634Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:32.763180Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.099992Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.099026Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:32.763600Z&quot;}}" data-execution_count="1">
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<section id="imports" class="level3">
+<h3 class="anchored" data-anchor-id="imports">Imports</h3>
+<div id="69a0123e-1880-477b-8643-d04cf45056b2" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:41.469202Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:41.468995Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:41.919193Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:41.918270Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:41.469186Z&quot;}}" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="5ab4f7b8-1aa2-4733-a774-5bb26a0a200d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:33.101417Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:33.101111Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.113341Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.112457Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:33.101398Z&quot;}}" data-execution_count="2">
+</section>
+<section id="utils" class="level3">
+<h3 class="anchored" data-anchor-id="utils">Utils</h3>
+<div id="5ab4f7b8-1aa2-4733-a774-5bb26a0a200d" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:41.920535Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:41.920194Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:41.932266Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:41.931211Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:41.920516Z&quot;}}" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pad(x):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [<span class="op">-</span><span class="bu">float</span>(<span class="st">&quot;inf&quot;</span>)] <span class="op">+</span> x <span class="op">+</span> [<span class="bu">float</span>(<span class="st">&quot;inf&quot;</span>)]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4008,7 +4025,7 @@ max-height: 75px;
 <span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a>    med <span class="op">=</span> calculate_median(a, b)</span>
 <span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a, b, med</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="3fe7eeaa-374a-4364-9413-10582ec8fbaa" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:33.114324Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:33.114062Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.137088Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.135768Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:33.114304Z&quot;}}" data-execution_count="3">
+<div id="3fe7eeaa-374a-4364-9413-10582ec8fbaa" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:41.933730Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:41.933428Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:41.953336Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:41.952112Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:41.933699Z&quot;}}" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> highlight_ol(ol: OrderedList):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    green_cols <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(ol.search_idx.low, ol.search_idx.target))</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    blue_cols <span class="op">=</span> <span class="bu">list</span>(<span class="bu">range</span>(ol.search_idx.target, ol.search_idx.high))</span>
@@ -4020,7 +4037,7 @@ max-height: 75px;
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="e1292b54-36a9-4d0a-b7fd-4ef640595737" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:33.139116Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:33.138782Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.239186Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.238268Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:33.139094Z&quot;}}" data-execution_count="4">
+<div id="e1292b54-36a9-4d0a-b7fd-4ef640595737" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:41.954660Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:41.954386Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:42.037787Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:42.036784Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:41.954632Z&quot;}}" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>override_a <span class="op">=</span> <span class="va">False</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>override_b <span class="op">=</span> <span class="va">False</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -4054,336 +4071,204 @@ max-height: 75px;
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;calculated median = </span><span class="sc">{</span>med_calc<span class="sc">}</span><span class="ss">&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <style type="text/css">
-#T_c87e0_row0_col0, #T_c87e0_row0_col1, #T_c87e0_row0_col2, #T_c87e0_row0_col3, #T_c87e0_row0_col4, #T_c87e0_row0_col5, #T_c87e0_row0_col6, #T_c87e0_row0_col7, #T_c87e0_row0_col8, #T_c87e0_row0_col9, #T_c87e0_row0_col10, #T_c87e0_row0_col11, #T_c87e0_row0_col12, #T_c87e0_row0_col13, #T_c87e0_row0_col14, #T_c87e0_row0_col15, #T_c87e0_row0_col16, #T_c87e0_row0_col17, #T_c87e0_row0_col18, #T_c87e0_row0_col19, #T_c87e0_row0_col20, #T_c87e0_row0_col21, #T_c87e0_row0_col22, #T_c87e0_row0_col23, #T_c87e0_row0_col24, #T_c87e0_row0_col25, #T_c87e0_row0_col26, #T_c87e0_row0_col27, #T_c87e0_row0_col28, #T_c87e0_row0_col29, #T_c87e0_row0_col30, #T_c87e0_row0_col31, #T_c87e0_row0_col32, #T_c87e0_row0_col33, #T_c87e0_row0_col34, #T_c87e0_row0_col35, #T_c87e0_row0_col36, #T_c87e0_row0_col37, #T_c87e0_row0_col38, #T_c87e0_row0_col39, #T_c87e0_row0_col40, #T_c87e0_row0_col41, #T_c87e0_row0_col42, #T_c87e0_row0_col43, #T_c87e0_row0_col44, #T_c87e0_row0_col45, #T_c87e0_row0_col46, #T_c87e0_row0_col47, #T_c87e0_row0_col48, #T_c87e0_row0_col49, #T_c87e0_row0_col50, #T_c87e0_row0_col51, #T_c87e0_row0_col52, #T_c87e0_row0_col53, #T_c87e0_row0_col54, #T_c87e0_row0_col55, #T_c87e0_row0_col56, #T_c87e0_row0_col57, #T_c87e0_row0_col58, #T_c87e0_row0_col59, #T_c87e0_row0_col60, #T_c87e0_row0_col61, #T_c87e0_row0_col62, #T_c87e0_row0_col63, #T_c87e0_row0_col64, #T_c87e0_row0_col65, #T_c87e0_row0_col66, #T_c87e0_row0_col67, #T_c87e0_row0_col68, #T_c87e0_row0_col69, #T_c87e0_row0_col70, #T_c87e0_row0_col71, #T_c87e0_row0_col72, #T_c87e0_row0_col73, #T_c87e0_row0_col74, #T_c87e0_row0_col75 {
+#T_89aef_row0_col0, #T_89aef_row0_col1, #T_89aef_row0_col2, #T_89aef_row0_col3, #T_89aef_row0_col4, #T_89aef_row0_col5, #T_89aef_row0_col6, #T_89aef_row0_col7, #T_89aef_row0_col8, #T_89aef_row0_col9, #T_89aef_row0_col10, #T_89aef_row0_col11, #T_89aef_row0_col12, #T_89aef_row0_col13, #T_89aef_row0_col14, #T_89aef_row0_col15, #T_89aef_row0_col16, #T_89aef_row0_col17, #T_89aef_row0_col18, #T_89aef_row0_col19, #T_89aef_row0_col20, #T_89aef_row0_col21, #T_89aef_row0_col22, #T_89aef_row0_col23, #T_89aef_row0_col24, #T_89aef_row0_col25, #T_89aef_row0_col26, #T_89aef_row0_col27, #T_89aef_row0_col28, #T_89aef_row0_col29, #T_89aef_row0_col30, #T_89aef_row0_col31, #T_89aef_row0_col32, #T_89aef_row0_col33, #T_89aef_row0_col34, #T_89aef_row0_col35, #T_89aef_row0_col36, #T_89aef_row0_col37, #T_89aef_row0_col38, #T_89aef_row0_col39, #T_89aef_row0_col40, #T_89aef_row0_col41, #T_89aef_row0_col42 {
 background-color: lightgreen;
 }
-#T_c87e0_row0_col76, #T_c87e0_row0_col77, #T_c87e0_row0_col78, #T_c87e0_row0_col79, #T_c87e0_row0_col80, #T_c87e0_row0_col81, #T_c87e0_row0_col82, #T_c87e0_row0_col83, #T_c87e0_row0_col84, #T_c87e0_row0_col85, #T_c87e0_row0_col86, #T_c87e0_row0_col87, #T_c87e0_row0_col88, #T_c87e0_row0_col89, #T_c87e0_row0_col90, #T_c87e0_row0_col91, #T_c87e0_row0_col92, #T_c87e0_row0_col93, #T_c87e0_row0_col94, #T_c87e0_row0_col95, #T_c87e0_row0_col96, #T_c87e0_row0_col97, #T_c87e0_row0_col98, #T_c87e0_row0_col99, #T_c87e0_row0_col100, #T_c87e0_row0_col101, #T_c87e0_row0_col102, #T_c87e0_row0_col103, #T_c87e0_row0_col104, #T_c87e0_row0_col105, #T_c87e0_row0_col106, #T_c87e0_row0_col107, #T_c87e0_row0_col108, #T_c87e0_row0_col109, #T_c87e0_row0_col110, #T_c87e0_row0_col111, #T_c87e0_row0_col112, #T_c87e0_row0_col113, #T_c87e0_row0_col114, #T_c87e0_row0_col115, #T_c87e0_row0_col116, #T_c87e0_row0_col117, #T_c87e0_row0_col118, #T_c87e0_row0_col119, #T_c87e0_row0_col120, #T_c87e0_row0_col121, #T_c87e0_row0_col122, #T_c87e0_row0_col123, #T_c87e0_row0_col124, #T_c87e0_row0_col125, #T_c87e0_row0_col126, #T_c87e0_row0_col127, #T_c87e0_row0_col128, #T_c87e0_row0_col129, #T_c87e0_row0_col130, #T_c87e0_row0_col131, #T_c87e0_row0_col132, #T_c87e0_row0_col133, #T_c87e0_row0_col134, #T_c87e0_row0_col135, #T_c87e0_row0_col136, #T_c87e0_row0_col137, #T_c87e0_row0_col138, #T_c87e0_row0_col139, #T_c87e0_row0_col140, #T_c87e0_row0_col141, #T_c87e0_row0_col142, #T_c87e0_row0_col143, #T_c87e0_row0_col144, #T_c87e0_row0_col145, #T_c87e0_row0_col146, #T_c87e0_row0_col147, #T_c87e0_row0_col148, #T_c87e0_row0_col149, #T_c87e0_row0_col150, #T_c87e0_row0_col151 {
+#T_89aef_row0_col43, #T_89aef_row0_col44, #T_89aef_row0_col45, #T_89aef_row0_col46, #T_89aef_row0_col47, #T_89aef_row0_col48, #T_89aef_row0_col49, #T_89aef_row0_col50, #T_89aef_row0_col51, #T_89aef_row0_col52, #T_89aef_row0_col53, #T_89aef_row0_col54, #T_89aef_row0_col55, #T_89aef_row0_col56, #T_89aef_row0_col57, #T_89aef_row0_col58, #T_89aef_row0_col59, #T_89aef_row0_col60, #T_89aef_row0_col61, #T_89aef_row0_col62, #T_89aef_row0_col63, #T_89aef_row0_col64, #T_89aef_row0_col65, #T_89aef_row0_col66, #T_89aef_row0_col67, #T_89aef_row0_col68, #T_89aef_row0_col69, #T_89aef_row0_col70, #T_89aef_row0_col71, #T_89aef_row0_col72, #T_89aef_row0_col73, #T_89aef_row0_col74, #T_89aef_row0_col75, #T_89aef_row0_col76, #T_89aef_row0_col77, #T_89aef_row0_col78, #T_89aef_row0_col79, #T_89aef_row0_col80, #T_89aef_row0_col81, #T_89aef_row0_col82, #T_89aef_row0_col83, #T_89aef_row0_col84, #T_89aef_row0_col85 {
 background-color: lightblue;
 }
 </style>
 
-<table id="T_c87e0" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table id="T_89aef" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
 <th class="blank level0" data-quarto-table-cell-role="th"> </th>
-<th id="T_c87e0_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
-<th id="T_c87e0_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
-<th id="T_c87e0_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
-<th id="T_c87e0_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
-<th id="T_c87e0_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
-<th id="T_c87e0_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
-<th id="T_c87e0_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
-<th id="T_c87e0_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
-<th id="T_c87e0_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
-<th id="T_c87e0_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
-<th id="T_c87e0_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
-<th id="T_c87e0_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
-<th id="T_c87e0_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
-<th id="T_c87e0_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
-<th id="T_c87e0_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
-<th id="T_c87e0_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
-<th id="T_c87e0_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
-<th id="T_c87e0_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
-<th id="T_c87e0_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
-<th id="T_c87e0_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
-<th id="T_c87e0_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
-<th id="T_c87e0_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
-<th id="T_c87e0_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
-<th id="T_c87e0_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
-<th id="T_c87e0_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
-<th id="T_c87e0_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
-<th id="T_c87e0_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
-<th id="T_c87e0_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
-<th id="T_c87e0_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
-<th id="T_c87e0_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
-<th id="T_c87e0_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
-<th id="T_c87e0_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
-<th id="T_c87e0_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
-<th id="T_c87e0_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
-<th id="T_c87e0_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
-<th id="T_c87e0_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
-<th id="T_c87e0_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
-<th id="T_c87e0_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
-<th id="T_c87e0_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
-<th id="T_c87e0_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
-<th id="T_c87e0_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
-<th id="T_c87e0_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
-<th id="T_c87e0_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
-<th id="T_c87e0_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
-<th id="T_c87e0_level0_col44" class="col_heading level0 col44" data-quarto-table-cell-role="th">44</th>
-<th id="T_c87e0_level0_col45" class="col_heading level0 col45" data-quarto-table-cell-role="th">45</th>
-<th id="T_c87e0_level0_col46" class="col_heading level0 col46" data-quarto-table-cell-role="th">46</th>
-<th id="T_c87e0_level0_col47" class="col_heading level0 col47" data-quarto-table-cell-role="th">47</th>
-<th id="T_c87e0_level0_col48" class="col_heading level0 col48" data-quarto-table-cell-role="th">48</th>
-<th id="T_c87e0_level0_col49" class="col_heading level0 col49" data-quarto-table-cell-role="th">49</th>
-<th id="T_c87e0_level0_col50" class="col_heading level0 col50" data-quarto-table-cell-role="th">50</th>
-<th id="T_c87e0_level0_col51" class="col_heading level0 col51" data-quarto-table-cell-role="th">51</th>
-<th id="T_c87e0_level0_col52" class="col_heading level0 col52" data-quarto-table-cell-role="th">52</th>
-<th id="T_c87e0_level0_col53" class="col_heading level0 col53" data-quarto-table-cell-role="th">53</th>
-<th id="T_c87e0_level0_col54" class="col_heading level0 col54" data-quarto-table-cell-role="th">54</th>
-<th id="T_c87e0_level0_col55" class="col_heading level0 col55" data-quarto-table-cell-role="th">55</th>
-<th id="T_c87e0_level0_col56" class="col_heading level0 col56" data-quarto-table-cell-role="th">56</th>
-<th id="T_c87e0_level0_col57" class="col_heading level0 col57" data-quarto-table-cell-role="th">57</th>
-<th id="T_c87e0_level0_col58" class="col_heading level0 col58" data-quarto-table-cell-role="th">58</th>
-<th id="T_c87e0_level0_col59" class="col_heading level0 col59" data-quarto-table-cell-role="th">59</th>
-<th id="T_c87e0_level0_col60" class="col_heading level0 col60" data-quarto-table-cell-role="th">60</th>
-<th id="T_c87e0_level0_col61" class="col_heading level0 col61" data-quarto-table-cell-role="th">61</th>
-<th id="T_c87e0_level0_col62" class="col_heading level0 col62" data-quarto-table-cell-role="th">62</th>
-<th id="T_c87e0_level0_col63" class="col_heading level0 col63" data-quarto-table-cell-role="th">63</th>
-<th id="T_c87e0_level0_col64" class="col_heading level0 col64" data-quarto-table-cell-role="th">64</th>
-<th id="T_c87e0_level0_col65" class="col_heading level0 col65" data-quarto-table-cell-role="th">65</th>
-<th id="T_c87e0_level0_col66" class="col_heading level0 col66" data-quarto-table-cell-role="th">66</th>
-<th id="T_c87e0_level0_col67" class="col_heading level0 col67" data-quarto-table-cell-role="th">67</th>
-<th id="T_c87e0_level0_col68" class="col_heading level0 col68" data-quarto-table-cell-role="th">68</th>
-<th id="T_c87e0_level0_col69" class="col_heading level0 col69" data-quarto-table-cell-role="th">69</th>
-<th id="T_c87e0_level0_col70" class="col_heading level0 col70" data-quarto-table-cell-role="th">70</th>
-<th id="T_c87e0_level0_col71" class="col_heading level0 col71" data-quarto-table-cell-role="th">71</th>
-<th id="T_c87e0_level0_col72" class="col_heading level0 col72" data-quarto-table-cell-role="th">72</th>
-<th id="T_c87e0_level0_col73" class="col_heading level0 col73" data-quarto-table-cell-role="th">73</th>
-<th id="T_c87e0_level0_col74" class="col_heading level0 col74" data-quarto-table-cell-role="th">74</th>
-<th id="T_c87e0_level0_col75" class="col_heading level0 col75" data-quarto-table-cell-role="th">75</th>
-<th id="T_c87e0_level0_col76" class="col_heading level0 col76" data-quarto-table-cell-role="th">76</th>
-<th id="T_c87e0_level0_col77" class="col_heading level0 col77" data-quarto-table-cell-role="th">77</th>
-<th id="T_c87e0_level0_col78" class="col_heading level0 col78" data-quarto-table-cell-role="th">78</th>
-<th id="T_c87e0_level0_col79" class="col_heading level0 col79" data-quarto-table-cell-role="th">79</th>
-<th id="T_c87e0_level0_col80" class="col_heading level0 col80" data-quarto-table-cell-role="th">80</th>
-<th id="T_c87e0_level0_col81" class="col_heading level0 col81" data-quarto-table-cell-role="th">81</th>
-<th id="T_c87e0_level0_col82" class="col_heading level0 col82" data-quarto-table-cell-role="th">82</th>
-<th id="T_c87e0_level0_col83" class="col_heading level0 col83" data-quarto-table-cell-role="th">83</th>
-<th id="T_c87e0_level0_col84" class="col_heading level0 col84" data-quarto-table-cell-role="th">84</th>
-<th id="T_c87e0_level0_col85" class="col_heading level0 col85" data-quarto-table-cell-role="th">85</th>
-<th id="T_c87e0_level0_col86" class="col_heading level0 col86" data-quarto-table-cell-role="th">86</th>
-<th id="T_c87e0_level0_col87" class="col_heading level0 col87" data-quarto-table-cell-role="th">87</th>
-<th id="T_c87e0_level0_col88" class="col_heading level0 col88" data-quarto-table-cell-role="th">88</th>
-<th id="T_c87e0_level0_col89" class="col_heading level0 col89" data-quarto-table-cell-role="th">89</th>
-<th id="T_c87e0_level0_col90" class="col_heading level0 col90" data-quarto-table-cell-role="th">90</th>
-<th id="T_c87e0_level0_col91" class="col_heading level0 col91" data-quarto-table-cell-role="th">91</th>
-<th id="T_c87e0_level0_col92" class="col_heading level0 col92" data-quarto-table-cell-role="th">92</th>
-<th id="T_c87e0_level0_col93" class="col_heading level0 col93" data-quarto-table-cell-role="th">93</th>
-<th id="T_c87e0_level0_col94" class="col_heading level0 col94" data-quarto-table-cell-role="th">94</th>
-<th id="T_c87e0_level0_col95" class="col_heading level0 col95" data-quarto-table-cell-role="th">95</th>
-<th id="T_c87e0_level0_col96" class="col_heading level0 col96" data-quarto-table-cell-role="th">96</th>
-<th id="T_c87e0_level0_col97" class="col_heading level0 col97" data-quarto-table-cell-role="th">97</th>
-<th id="T_c87e0_level0_col98" class="col_heading level0 col98" data-quarto-table-cell-role="th">98</th>
-<th id="T_c87e0_level0_col99" class="col_heading level0 col99" data-quarto-table-cell-role="th">99</th>
-<th id="T_c87e0_level0_col100" class="col_heading level0 col100" data-quarto-table-cell-role="th">100</th>
-<th id="T_c87e0_level0_col101" class="col_heading level0 col101" data-quarto-table-cell-role="th">101</th>
-<th id="T_c87e0_level0_col102" class="col_heading level0 col102" data-quarto-table-cell-role="th">102</th>
-<th id="T_c87e0_level0_col103" class="col_heading level0 col103" data-quarto-table-cell-role="th">103</th>
-<th id="T_c87e0_level0_col104" class="col_heading level0 col104" data-quarto-table-cell-role="th">104</th>
-<th id="T_c87e0_level0_col105" class="col_heading level0 col105" data-quarto-table-cell-role="th">105</th>
-<th id="T_c87e0_level0_col106" class="col_heading level0 col106" data-quarto-table-cell-role="th">106</th>
-<th id="T_c87e0_level0_col107" class="col_heading level0 col107" data-quarto-table-cell-role="th">107</th>
-<th id="T_c87e0_level0_col108" class="col_heading level0 col108" data-quarto-table-cell-role="th">108</th>
-<th id="T_c87e0_level0_col109" class="col_heading level0 col109" data-quarto-table-cell-role="th">109</th>
-<th id="T_c87e0_level0_col110" class="col_heading level0 col110" data-quarto-table-cell-role="th">110</th>
-<th id="T_c87e0_level0_col111" class="col_heading level0 col111" data-quarto-table-cell-role="th">111</th>
-<th id="T_c87e0_level0_col112" class="col_heading level0 col112" data-quarto-table-cell-role="th">112</th>
-<th id="T_c87e0_level0_col113" class="col_heading level0 col113" data-quarto-table-cell-role="th">113</th>
-<th id="T_c87e0_level0_col114" class="col_heading level0 col114" data-quarto-table-cell-role="th">114</th>
-<th id="T_c87e0_level0_col115" class="col_heading level0 col115" data-quarto-table-cell-role="th">115</th>
-<th id="T_c87e0_level0_col116" class="col_heading level0 col116" data-quarto-table-cell-role="th">116</th>
-<th id="T_c87e0_level0_col117" class="col_heading level0 col117" data-quarto-table-cell-role="th">117</th>
-<th id="T_c87e0_level0_col118" class="col_heading level0 col118" data-quarto-table-cell-role="th">118</th>
-<th id="T_c87e0_level0_col119" class="col_heading level0 col119" data-quarto-table-cell-role="th">119</th>
-<th id="T_c87e0_level0_col120" class="col_heading level0 col120" data-quarto-table-cell-role="th">120</th>
-<th id="T_c87e0_level0_col121" class="col_heading level0 col121" data-quarto-table-cell-role="th">121</th>
-<th id="T_c87e0_level0_col122" class="col_heading level0 col122" data-quarto-table-cell-role="th">122</th>
-<th id="T_c87e0_level0_col123" class="col_heading level0 col123" data-quarto-table-cell-role="th">123</th>
-<th id="T_c87e0_level0_col124" class="col_heading level0 col124" data-quarto-table-cell-role="th">124</th>
-<th id="T_c87e0_level0_col125" class="col_heading level0 col125" data-quarto-table-cell-role="th">125</th>
-<th id="T_c87e0_level0_col126" class="col_heading level0 col126" data-quarto-table-cell-role="th">126</th>
-<th id="T_c87e0_level0_col127" class="col_heading level0 col127" data-quarto-table-cell-role="th">127</th>
-<th id="T_c87e0_level0_col128" class="col_heading level0 col128" data-quarto-table-cell-role="th">128</th>
-<th id="T_c87e0_level0_col129" class="col_heading level0 col129" data-quarto-table-cell-role="th">129</th>
-<th id="T_c87e0_level0_col130" class="col_heading level0 col130" data-quarto-table-cell-role="th">130</th>
-<th id="T_c87e0_level0_col131" class="col_heading level0 col131" data-quarto-table-cell-role="th">131</th>
-<th id="T_c87e0_level0_col132" class="col_heading level0 col132" data-quarto-table-cell-role="th">132</th>
-<th id="T_c87e0_level0_col133" class="col_heading level0 col133" data-quarto-table-cell-role="th">133</th>
-<th id="T_c87e0_level0_col134" class="col_heading level0 col134" data-quarto-table-cell-role="th">134</th>
-<th id="T_c87e0_level0_col135" class="col_heading level0 col135" data-quarto-table-cell-role="th">135</th>
-<th id="T_c87e0_level0_col136" class="col_heading level0 col136" data-quarto-table-cell-role="th">136</th>
-<th id="T_c87e0_level0_col137" class="col_heading level0 col137" data-quarto-table-cell-role="th">137</th>
-<th id="T_c87e0_level0_col138" class="col_heading level0 col138" data-quarto-table-cell-role="th">138</th>
-<th id="T_c87e0_level0_col139" class="col_heading level0 col139" data-quarto-table-cell-role="th">139</th>
-<th id="T_c87e0_level0_col140" class="col_heading level0 col140" data-quarto-table-cell-role="th">140</th>
-<th id="T_c87e0_level0_col141" class="col_heading level0 col141" data-quarto-table-cell-role="th">141</th>
-<th id="T_c87e0_level0_col142" class="col_heading level0 col142" data-quarto-table-cell-role="th">142</th>
-<th id="T_c87e0_level0_col143" class="col_heading level0 col143" data-quarto-table-cell-role="th">143</th>
-<th id="T_c87e0_level0_col144" class="col_heading level0 col144" data-quarto-table-cell-role="th">144</th>
-<th id="T_c87e0_level0_col145" class="col_heading level0 col145" data-quarto-table-cell-role="th">145</th>
-<th id="T_c87e0_level0_col146" class="col_heading level0 col146" data-quarto-table-cell-role="th">146</th>
-<th id="T_c87e0_level0_col147" class="col_heading level0 col147" data-quarto-table-cell-role="th">147</th>
-<th id="T_c87e0_level0_col148" class="col_heading level0 col148" data-quarto-table-cell-role="th">148</th>
-<th id="T_c87e0_level0_col149" class="col_heading level0 col149" data-quarto-table-cell-role="th">149</th>
-<th id="T_c87e0_level0_col150" class="col_heading level0 col150" data-quarto-table-cell-role="th">150</th>
-<th id="T_c87e0_level0_col151" class="col_heading level0 col151" data-quarto-table-cell-role="th">151</th>
+<th id="T_89aef_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
+<th id="T_89aef_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
+<th id="T_89aef_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
+<th id="T_89aef_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
+<th id="T_89aef_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
+<th id="T_89aef_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
+<th id="T_89aef_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
+<th id="T_89aef_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
+<th id="T_89aef_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
+<th id="T_89aef_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
+<th id="T_89aef_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
+<th id="T_89aef_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
+<th id="T_89aef_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
+<th id="T_89aef_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
+<th id="T_89aef_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
+<th id="T_89aef_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
+<th id="T_89aef_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
+<th id="T_89aef_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
+<th id="T_89aef_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
+<th id="T_89aef_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
+<th id="T_89aef_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
+<th id="T_89aef_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
+<th id="T_89aef_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
+<th id="T_89aef_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
+<th id="T_89aef_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
+<th id="T_89aef_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
+<th id="T_89aef_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
+<th id="T_89aef_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
+<th id="T_89aef_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
+<th id="T_89aef_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
+<th id="T_89aef_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
+<th id="T_89aef_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
+<th id="T_89aef_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
+<th id="T_89aef_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
+<th id="T_89aef_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
+<th id="T_89aef_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
+<th id="T_89aef_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
+<th id="T_89aef_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
+<th id="T_89aef_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
+<th id="T_89aef_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
+<th id="T_89aef_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
+<th id="T_89aef_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
+<th id="T_89aef_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
+<th id="T_89aef_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
+<th id="T_89aef_level0_col44" class="col_heading level0 col44" data-quarto-table-cell-role="th">44</th>
+<th id="T_89aef_level0_col45" class="col_heading level0 col45" data-quarto-table-cell-role="th">45</th>
+<th id="T_89aef_level0_col46" class="col_heading level0 col46" data-quarto-table-cell-role="th">46</th>
+<th id="T_89aef_level0_col47" class="col_heading level0 col47" data-quarto-table-cell-role="th">47</th>
+<th id="T_89aef_level0_col48" class="col_heading level0 col48" data-quarto-table-cell-role="th">48</th>
+<th id="T_89aef_level0_col49" class="col_heading level0 col49" data-quarto-table-cell-role="th">49</th>
+<th id="T_89aef_level0_col50" class="col_heading level0 col50" data-quarto-table-cell-role="th">50</th>
+<th id="T_89aef_level0_col51" class="col_heading level0 col51" data-quarto-table-cell-role="th">51</th>
+<th id="T_89aef_level0_col52" class="col_heading level0 col52" data-quarto-table-cell-role="th">52</th>
+<th id="T_89aef_level0_col53" class="col_heading level0 col53" data-quarto-table-cell-role="th">53</th>
+<th id="T_89aef_level0_col54" class="col_heading level0 col54" data-quarto-table-cell-role="th">54</th>
+<th id="T_89aef_level0_col55" class="col_heading level0 col55" data-quarto-table-cell-role="th">55</th>
+<th id="T_89aef_level0_col56" class="col_heading level0 col56" data-quarto-table-cell-role="th">56</th>
+<th id="T_89aef_level0_col57" class="col_heading level0 col57" data-quarto-table-cell-role="th">57</th>
+<th id="T_89aef_level0_col58" class="col_heading level0 col58" data-quarto-table-cell-role="th">58</th>
+<th id="T_89aef_level0_col59" class="col_heading level0 col59" data-quarto-table-cell-role="th">59</th>
+<th id="T_89aef_level0_col60" class="col_heading level0 col60" data-quarto-table-cell-role="th">60</th>
+<th id="T_89aef_level0_col61" class="col_heading level0 col61" data-quarto-table-cell-role="th">61</th>
+<th id="T_89aef_level0_col62" class="col_heading level0 col62" data-quarto-table-cell-role="th">62</th>
+<th id="T_89aef_level0_col63" class="col_heading level0 col63" data-quarto-table-cell-role="th">63</th>
+<th id="T_89aef_level0_col64" class="col_heading level0 col64" data-quarto-table-cell-role="th">64</th>
+<th id="T_89aef_level0_col65" class="col_heading level0 col65" data-quarto-table-cell-role="th">65</th>
+<th id="T_89aef_level0_col66" class="col_heading level0 col66" data-quarto-table-cell-role="th">66</th>
+<th id="T_89aef_level0_col67" class="col_heading level0 col67" data-quarto-table-cell-role="th">67</th>
+<th id="T_89aef_level0_col68" class="col_heading level0 col68" data-quarto-table-cell-role="th">68</th>
+<th id="T_89aef_level0_col69" class="col_heading level0 col69" data-quarto-table-cell-role="th">69</th>
+<th id="T_89aef_level0_col70" class="col_heading level0 col70" data-quarto-table-cell-role="th">70</th>
+<th id="T_89aef_level0_col71" class="col_heading level0 col71" data-quarto-table-cell-role="th">71</th>
+<th id="T_89aef_level0_col72" class="col_heading level0 col72" data-quarto-table-cell-role="th">72</th>
+<th id="T_89aef_level0_col73" class="col_heading level0 col73" data-quarto-table-cell-role="th">73</th>
+<th id="T_89aef_level0_col74" class="col_heading level0 col74" data-quarto-table-cell-role="th">74</th>
+<th id="T_89aef_level0_col75" class="col_heading level0 col75" data-quarto-table-cell-role="th">75</th>
+<th id="T_89aef_level0_col76" class="col_heading level0 col76" data-quarto-table-cell-role="th">76</th>
+<th id="T_89aef_level0_col77" class="col_heading level0 col77" data-quarto-table-cell-role="th">77</th>
+<th id="T_89aef_level0_col78" class="col_heading level0 col78" data-quarto-table-cell-role="th">78</th>
+<th id="T_89aef_level0_col79" class="col_heading level0 col79" data-quarto-table-cell-role="th">79</th>
+<th id="T_89aef_level0_col80" class="col_heading level0 col80" data-quarto-table-cell-role="th">80</th>
+<th id="T_89aef_level0_col81" class="col_heading level0 col81" data-quarto-table-cell-role="th">81</th>
+<th id="T_89aef_level0_col82" class="col_heading level0 col82" data-quarto-table-cell-role="th">82</th>
+<th id="T_89aef_level0_col83" class="col_heading level0 col83" data-quarto-table-cell-role="th">83</th>
+<th id="T_89aef_level0_col84" class="col_heading level0 col84" data-quarto-table-cell-role="th">84</th>
+<th id="T_89aef_level0_col85" class="col_heading level0 col85" data-quarto-table-cell-role="th">85</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td id="T_c87e0_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
-<td id="T_c87e0_row0_col0" class="data row0 col0">-inf</td>
-<td id="T_c87e0_row0_col1" class="data row0 col1">0.000000</td>
-<td id="T_c87e0_row0_col2" class="data row0 col2">0.000000</td>
-<td id="T_c87e0_row0_col3" class="data row0 col3">0.000000</td>
-<td id="T_c87e0_row0_col4" class="data row0 col4">1.000000</td>
-<td id="T_c87e0_row0_col5" class="data row0 col5">3.000000</td>
-<td id="T_c87e0_row0_col6" class="data row0 col6">3.000000</td>
-<td id="T_c87e0_row0_col7" class="data row0 col7">4.000000</td>
-<td id="T_c87e0_row0_col8" class="data row0 col8">5.000000</td>
-<td id="T_c87e0_row0_col9" class="data row0 col9">7.000000</td>
-<td id="T_c87e0_row0_col10" class="data row0 col10">7.000000</td>
-<td id="T_c87e0_row0_col11" class="data row0 col11">7.000000</td>
-<td id="T_c87e0_row0_col12" class="data row0 col12">8.000000</td>
-<td id="T_c87e0_row0_col13" class="data row0 col13">8.000000</td>
-<td id="T_c87e0_row0_col14" class="data row0 col14">8.000000</td>
-<td id="T_c87e0_row0_col15" class="data row0 col15">8.000000</td>
-<td id="T_c87e0_row0_col16" class="data row0 col16">10.000000</td>
-<td id="T_c87e0_row0_col17" class="data row0 col17">11.000000</td>
-<td id="T_c87e0_row0_col18" class="data row0 col18">11.000000</td>
-<td id="T_c87e0_row0_col19" class="data row0 col19">12.000000</td>
-<td id="T_c87e0_row0_col20" class="data row0 col20">14.000000</td>
-<td id="T_c87e0_row0_col21" class="data row0 col21">15.000000</td>
-<td id="T_c87e0_row0_col22" class="data row0 col22">16.000000</td>
-<td id="T_c87e0_row0_col23" class="data row0 col23">17.000000</td>
-<td id="T_c87e0_row0_col24" class="data row0 col24">17.000000</td>
-<td id="T_c87e0_row0_col25" class="data row0 col25">17.000000</td>
-<td id="T_c87e0_row0_col26" class="data row0 col26">18.000000</td>
-<td id="T_c87e0_row0_col27" class="data row0 col27">18.000000</td>
-<td id="T_c87e0_row0_col28" class="data row0 col28">18.000000</td>
-<td id="T_c87e0_row0_col29" class="data row0 col29">20.000000</td>
-<td id="T_c87e0_row0_col30" class="data row0 col30">21.000000</td>
-<td id="T_c87e0_row0_col31" class="data row0 col31">21.000000</td>
-<td id="T_c87e0_row0_col32" class="data row0 col32">22.000000</td>
-<td id="T_c87e0_row0_col33" class="data row0 col33">22.000000</td>
-<td id="T_c87e0_row0_col34" class="data row0 col34">23.000000</td>
-<td id="T_c87e0_row0_col35" class="data row0 col35">25.000000</td>
-<td id="T_c87e0_row0_col36" class="data row0 col36">26.000000</td>
-<td id="T_c87e0_row0_col37" class="data row0 col37">27.000000</td>
-<td id="T_c87e0_row0_col38" class="data row0 col38">27.000000</td>
-<td id="T_c87e0_row0_col39" class="data row0 col39">28.000000</td>
-<td id="T_c87e0_row0_col40" class="data row0 col40">31.000000</td>
-<td id="T_c87e0_row0_col41" class="data row0 col41">31.000000</td>
-<td id="T_c87e0_row0_col42" class="data row0 col42">35.000000</td>
-<td id="T_c87e0_row0_col43" class="data row0 col43">35.000000</td>
-<td id="T_c87e0_row0_col44" class="data row0 col44">36.000000</td>
-<td id="T_c87e0_row0_col45" class="data row0 col45">37.000000</td>
-<td id="T_c87e0_row0_col46" class="data row0 col46">37.000000</td>
-<td id="T_c87e0_row0_col47" class="data row0 col47">39.000000</td>
-<td id="T_c87e0_row0_col48" class="data row0 col48">40.000000</td>
-<td id="T_c87e0_row0_col49" class="data row0 col49">40.000000</td>
-<td id="T_c87e0_row0_col50" class="data row0 col50">41.000000</td>
-<td id="T_c87e0_row0_col51" class="data row0 col51">41.000000</td>
-<td id="T_c87e0_row0_col52" class="data row0 col52">41.000000</td>
-<td id="T_c87e0_row0_col53" class="data row0 col53">41.000000</td>
-<td id="T_c87e0_row0_col54" class="data row0 col54">42.000000</td>
-<td id="T_c87e0_row0_col55" class="data row0 col55">42.000000</td>
-<td id="T_c87e0_row0_col56" class="data row0 col56">42.000000</td>
-<td id="T_c87e0_row0_col57" class="data row0 col57">42.000000</td>
-<td id="T_c87e0_row0_col58" class="data row0 col58">42.000000</td>
-<td id="T_c87e0_row0_col59" class="data row0 col59">43.000000</td>
-<td id="T_c87e0_row0_col60" class="data row0 col60">43.000000</td>
-<td id="T_c87e0_row0_col61" class="data row0 col61">43.000000</td>
-<td id="T_c87e0_row0_col62" class="data row0 col62">44.000000</td>
-<td id="T_c87e0_row0_col63" class="data row0 col63">44.000000</td>
-<td id="T_c87e0_row0_col64" class="data row0 col64">45.000000</td>
-<td id="T_c87e0_row0_col65" class="data row0 col65">46.000000</td>
-<td id="T_c87e0_row0_col66" class="data row0 col66">46.000000</td>
-<td id="T_c87e0_row0_col67" class="data row0 col67">46.000000</td>
-<td id="T_c87e0_row0_col68" class="data row0 col68">47.000000</td>
-<td id="T_c87e0_row0_col69" class="data row0 col69">48.000000</td>
-<td id="T_c87e0_row0_col70" class="data row0 col70">48.000000</td>
-<td id="T_c87e0_row0_col71" class="data row0 col71">48.000000</td>
-<td id="T_c87e0_row0_col72" class="data row0 col72">48.000000</td>
-<td id="T_c87e0_row0_col73" class="data row0 col73">49.000000</td>
-<td id="T_c87e0_row0_col74" class="data row0 col74">49.000000</td>
-<td id="T_c87e0_row0_col75" class="data row0 col75">50.000000</td>
-<td id="T_c87e0_row0_col76" class="data row0 col76">51.000000</td>
-<td id="T_c87e0_row0_col77" class="data row0 col77">51.000000</td>
-<td id="T_c87e0_row0_col78" class="data row0 col78">51.000000</td>
-<td id="T_c87e0_row0_col79" class="data row0 col79">52.000000</td>
-<td id="T_c87e0_row0_col80" class="data row0 col80">52.000000</td>
-<td id="T_c87e0_row0_col81" class="data row0 col81">52.000000</td>
-<td id="T_c87e0_row0_col82" class="data row0 col82">52.000000</td>
-<td id="T_c87e0_row0_col83" class="data row0 col83">53.000000</td>
-<td id="T_c87e0_row0_col84" class="data row0 col84">53.000000</td>
-<td id="T_c87e0_row0_col85" class="data row0 col85">54.000000</td>
-<td id="T_c87e0_row0_col86" class="data row0 col86">54.000000</td>
-<td id="T_c87e0_row0_col87" class="data row0 col87">54.000000</td>
-<td id="T_c87e0_row0_col88" class="data row0 col88">55.000000</td>
-<td id="T_c87e0_row0_col89" class="data row0 col89">55.000000</td>
-<td id="T_c87e0_row0_col90" class="data row0 col90">55.000000</td>
-<td id="T_c87e0_row0_col91" class="data row0 col91">56.000000</td>
-<td id="T_c87e0_row0_col92" class="data row0 col92">57.000000</td>
-<td id="T_c87e0_row0_col93" class="data row0 col93">57.000000</td>
-<td id="T_c87e0_row0_col94" class="data row0 col94">57.000000</td>
-<td id="T_c87e0_row0_col95" class="data row0 col95">57.000000</td>
-<td id="T_c87e0_row0_col96" class="data row0 col96">57.000000</td>
-<td id="T_c87e0_row0_col97" class="data row0 col97">58.000000</td>
-<td id="T_c87e0_row0_col98" class="data row0 col98">58.000000</td>
-<td id="T_c87e0_row0_col99" class="data row0 col99">58.000000</td>
-<td id="T_c87e0_row0_col100" class="data row0 col100">60.000000</td>
-<td id="T_c87e0_row0_col101" class="data row0 col101">60.000000</td>
-<td id="T_c87e0_row0_col102" class="data row0 col102">61.000000</td>
-<td id="T_c87e0_row0_col103" class="data row0 col103">62.000000</td>
-<td id="T_c87e0_row0_col104" class="data row0 col104">63.000000</td>
-<td id="T_c87e0_row0_col105" class="data row0 col105">64.000000</td>
-<td id="T_c87e0_row0_col106" class="data row0 col106">64.000000</td>
-<td id="T_c87e0_row0_col107" class="data row0 col107">65.000000</td>
-<td id="T_c87e0_row0_col108" class="data row0 col108">66.000000</td>
-<td id="T_c87e0_row0_col109" class="data row0 col109">66.000000</td>
-<td id="T_c87e0_row0_col110" class="data row0 col110">67.000000</td>
-<td id="T_c87e0_row0_col111" class="data row0 col111">68.000000</td>
-<td id="T_c87e0_row0_col112" class="data row0 col112">68.000000</td>
-<td id="T_c87e0_row0_col113" class="data row0 col113">69.000000</td>
-<td id="T_c87e0_row0_col114" class="data row0 col114">69.000000</td>
-<td id="T_c87e0_row0_col115" class="data row0 col115">70.000000</td>
-<td id="T_c87e0_row0_col116" class="data row0 col116">70.000000</td>
-<td id="T_c87e0_row0_col117" class="data row0 col117">70.000000</td>
-<td id="T_c87e0_row0_col118" class="data row0 col118">70.000000</td>
-<td id="T_c87e0_row0_col119" class="data row0 col119">71.000000</td>
-<td id="T_c87e0_row0_col120" class="data row0 col120">71.000000</td>
-<td id="T_c87e0_row0_col121" class="data row0 col121">74.000000</td>
-<td id="T_c87e0_row0_col122" class="data row0 col122">74.000000</td>
-<td id="T_c87e0_row0_col123" class="data row0 col123">74.000000</td>
-<td id="T_c87e0_row0_col124" class="data row0 col124">76.000000</td>
-<td id="T_c87e0_row0_col125" class="data row0 col125">76.000000</td>
-<td id="T_c87e0_row0_col126" class="data row0 col126">77.000000</td>
-<td id="T_c87e0_row0_col127" class="data row0 col127">79.000000</td>
-<td id="T_c87e0_row0_col128" class="data row0 col128">79.000000</td>
-<td id="T_c87e0_row0_col129" class="data row0 col129">79.000000</td>
-<td id="T_c87e0_row0_col130" class="data row0 col130">79.000000</td>
-<td id="T_c87e0_row0_col131" class="data row0 col131">80.000000</td>
-<td id="T_c87e0_row0_col132" class="data row0 col132">80.000000</td>
-<td id="T_c87e0_row0_col133" class="data row0 col133">81.000000</td>
-<td id="T_c87e0_row0_col134" class="data row0 col134">83.000000</td>
-<td id="T_c87e0_row0_col135" class="data row0 col135">84.000000</td>
-<td id="T_c87e0_row0_col136" class="data row0 col136">84.000000</td>
-<td id="T_c87e0_row0_col137" class="data row0 col137">84.000000</td>
-<td id="T_c87e0_row0_col138" class="data row0 col138">87.000000</td>
-<td id="T_c87e0_row0_col139" class="data row0 col139">87.000000</td>
-<td id="T_c87e0_row0_col140" class="data row0 col140">91.000000</td>
-<td id="T_c87e0_row0_col141" class="data row0 col141">92.000000</td>
-<td id="T_c87e0_row0_col142" class="data row0 col142">93.000000</td>
-<td id="T_c87e0_row0_col143" class="data row0 col143">93.000000</td>
-<td id="T_c87e0_row0_col144" class="data row0 col144">94.000000</td>
-<td id="T_c87e0_row0_col145" class="data row0 col145">94.000000</td>
-<td id="T_c87e0_row0_col146" class="data row0 col146">94.000000</td>
-<td id="T_c87e0_row0_col147" class="data row0 col147">95.000000</td>
-<td id="T_c87e0_row0_col148" class="data row0 col148">95.000000</td>
-<td id="T_c87e0_row0_col149" class="data row0 col149">95.000000</td>
-<td id="T_c87e0_row0_col150" class="data row0 col150">96.000000</td>
-<td id="T_c87e0_row0_col151" class="data row0 col151">inf</td>
+<td id="T_89aef_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
+<td id="T_89aef_row0_col0" class="data row0 col0">-inf</td>
+<td id="T_89aef_row0_col1" class="data row0 col1">2.000000</td>
+<td id="T_89aef_row0_col2" class="data row0 col2">4.000000</td>
+<td id="T_89aef_row0_col3" class="data row0 col3">9.000000</td>
+<td id="T_89aef_row0_col4" class="data row0 col4">9.000000</td>
+<td id="T_89aef_row0_col5" class="data row0 col5">10.000000</td>
+<td id="T_89aef_row0_col6" class="data row0 col6">11.000000</td>
+<td id="T_89aef_row0_col7" class="data row0 col7">11.000000</td>
+<td id="T_89aef_row0_col8" class="data row0 col8">12.000000</td>
+<td id="T_89aef_row0_col9" class="data row0 col9">12.000000</td>
+<td id="T_89aef_row0_col10" class="data row0 col10">17.000000</td>
+<td id="T_89aef_row0_col11" class="data row0 col11">17.000000</td>
+<td id="T_89aef_row0_col12" class="data row0 col12">18.000000</td>
+<td id="T_89aef_row0_col13" class="data row0 col13">18.000000</td>
+<td id="T_89aef_row0_col14" class="data row0 col14">19.000000</td>
+<td id="T_89aef_row0_col15" class="data row0 col15">20.000000</td>
+<td id="T_89aef_row0_col16" class="data row0 col16">22.000000</td>
+<td id="T_89aef_row0_col17" class="data row0 col17">23.000000</td>
+<td id="T_89aef_row0_col18" class="data row0 col18">30.000000</td>
+<td id="T_89aef_row0_col19" class="data row0 col19">32.000000</td>
+<td id="T_89aef_row0_col20" class="data row0 col20">32.000000</td>
+<td id="T_89aef_row0_col21" class="data row0 col21">32.000000</td>
+<td id="T_89aef_row0_col22" class="data row0 col22">33.000000</td>
+<td id="T_89aef_row0_col23" class="data row0 col23">36.000000</td>
+<td id="T_89aef_row0_col24" class="data row0 col24">38.000000</td>
+<td id="T_89aef_row0_col25" class="data row0 col25">38.000000</td>
+<td id="T_89aef_row0_col26" class="data row0 col26">39.000000</td>
+<td id="T_89aef_row0_col27" class="data row0 col27">40.000000</td>
+<td id="T_89aef_row0_col28" class="data row0 col28">40.000000</td>
+<td id="T_89aef_row0_col29" class="data row0 col29">41.000000</td>
+<td id="T_89aef_row0_col30" class="data row0 col30">42.000000</td>
+<td id="T_89aef_row0_col31" class="data row0 col31">42.000000</td>
+<td id="T_89aef_row0_col32" class="data row0 col32">42.000000</td>
+<td id="T_89aef_row0_col33" class="data row0 col33">43.000000</td>
+<td id="T_89aef_row0_col34" class="data row0 col34">43.000000</td>
+<td id="T_89aef_row0_col35" class="data row0 col35">43.000000</td>
+<td id="T_89aef_row0_col36" class="data row0 col36">43.000000</td>
+<td id="T_89aef_row0_col37" class="data row0 col37">44.000000</td>
+<td id="T_89aef_row0_col38" class="data row0 col38">44.000000</td>
+<td id="T_89aef_row0_col39" class="data row0 col39">44.000000</td>
+<td id="T_89aef_row0_col40" class="data row0 col40">45.000000</td>
+<td id="T_89aef_row0_col41" class="data row0 col41">45.000000</td>
+<td id="T_89aef_row0_col42" class="data row0 col42">46.000000</td>
+<td id="T_89aef_row0_col43" class="data row0 col43">47.000000</td>
+<td id="T_89aef_row0_col44" class="data row0 col44">49.000000</td>
+<td id="T_89aef_row0_col45" class="data row0 col45">50.000000</td>
+<td id="T_89aef_row0_col46" class="data row0 col46">52.000000</td>
+<td id="T_89aef_row0_col47" class="data row0 col47">53.000000</td>
+<td id="T_89aef_row0_col48" class="data row0 col48">53.000000</td>
+<td id="T_89aef_row0_col49" class="data row0 col49">54.000000</td>
+<td id="T_89aef_row0_col50" class="data row0 col50">54.000000</td>
+<td id="T_89aef_row0_col51" class="data row0 col51">54.000000</td>
+<td id="T_89aef_row0_col52" class="data row0 col52">55.000000</td>
+<td id="T_89aef_row0_col53" class="data row0 col53">55.000000</td>
+<td id="T_89aef_row0_col54" class="data row0 col54">57.000000</td>
+<td id="T_89aef_row0_col55" class="data row0 col55">57.000000</td>
+<td id="T_89aef_row0_col56" class="data row0 col56">58.000000</td>
+<td id="T_89aef_row0_col57" class="data row0 col57">58.000000</td>
+<td id="T_89aef_row0_col58" class="data row0 col58">58.000000</td>
+<td id="T_89aef_row0_col59" class="data row0 col59">58.000000</td>
+<td id="T_89aef_row0_col60" class="data row0 col60">60.000000</td>
+<td id="T_89aef_row0_col61" class="data row0 col61">60.000000</td>
+<td id="T_89aef_row0_col62" class="data row0 col62">61.000000</td>
+<td id="T_89aef_row0_col63" class="data row0 col63">67.000000</td>
+<td id="T_89aef_row0_col64" class="data row0 col64">67.000000</td>
+<td id="T_89aef_row0_col65" class="data row0 col65">69.000000</td>
+<td id="T_89aef_row0_col66" class="data row0 col66">70.000000</td>
+<td id="T_89aef_row0_col67" class="data row0 col67">71.000000</td>
+<td id="T_89aef_row0_col68" class="data row0 col68">74.000000</td>
+<td id="T_89aef_row0_col69" class="data row0 col69">74.000000</td>
+<td id="T_89aef_row0_col70" class="data row0 col70">75.000000</td>
+<td id="T_89aef_row0_col71" class="data row0 col71">75.000000</td>
+<td id="T_89aef_row0_col72" class="data row0 col72">76.000000</td>
+<td id="T_89aef_row0_col73" class="data row0 col73">77.000000</td>
+<td id="T_89aef_row0_col74" class="data row0 col74">77.000000</td>
+<td id="T_89aef_row0_col75" class="data row0 col75">78.000000</td>
+<td id="T_89aef_row0_col76" class="data row0 col76">78.000000</td>
+<td id="T_89aef_row0_col77" class="data row0 col77">82.000000</td>
+<td id="T_89aef_row0_col78" class="data row0 col78">82.000000</td>
+<td id="T_89aef_row0_col79" class="data row0 col79">84.000000</td>
+<td id="T_89aef_row0_col80" class="data row0 col80">86.000000</td>
+<td id="T_89aef_row0_col81" class="data row0 col81">88.000000</td>
+<td id="T_89aef_row0_col82" class="data row0 col82">90.000000</td>
+<td id="T_89aef_row0_col83" class="data row0 col83">91.000000</td>
+<td id="T_89aef_row0_col84" class="data row0 col84">96.000000</td>
+<td id="T_89aef_row0_col85" class="data row0 col85">inf</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>calculated median = 50.5</code></pre>
+<pre><code>calculated median = 46.5</code></pre>
 </div>
 </div>
-<div id="1317c38d-dfbd-49ae-967e-9d569237febf" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:33.240440Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:33.240175Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.275217Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.274464Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:33.240421Z&quot;}}" data-execution_count="5">
+<div id="1317c38d-dfbd-49ae-967e-9d569237febf" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:42.039038Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:42.038692Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:42.068892Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:42.067846Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:42.039017Z&quot;}}" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>a, b, med <span class="op">=</span> main(a_, b_)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    display(highlight_ol(a))</span>
@@ -4394,363 +4279,231 @@ background-color: lightblue;
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    display(med)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <style type="text/css">
-#T_c4ef2_row0_col58 {
+#T_158a3_row0_col22, #T_158a3_row0_col23, #T_158a3_row0_col24, #T_158a3_row0_col25, #T_158a3_row0_col26, #T_158a3_row0_col27, #T_158a3_row0_col28, #T_158a3_row0_col29, #T_158a3_row0_col30, #T_158a3_row0_col31, #T_158a3_row0_col32 {
 background-color: lightgreen;
 }
-#T_c4ef2_row0_col59 {
+#T_158a3_row0_col33, #T_158a3_row0_col34, #T_158a3_row0_col35, #T_158a3_row0_col36, #T_158a3_row0_col37, #T_158a3_row0_col38, #T_158a3_row0_col39, #T_158a3_row0_col40, #T_158a3_row0_col41, #T_158a3_row0_col42, #T_158a3_row0_col43 {
 background-color: lightblue;
 }
 </style>
 
-<table id="T_c4ef2" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table id="T_158a3" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
 <th class="blank level0" data-quarto-table-cell-role="th"> </th>
-<th id="T_c4ef2_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
-<th id="T_c4ef2_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
-<th id="T_c4ef2_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
-<th id="T_c4ef2_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
-<th id="T_c4ef2_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
-<th id="T_c4ef2_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
-<th id="T_c4ef2_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
-<th id="T_c4ef2_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
-<th id="T_c4ef2_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
-<th id="T_c4ef2_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
-<th id="T_c4ef2_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
-<th id="T_c4ef2_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
-<th id="T_c4ef2_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
-<th id="T_c4ef2_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
-<th id="T_c4ef2_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
-<th id="T_c4ef2_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
-<th id="T_c4ef2_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
-<th id="T_c4ef2_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
-<th id="T_c4ef2_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
-<th id="T_c4ef2_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
-<th id="T_c4ef2_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
-<th id="T_c4ef2_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
-<th id="T_c4ef2_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
-<th id="T_c4ef2_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
-<th id="T_c4ef2_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
-<th id="T_c4ef2_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
-<th id="T_c4ef2_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
-<th id="T_c4ef2_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
-<th id="T_c4ef2_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
-<th id="T_c4ef2_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
-<th id="T_c4ef2_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
-<th id="T_c4ef2_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
-<th id="T_c4ef2_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
-<th id="T_c4ef2_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
-<th id="T_c4ef2_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
-<th id="T_c4ef2_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
-<th id="T_c4ef2_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
-<th id="T_c4ef2_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
-<th id="T_c4ef2_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
-<th id="T_c4ef2_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
-<th id="T_c4ef2_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
-<th id="T_c4ef2_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
-<th id="T_c4ef2_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
-<th id="T_c4ef2_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
-<th id="T_c4ef2_level0_col44" class="col_heading level0 col44" data-quarto-table-cell-role="th">44</th>
-<th id="T_c4ef2_level0_col45" class="col_heading level0 col45" data-quarto-table-cell-role="th">45</th>
-<th id="T_c4ef2_level0_col46" class="col_heading level0 col46" data-quarto-table-cell-role="th">46</th>
-<th id="T_c4ef2_level0_col47" class="col_heading level0 col47" data-quarto-table-cell-role="th">47</th>
-<th id="T_c4ef2_level0_col48" class="col_heading level0 col48" data-quarto-table-cell-role="th">48</th>
-<th id="T_c4ef2_level0_col49" class="col_heading level0 col49" data-quarto-table-cell-role="th">49</th>
-<th id="T_c4ef2_level0_col50" class="col_heading level0 col50" data-quarto-table-cell-role="th">50</th>
-<th id="T_c4ef2_level0_col51" class="col_heading level0 col51" data-quarto-table-cell-role="th">51</th>
-<th id="T_c4ef2_level0_col52" class="col_heading level0 col52" data-quarto-table-cell-role="th">52</th>
-<th id="T_c4ef2_level0_col53" class="col_heading level0 col53" data-quarto-table-cell-role="th">53</th>
-<th id="T_c4ef2_level0_col54" class="col_heading level0 col54" data-quarto-table-cell-role="th">54</th>
-<th id="T_c4ef2_level0_col55" class="col_heading level0 col55" data-quarto-table-cell-role="th">55</th>
-<th id="T_c4ef2_level0_col56" class="col_heading level0 col56" data-quarto-table-cell-role="th">56</th>
-<th id="T_c4ef2_level0_col57" class="col_heading level0 col57" data-quarto-table-cell-role="th">57</th>
-<th id="T_c4ef2_level0_col58" class="col_heading level0 col58" data-quarto-table-cell-role="th">58</th>
-<th id="T_c4ef2_level0_col59" class="col_heading level0 col59" data-quarto-table-cell-role="th">59</th>
-<th id="T_c4ef2_level0_col60" class="col_heading level0 col60" data-quarto-table-cell-role="th">60</th>
-<th id="T_c4ef2_level0_col61" class="col_heading level0 col61" data-quarto-table-cell-role="th">61</th>
-<th id="T_c4ef2_level0_col62" class="col_heading level0 col62" data-quarto-table-cell-role="th">62</th>
-<th id="T_c4ef2_level0_col63" class="col_heading level0 col63" data-quarto-table-cell-role="th">63</th>
-<th id="T_c4ef2_level0_col64" class="col_heading level0 col64" data-quarto-table-cell-role="th">64</th>
-<th id="T_c4ef2_level0_col65" class="col_heading level0 col65" data-quarto-table-cell-role="th">65</th>
-<th id="T_c4ef2_level0_col66" class="col_heading level0 col66" data-quarto-table-cell-role="th">66</th>
-<th id="T_c4ef2_level0_col67" class="col_heading level0 col67" data-quarto-table-cell-role="th">67</th>
-<th id="T_c4ef2_level0_col68" class="col_heading level0 col68" data-quarto-table-cell-role="th">68</th>
-<th id="T_c4ef2_level0_col69" class="col_heading level0 col69" data-quarto-table-cell-role="th">69</th>
-<th id="T_c4ef2_level0_col70" class="col_heading level0 col70" data-quarto-table-cell-role="th">70</th>
-<th id="T_c4ef2_level0_col71" class="col_heading level0 col71" data-quarto-table-cell-role="th">71</th>
+<th id="T_158a3_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
+<th id="T_158a3_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
+<th id="T_158a3_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
+<th id="T_158a3_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
+<th id="T_158a3_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
+<th id="T_158a3_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
+<th id="T_158a3_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
+<th id="T_158a3_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
+<th id="T_158a3_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
+<th id="T_158a3_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
+<th id="T_158a3_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
+<th id="T_158a3_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
+<th id="T_158a3_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
+<th id="T_158a3_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
+<th id="T_158a3_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
+<th id="T_158a3_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
+<th id="T_158a3_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
+<th id="T_158a3_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
+<th id="T_158a3_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
+<th id="T_158a3_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
+<th id="T_158a3_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
+<th id="T_158a3_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
+<th id="T_158a3_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
+<th id="T_158a3_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
+<th id="T_158a3_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
+<th id="T_158a3_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
+<th id="T_158a3_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
+<th id="T_158a3_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
+<th id="T_158a3_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
+<th id="T_158a3_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
+<th id="T_158a3_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
+<th id="T_158a3_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
+<th id="T_158a3_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
+<th id="T_158a3_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
+<th id="T_158a3_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
+<th id="T_158a3_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
+<th id="T_158a3_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
+<th id="T_158a3_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
+<th id="T_158a3_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
+<th id="T_158a3_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
+<th id="T_158a3_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
+<th id="T_158a3_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
+<th id="T_158a3_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
+<th id="T_158a3_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td id="T_c4ef2_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
-<td id="T_c4ef2_row0_col0" class="data row0 col0">-inf</td>
-<td id="T_c4ef2_row0_col1" class="data row0 col1">0.000000</td>
-<td id="T_c4ef2_row0_col2" class="data row0 col2">0.000000</td>
-<td id="T_c4ef2_row0_col3" class="data row0 col3">0.000000</td>
-<td id="T_c4ef2_row0_col4" class="data row0 col4">1.000000</td>
-<td id="T_c4ef2_row0_col5" class="data row0 col5">3.000000</td>
-<td id="T_c4ef2_row0_col6" class="data row0 col6">3.000000</td>
-<td id="T_c4ef2_row0_col7" class="data row0 col7">4.000000</td>
-<td id="T_c4ef2_row0_col8" class="data row0 col8">5.000000</td>
-<td id="T_c4ef2_row0_col9" class="data row0 col9">7.000000</td>
-<td id="T_c4ef2_row0_col10" class="data row0 col10">7.000000</td>
-<td id="T_c4ef2_row0_col11" class="data row0 col11">7.000000</td>
-<td id="T_c4ef2_row0_col12" class="data row0 col12">8.000000</td>
-<td id="T_c4ef2_row0_col13" class="data row0 col13">8.000000</td>
-<td id="T_c4ef2_row0_col14" class="data row0 col14">8.000000</td>
-<td id="T_c4ef2_row0_col15" class="data row0 col15">8.000000</td>
-<td id="T_c4ef2_row0_col16" class="data row0 col16">10.000000</td>
-<td id="T_c4ef2_row0_col17" class="data row0 col17">11.000000</td>
-<td id="T_c4ef2_row0_col18" class="data row0 col18">11.000000</td>
-<td id="T_c4ef2_row0_col19" class="data row0 col19">12.000000</td>
-<td id="T_c4ef2_row0_col20" class="data row0 col20">14.000000</td>
-<td id="T_c4ef2_row0_col21" class="data row0 col21">15.000000</td>
-<td id="T_c4ef2_row0_col22" class="data row0 col22">16.000000</td>
-<td id="T_c4ef2_row0_col23" class="data row0 col23">17.000000</td>
-<td id="T_c4ef2_row0_col24" class="data row0 col24">17.000000</td>
-<td id="T_c4ef2_row0_col25" class="data row0 col25">17.000000</td>
-<td id="T_c4ef2_row0_col26" class="data row0 col26">18.000000</td>
-<td id="T_c4ef2_row0_col27" class="data row0 col27">18.000000</td>
-<td id="T_c4ef2_row0_col28" class="data row0 col28">18.000000</td>
-<td id="T_c4ef2_row0_col29" class="data row0 col29">20.000000</td>
-<td id="T_c4ef2_row0_col30" class="data row0 col30">21.000000</td>
-<td id="T_c4ef2_row0_col31" class="data row0 col31">21.000000</td>
-<td id="T_c4ef2_row0_col32" class="data row0 col32">22.000000</td>
-<td id="T_c4ef2_row0_col33" class="data row0 col33">22.000000</td>
-<td id="T_c4ef2_row0_col34" class="data row0 col34">23.000000</td>
-<td id="T_c4ef2_row0_col35" class="data row0 col35">25.000000</td>
-<td id="T_c4ef2_row0_col36" class="data row0 col36">26.000000</td>
-<td id="T_c4ef2_row0_col37" class="data row0 col37">27.000000</td>
-<td id="T_c4ef2_row0_col38" class="data row0 col38">27.000000</td>
-<td id="T_c4ef2_row0_col39" class="data row0 col39">28.000000</td>
-<td id="T_c4ef2_row0_col40" class="data row0 col40">31.000000</td>
-<td id="T_c4ef2_row0_col41" class="data row0 col41">31.000000</td>
-<td id="T_c4ef2_row0_col42" class="data row0 col42">35.000000</td>
-<td id="T_c4ef2_row0_col43" class="data row0 col43">35.000000</td>
-<td id="T_c4ef2_row0_col44" class="data row0 col44">36.000000</td>
-<td id="T_c4ef2_row0_col45" class="data row0 col45">37.000000</td>
-<td id="T_c4ef2_row0_col46" class="data row0 col46">37.000000</td>
-<td id="T_c4ef2_row0_col47" class="data row0 col47">39.000000</td>
-<td id="T_c4ef2_row0_col48" class="data row0 col48">40.000000</td>
-<td id="T_c4ef2_row0_col49" class="data row0 col49">40.000000</td>
-<td id="T_c4ef2_row0_col50" class="data row0 col50">41.000000</td>
-<td id="T_c4ef2_row0_col51" class="data row0 col51">42.000000</td>
-<td id="T_c4ef2_row0_col52" class="data row0 col52">43.000000</td>
-<td id="T_c4ef2_row0_col53" class="data row0 col53">43.000000</td>
-<td id="T_c4ef2_row0_col54" class="data row0 col54">44.000000</td>
-<td id="T_c4ef2_row0_col55" class="data row0 col55">46.000000</td>
-<td id="T_c4ef2_row0_col56" class="data row0 col56">46.000000</td>
-<td id="T_c4ef2_row0_col57" class="data row0 col57">47.000000</td>
-<td id="T_c4ef2_row0_col58" class="data row0 col58">48.000000</td>
-<td id="T_c4ef2_row0_col59" class="data row0 col59">51.000000</td>
-<td id="T_c4ef2_row0_col60" class="data row0 col60">51.000000</td>
-<td id="T_c4ef2_row0_col61" class="data row0 col61">54.000000</td>
-<td id="T_c4ef2_row0_col62" class="data row0 col62">54.000000</td>
-<td id="T_c4ef2_row0_col63" class="data row0 col63">55.000000</td>
-<td id="T_c4ef2_row0_col64" class="data row0 col64">55.000000</td>
-<td id="T_c4ef2_row0_col65" class="data row0 col65">57.000000</td>
-<td id="T_c4ef2_row0_col66" class="data row0 col66">57.000000</td>
-<td id="T_c4ef2_row0_col67" class="data row0 col67">57.000000</td>
-<td id="T_c4ef2_row0_col68" class="data row0 col68">58.000000</td>
-<td id="T_c4ef2_row0_col69" class="data row0 col69">58.000000</td>
-<td id="T_c4ef2_row0_col70" class="data row0 col70">58.000000</td>
-<td id="T_c4ef2_row0_col71" class="data row0 col71">inf</td>
+<td id="T_158a3_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
+<td id="T_158a3_row0_col0" class="data row0 col0">-inf</td>
+<td id="T_158a3_row0_col1" class="data row0 col1">2.000000</td>
+<td id="T_158a3_row0_col2" class="data row0 col2">4.000000</td>
+<td id="T_158a3_row0_col3" class="data row0 col3">9.000000</td>
+<td id="T_158a3_row0_col4" class="data row0 col4">9.000000</td>
+<td id="T_158a3_row0_col5" class="data row0 col5">10.000000</td>
+<td id="T_158a3_row0_col6" class="data row0 col6">11.000000</td>
+<td id="T_158a3_row0_col7" class="data row0 col7">11.000000</td>
+<td id="T_158a3_row0_col8" class="data row0 col8">12.000000</td>
+<td id="T_158a3_row0_col9" class="data row0 col9">12.000000</td>
+<td id="T_158a3_row0_col10" class="data row0 col10">17.000000</td>
+<td id="T_158a3_row0_col11" class="data row0 col11">17.000000</td>
+<td id="T_158a3_row0_col12" class="data row0 col12">18.000000</td>
+<td id="T_158a3_row0_col13" class="data row0 col13">18.000000</td>
+<td id="T_158a3_row0_col14" class="data row0 col14">19.000000</td>
+<td id="T_158a3_row0_col15" class="data row0 col15">20.000000</td>
+<td id="T_158a3_row0_col16" class="data row0 col16">22.000000</td>
+<td id="T_158a3_row0_col17" class="data row0 col17">23.000000</td>
+<td id="T_158a3_row0_col18" class="data row0 col18">30.000000</td>
+<td id="T_158a3_row0_col19" class="data row0 col19">32.000000</td>
+<td id="T_158a3_row0_col20" class="data row0 col20">32.000000</td>
+<td id="T_158a3_row0_col21" class="data row0 col21">32.000000</td>
+<td id="T_158a3_row0_col22" class="data row0 col22">33.000000</td>
+<td id="T_158a3_row0_col23" class="data row0 col23">36.000000</td>
+<td id="T_158a3_row0_col24" class="data row0 col24">38.000000</td>
+<td id="T_158a3_row0_col25" class="data row0 col25">38.000000</td>
+<td id="T_158a3_row0_col26" class="data row0 col26">39.000000</td>
+<td id="T_158a3_row0_col27" class="data row0 col27">43.000000</td>
+<td id="T_158a3_row0_col28" class="data row0 col28">43.000000</td>
+<td id="T_158a3_row0_col29" class="data row0 col29">43.000000</td>
+<td id="T_158a3_row0_col30" class="data row0 col30">44.000000</td>
+<td id="T_158a3_row0_col31" class="data row0 col31">44.000000</td>
+<td id="T_158a3_row0_col32" class="data row0 col32">45.000000</td>
+<td id="T_158a3_row0_col33" class="data row0 col33">47.000000</td>
+<td id="T_158a3_row0_col34" class="data row0 col34">52.000000</td>
+<td id="T_158a3_row0_col35" class="data row0 col35">53.000000</td>
+<td id="T_158a3_row0_col36" class="data row0 col36">53.000000</td>
+<td id="T_158a3_row0_col37" class="data row0 col37">54.000000</td>
+<td id="T_158a3_row0_col38" class="data row0 col38">54.000000</td>
+<td id="T_158a3_row0_col39" class="data row0 col39">54.000000</td>
+<td id="T_158a3_row0_col40" class="data row0 col40">55.000000</td>
+<td id="T_158a3_row0_col41" class="data row0 col41">55.000000</td>
+<td id="T_158a3_row0_col42" class="data row0 col42">57.000000</td>
+<td id="T_158a3_row0_col43" class="data row0 col43">inf</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="cell-output cell-output-display">
 <style type="text/css">
-#T_b2e67_row0_col0, #T_b2e67_row0_col1, #T_b2e67_row0_col2, #T_b2e67_row0_col3, #T_b2e67_row0_col4, #T_b2e67_row0_col5, #T_b2e67_row0_col6, #T_b2e67_row0_col7, #T_b2e67_row0_col8, #T_b2e67_row0_col9, #T_b2e67_row0_col10, #T_b2e67_row0_col11, #T_b2e67_row0_col12, #T_b2e67_row0_col13, #T_b2e67_row0_col14, #T_b2e67_row0_col15, #T_b2e67_row0_col16, #T_b2e67_row0_col17 {
+#T_9cf4d_row0_col0, #T_9cf4d_row0_col1, #T_9cf4d_row0_col2, #T_9cf4d_row0_col3, #T_9cf4d_row0_col4, #T_9cf4d_row0_col5, #T_9cf4d_row0_col6, #T_9cf4d_row0_col7, #T_9cf4d_row0_col8, #T_9cf4d_row0_col9, #T_9cf4d_row0_col10 {
 background-color: lightgreen;
 }
-#T_b2e67_row0_col18, #T_b2e67_row0_col19, #T_b2e67_row0_col20, #T_b2e67_row0_col21, #T_b2e67_row0_col22, #T_b2e67_row0_col23, #T_b2e67_row0_col24, #T_b2e67_row0_col25, #T_b2e67_row0_col26, #T_b2e67_row0_col27, #T_b2e67_row0_col28, #T_b2e67_row0_col29, #T_b2e67_row0_col30, #T_b2e67_row0_col31, #T_b2e67_row0_col32, #T_b2e67_row0_col33, #T_b2e67_row0_col34, #T_b2e67_row0_col35, #T_b2e67_row0_col36, #T_b2e67_row0_col37, #T_b2e67_row0_col38, #T_b2e67_row0_col39, #T_b2e67_row0_col40, #T_b2e67_row0_col41, #T_b2e67_row0_col42, #T_b2e67_row0_col43, #T_b2e67_row0_col44, #T_b2e67_row0_col45, #T_b2e67_row0_col46, #T_b2e67_row0_col47, #T_b2e67_row0_col48, #T_b2e67_row0_col49, #T_b2e67_row0_col50, #T_b2e67_row0_col51, #T_b2e67_row0_col52, #T_b2e67_row0_col53, #T_b2e67_row0_col54, #T_b2e67_row0_col55, #T_b2e67_row0_col56, #T_b2e67_row0_col57, #T_b2e67_row0_col58, #T_b2e67_row0_col59, #T_b2e67_row0_col60, #T_b2e67_row0_col61, #T_b2e67_row0_col62, #T_b2e67_row0_col63, #T_b2e67_row0_col64, #T_b2e67_row0_col65, #T_b2e67_row0_col66, #T_b2e67_row0_col67, #T_b2e67_row0_col68, #T_b2e67_row0_col69, #T_b2e67_row0_col70, #T_b2e67_row0_col71, #T_b2e67_row0_col72, #T_b2e67_row0_col73, #T_b2e67_row0_col74, #T_b2e67_row0_col75, #T_b2e67_row0_col76, #T_b2e67_row0_col77, #T_b2e67_row0_col78, #T_b2e67_row0_col79, #T_b2e67_row0_col80, #T_b2e67_row0_col81 {
+#T_9cf4d_row0_col11, #T_9cf4d_row0_col12, #T_9cf4d_row0_col13, #T_9cf4d_row0_col14, #T_9cf4d_row0_col15, #T_9cf4d_row0_col16, #T_9cf4d_row0_col17, #T_9cf4d_row0_col18, #T_9cf4d_row0_col19, #T_9cf4d_row0_col20, #T_9cf4d_row0_col21, #T_9cf4d_row0_col22, #T_9cf4d_row0_col23, #T_9cf4d_row0_col24, #T_9cf4d_row0_col25, #T_9cf4d_row0_col26, #T_9cf4d_row0_col27, #T_9cf4d_row0_col28, #T_9cf4d_row0_col29, #T_9cf4d_row0_col30, #T_9cf4d_row0_col31, #T_9cf4d_row0_col32, #T_9cf4d_row0_col33, #T_9cf4d_row0_col34, #T_9cf4d_row0_col35, #T_9cf4d_row0_col36, #T_9cf4d_row0_col37, #T_9cf4d_row0_col38, #T_9cf4d_row0_col39, #T_9cf4d_row0_col40, #T_9cf4d_row0_col41, #T_9cf4d_row0_col42, #T_9cf4d_row0_col43 {
 background-color: lightblue;
 }
 </style>
 
-<table id="T_b2e67" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<table id="T_9cf4d" class="caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
 <th class="blank level0" data-quarto-table-cell-role="th"> </th>
-<th id="T_b2e67_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
-<th id="T_b2e67_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
-<th id="T_b2e67_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
-<th id="T_b2e67_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
-<th id="T_b2e67_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
-<th id="T_b2e67_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
-<th id="T_b2e67_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
-<th id="T_b2e67_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
-<th id="T_b2e67_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
-<th id="T_b2e67_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
-<th id="T_b2e67_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
-<th id="T_b2e67_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
-<th id="T_b2e67_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
-<th id="T_b2e67_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
-<th id="T_b2e67_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
-<th id="T_b2e67_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
-<th id="T_b2e67_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
-<th id="T_b2e67_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
-<th id="T_b2e67_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
-<th id="T_b2e67_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
-<th id="T_b2e67_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
-<th id="T_b2e67_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
-<th id="T_b2e67_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
-<th id="T_b2e67_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
-<th id="T_b2e67_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
-<th id="T_b2e67_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
-<th id="T_b2e67_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
-<th id="T_b2e67_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
-<th id="T_b2e67_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
-<th id="T_b2e67_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
-<th id="T_b2e67_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
-<th id="T_b2e67_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
-<th id="T_b2e67_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
-<th id="T_b2e67_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
-<th id="T_b2e67_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
-<th id="T_b2e67_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
-<th id="T_b2e67_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
-<th id="T_b2e67_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
-<th id="T_b2e67_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
-<th id="T_b2e67_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
-<th id="T_b2e67_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
-<th id="T_b2e67_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
-<th id="T_b2e67_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
-<th id="T_b2e67_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
-<th id="T_b2e67_level0_col44" class="col_heading level0 col44" data-quarto-table-cell-role="th">44</th>
-<th id="T_b2e67_level0_col45" class="col_heading level0 col45" data-quarto-table-cell-role="th">45</th>
-<th id="T_b2e67_level0_col46" class="col_heading level0 col46" data-quarto-table-cell-role="th">46</th>
-<th id="T_b2e67_level0_col47" class="col_heading level0 col47" data-quarto-table-cell-role="th">47</th>
-<th id="T_b2e67_level0_col48" class="col_heading level0 col48" data-quarto-table-cell-role="th">48</th>
-<th id="T_b2e67_level0_col49" class="col_heading level0 col49" data-quarto-table-cell-role="th">49</th>
-<th id="T_b2e67_level0_col50" class="col_heading level0 col50" data-quarto-table-cell-role="th">50</th>
-<th id="T_b2e67_level0_col51" class="col_heading level0 col51" data-quarto-table-cell-role="th">51</th>
-<th id="T_b2e67_level0_col52" class="col_heading level0 col52" data-quarto-table-cell-role="th">52</th>
-<th id="T_b2e67_level0_col53" class="col_heading level0 col53" data-quarto-table-cell-role="th">53</th>
-<th id="T_b2e67_level0_col54" class="col_heading level0 col54" data-quarto-table-cell-role="th">54</th>
-<th id="T_b2e67_level0_col55" class="col_heading level0 col55" data-quarto-table-cell-role="th">55</th>
-<th id="T_b2e67_level0_col56" class="col_heading level0 col56" data-quarto-table-cell-role="th">56</th>
-<th id="T_b2e67_level0_col57" class="col_heading level0 col57" data-quarto-table-cell-role="th">57</th>
-<th id="T_b2e67_level0_col58" class="col_heading level0 col58" data-quarto-table-cell-role="th">58</th>
-<th id="T_b2e67_level0_col59" class="col_heading level0 col59" data-quarto-table-cell-role="th">59</th>
-<th id="T_b2e67_level0_col60" class="col_heading level0 col60" data-quarto-table-cell-role="th">60</th>
-<th id="T_b2e67_level0_col61" class="col_heading level0 col61" data-quarto-table-cell-role="th">61</th>
-<th id="T_b2e67_level0_col62" class="col_heading level0 col62" data-quarto-table-cell-role="th">62</th>
-<th id="T_b2e67_level0_col63" class="col_heading level0 col63" data-quarto-table-cell-role="th">63</th>
-<th id="T_b2e67_level0_col64" class="col_heading level0 col64" data-quarto-table-cell-role="th">64</th>
-<th id="T_b2e67_level0_col65" class="col_heading level0 col65" data-quarto-table-cell-role="th">65</th>
-<th id="T_b2e67_level0_col66" class="col_heading level0 col66" data-quarto-table-cell-role="th">66</th>
-<th id="T_b2e67_level0_col67" class="col_heading level0 col67" data-quarto-table-cell-role="th">67</th>
-<th id="T_b2e67_level0_col68" class="col_heading level0 col68" data-quarto-table-cell-role="th">68</th>
-<th id="T_b2e67_level0_col69" class="col_heading level0 col69" data-quarto-table-cell-role="th">69</th>
-<th id="T_b2e67_level0_col70" class="col_heading level0 col70" data-quarto-table-cell-role="th">70</th>
-<th id="T_b2e67_level0_col71" class="col_heading level0 col71" data-quarto-table-cell-role="th">71</th>
-<th id="T_b2e67_level0_col72" class="col_heading level0 col72" data-quarto-table-cell-role="th">72</th>
-<th id="T_b2e67_level0_col73" class="col_heading level0 col73" data-quarto-table-cell-role="th">73</th>
-<th id="T_b2e67_level0_col74" class="col_heading level0 col74" data-quarto-table-cell-role="th">74</th>
-<th id="T_b2e67_level0_col75" class="col_heading level0 col75" data-quarto-table-cell-role="th">75</th>
-<th id="T_b2e67_level0_col76" class="col_heading level0 col76" data-quarto-table-cell-role="th">76</th>
-<th id="T_b2e67_level0_col77" class="col_heading level0 col77" data-quarto-table-cell-role="th">77</th>
-<th id="T_b2e67_level0_col78" class="col_heading level0 col78" data-quarto-table-cell-role="th">78</th>
-<th id="T_b2e67_level0_col79" class="col_heading level0 col79" data-quarto-table-cell-role="th">79</th>
-<th id="T_b2e67_level0_col80" class="col_heading level0 col80" data-quarto-table-cell-role="th">80</th>
-<th id="T_b2e67_level0_col81" class="col_heading level0 col81" data-quarto-table-cell-role="th">81</th>
+<th id="T_9cf4d_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">0</th>
+<th id="T_9cf4d_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">1</th>
+<th id="T_9cf4d_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">2</th>
+<th id="T_9cf4d_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">3</th>
+<th id="T_9cf4d_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">4</th>
+<th id="T_9cf4d_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">5</th>
+<th id="T_9cf4d_level0_col6" class="col_heading level0 col6" data-quarto-table-cell-role="th">6</th>
+<th id="T_9cf4d_level0_col7" class="col_heading level0 col7" data-quarto-table-cell-role="th">7</th>
+<th id="T_9cf4d_level0_col8" class="col_heading level0 col8" data-quarto-table-cell-role="th">8</th>
+<th id="T_9cf4d_level0_col9" class="col_heading level0 col9" data-quarto-table-cell-role="th">9</th>
+<th id="T_9cf4d_level0_col10" class="col_heading level0 col10" data-quarto-table-cell-role="th">10</th>
+<th id="T_9cf4d_level0_col11" class="col_heading level0 col11" data-quarto-table-cell-role="th">11</th>
+<th id="T_9cf4d_level0_col12" class="col_heading level0 col12" data-quarto-table-cell-role="th">12</th>
+<th id="T_9cf4d_level0_col13" class="col_heading level0 col13" data-quarto-table-cell-role="th">13</th>
+<th id="T_9cf4d_level0_col14" class="col_heading level0 col14" data-quarto-table-cell-role="th">14</th>
+<th id="T_9cf4d_level0_col15" class="col_heading level0 col15" data-quarto-table-cell-role="th">15</th>
+<th id="T_9cf4d_level0_col16" class="col_heading level0 col16" data-quarto-table-cell-role="th">16</th>
+<th id="T_9cf4d_level0_col17" class="col_heading level0 col17" data-quarto-table-cell-role="th">17</th>
+<th id="T_9cf4d_level0_col18" class="col_heading level0 col18" data-quarto-table-cell-role="th">18</th>
+<th id="T_9cf4d_level0_col19" class="col_heading level0 col19" data-quarto-table-cell-role="th">19</th>
+<th id="T_9cf4d_level0_col20" class="col_heading level0 col20" data-quarto-table-cell-role="th">20</th>
+<th id="T_9cf4d_level0_col21" class="col_heading level0 col21" data-quarto-table-cell-role="th">21</th>
+<th id="T_9cf4d_level0_col22" class="col_heading level0 col22" data-quarto-table-cell-role="th">22</th>
+<th id="T_9cf4d_level0_col23" class="col_heading level0 col23" data-quarto-table-cell-role="th">23</th>
+<th id="T_9cf4d_level0_col24" class="col_heading level0 col24" data-quarto-table-cell-role="th">24</th>
+<th id="T_9cf4d_level0_col25" class="col_heading level0 col25" data-quarto-table-cell-role="th">25</th>
+<th id="T_9cf4d_level0_col26" class="col_heading level0 col26" data-quarto-table-cell-role="th">26</th>
+<th id="T_9cf4d_level0_col27" class="col_heading level0 col27" data-quarto-table-cell-role="th">27</th>
+<th id="T_9cf4d_level0_col28" class="col_heading level0 col28" data-quarto-table-cell-role="th">28</th>
+<th id="T_9cf4d_level0_col29" class="col_heading level0 col29" data-quarto-table-cell-role="th">29</th>
+<th id="T_9cf4d_level0_col30" class="col_heading level0 col30" data-quarto-table-cell-role="th">30</th>
+<th id="T_9cf4d_level0_col31" class="col_heading level0 col31" data-quarto-table-cell-role="th">31</th>
+<th id="T_9cf4d_level0_col32" class="col_heading level0 col32" data-quarto-table-cell-role="th">32</th>
+<th id="T_9cf4d_level0_col33" class="col_heading level0 col33" data-quarto-table-cell-role="th">33</th>
+<th id="T_9cf4d_level0_col34" class="col_heading level0 col34" data-quarto-table-cell-role="th">34</th>
+<th id="T_9cf4d_level0_col35" class="col_heading level0 col35" data-quarto-table-cell-role="th">35</th>
+<th id="T_9cf4d_level0_col36" class="col_heading level0 col36" data-quarto-table-cell-role="th">36</th>
+<th id="T_9cf4d_level0_col37" class="col_heading level0 col37" data-quarto-table-cell-role="th">37</th>
+<th id="T_9cf4d_level0_col38" class="col_heading level0 col38" data-quarto-table-cell-role="th">38</th>
+<th id="T_9cf4d_level0_col39" class="col_heading level0 col39" data-quarto-table-cell-role="th">39</th>
+<th id="T_9cf4d_level0_col40" class="col_heading level0 col40" data-quarto-table-cell-role="th">40</th>
+<th id="T_9cf4d_level0_col41" class="col_heading level0 col41" data-quarto-table-cell-role="th">41</th>
+<th id="T_9cf4d_level0_col42" class="col_heading level0 col42" data-quarto-table-cell-role="th">42</th>
+<th id="T_9cf4d_level0_col43" class="col_heading level0 col43" data-quarto-table-cell-role="th">43</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td id="T_b2e67_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
-<td id="T_b2e67_row0_col0" class="data row0 col0">-inf</td>
-<td id="T_b2e67_row0_col1" class="data row0 col1">41.000000</td>
-<td id="T_b2e67_row0_col2" class="data row0 col2">41.000000</td>
-<td id="T_b2e67_row0_col3" class="data row0 col3">41.000000</td>
-<td id="T_b2e67_row0_col4" class="data row0 col4">42.000000</td>
-<td id="T_b2e67_row0_col5" class="data row0 col5">42.000000</td>
-<td id="T_b2e67_row0_col6" class="data row0 col6">42.000000</td>
-<td id="T_b2e67_row0_col7" class="data row0 col7">42.000000</td>
-<td id="T_b2e67_row0_col8" class="data row0 col8">43.000000</td>
-<td id="T_b2e67_row0_col9" class="data row0 col9">44.000000</td>
-<td id="T_b2e67_row0_col10" class="data row0 col10">45.000000</td>
-<td id="T_b2e67_row0_col11" class="data row0 col11">46.000000</td>
-<td id="T_b2e67_row0_col12" class="data row0 col12">48.000000</td>
-<td id="T_b2e67_row0_col13" class="data row0 col13">48.000000</td>
-<td id="T_b2e67_row0_col14" class="data row0 col14">48.000000</td>
-<td id="T_b2e67_row0_col15" class="data row0 col15">49.000000</td>
-<td id="T_b2e67_row0_col16" class="data row0 col16">49.000000</td>
-<td id="T_b2e67_row0_col17" class="data row0 col17">50.000000</td>
-<td id="T_b2e67_row0_col18" class="data row0 col18">51.000000</td>
-<td id="T_b2e67_row0_col19" class="data row0 col19">52.000000</td>
-<td id="T_b2e67_row0_col20" class="data row0 col20">52.000000</td>
-<td id="T_b2e67_row0_col21" class="data row0 col21">52.000000</td>
-<td id="T_b2e67_row0_col22" class="data row0 col22">52.000000</td>
-<td id="T_b2e67_row0_col23" class="data row0 col23">53.000000</td>
-<td id="T_b2e67_row0_col24" class="data row0 col24">53.000000</td>
-<td id="T_b2e67_row0_col25" class="data row0 col25">54.000000</td>
-<td id="T_b2e67_row0_col26" class="data row0 col26">55.000000</td>
-<td id="T_b2e67_row0_col27" class="data row0 col27">56.000000</td>
-<td id="T_b2e67_row0_col28" class="data row0 col28">57.000000</td>
-<td id="T_b2e67_row0_col29" class="data row0 col29">57.000000</td>
-<td id="T_b2e67_row0_col30" class="data row0 col30">60.000000</td>
-<td id="T_b2e67_row0_col31" class="data row0 col31">60.000000</td>
-<td id="T_b2e67_row0_col32" class="data row0 col32">61.000000</td>
-<td id="T_b2e67_row0_col33" class="data row0 col33">62.000000</td>
-<td id="T_b2e67_row0_col34" class="data row0 col34">63.000000</td>
-<td id="T_b2e67_row0_col35" class="data row0 col35">64.000000</td>
-<td id="T_b2e67_row0_col36" class="data row0 col36">64.000000</td>
-<td id="T_b2e67_row0_col37" class="data row0 col37">65.000000</td>
-<td id="T_b2e67_row0_col38" class="data row0 col38">66.000000</td>
-<td id="T_b2e67_row0_col39" class="data row0 col39">66.000000</td>
-<td id="T_b2e67_row0_col40" class="data row0 col40">67.000000</td>
-<td id="T_b2e67_row0_col41" class="data row0 col41">68.000000</td>
-<td id="T_b2e67_row0_col42" class="data row0 col42">68.000000</td>
-<td id="T_b2e67_row0_col43" class="data row0 col43">69.000000</td>
-<td id="T_b2e67_row0_col44" class="data row0 col44">69.000000</td>
-<td id="T_b2e67_row0_col45" class="data row0 col45">70.000000</td>
-<td id="T_b2e67_row0_col46" class="data row0 col46">70.000000</td>
-<td id="T_b2e67_row0_col47" class="data row0 col47">70.000000</td>
-<td id="T_b2e67_row0_col48" class="data row0 col48">70.000000</td>
-<td id="T_b2e67_row0_col49" class="data row0 col49">71.000000</td>
-<td id="T_b2e67_row0_col50" class="data row0 col50">71.000000</td>
-<td id="T_b2e67_row0_col51" class="data row0 col51">74.000000</td>
-<td id="T_b2e67_row0_col52" class="data row0 col52">74.000000</td>
-<td id="T_b2e67_row0_col53" class="data row0 col53">74.000000</td>
-<td id="T_b2e67_row0_col54" class="data row0 col54">76.000000</td>
-<td id="T_b2e67_row0_col55" class="data row0 col55">76.000000</td>
-<td id="T_b2e67_row0_col56" class="data row0 col56">77.000000</td>
-<td id="T_b2e67_row0_col57" class="data row0 col57">79.000000</td>
-<td id="T_b2e67_row0_col58" class="data row0 col58">79.000000</td>
-<td id="T_b2e67_row0_col59" class="data row0 col59">79.000000</td>
-<td id="T_b2e67_row0_col60" class="data row0 col60">79.000000</td>
-<td id="T_b2e67_row0_col61" class="data row0 col61">80.000000</td>
-<td id="T_b2e67_row0_col62" class="data row0 col62">80.000000</td>
-<td id="T_b2e67_row0_col63" class="data row0 col63">81.000000</td>
-<td id="T_b2e67_row0_col64" class="data row0 col64">83.000000</td>
-<td id="T_b2e67_row0_col65" class="data row0 col65">84.000000</td>
-<td id="T_b2e67_row0_col66" class="data row0 col66">84.000000</td>
-<td id="T_b2e67_row0_col67" class="data row0 col67">84.000000</td>
-<td id="T_b2e67_row0_col68" class="data row0 col68">87.000000</td>
-<td id="T_b2e67_row0_col69" class="data row0 col69">87.000000</td>
-<td id="T_b2e67_row0_col70" class="data row0 col70">91.000000</td>
-<td id="T_b2e67_row0_col71" class="data row0 col71">92.000000</td>
-<td id="T_b2e67_row0_col72" class="data row0 col72">93.000000</td>
-<td id="T_b2e67_row0_col73" class="data row0 col73">93.000000</td>
-<td id="T_b2e67_row0_col74" class="data row0 col74">94.000000</td>
-<td id="T_b2e67_row0_col75" class="data row0 col75">94.000000</td>
-<td id="T_b2e67_row0_col76" class="data row0 col76">94.000000</td>
-<td id="T_b2e67_row0_col77" class="data row0 col77">95.000000</td>
-<td id="T_b2e67_row0_col78" class="data row0 col78">95.000000</td>
-<td id="T_b2e67_row0_col79" class="data row0 col79">95.000000</td>
-<td id="T_b2e67_row0_col80" class="data row0 col80">96.000000</td>
-<td id="T_b2e67_row0_col81" class="data row0 col81">inf</td>
+<td id="T_9cf4d_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</td>
+<td id="T_9cf4d_row0_col0" class="data row0 col0">-inf</td>
+<td id="T_9cf4d_row0_col1" class="data row0 col1">40.000000</td>
+<td id="T_9cf4d_row0_col2" class="data row0 col2">40.000000</td>
+<td id="T_9cf4d_row0_col3" class="data row0 col3">41.000000</td>
+<td id="T_9cf4d_row0_col4" class="data row0 col4">42.000000</td>
+<td id="T_9cf4d_row0_col5" class="data row0 col5">42.000000</td>
+<td id="T_9cf4d_row0_col6" class="data row0 col6">42.000000</td>
+<td id="T_9cf4d_row0_col7" class="data row0 col7">43.000000</td>
+<td id="T_9cf4d_row0_col8" class="data row0 col8">44.000000</td>
+<td id="T_9cf4d_row0_col9" class="data row0 col9">45.000000</td>
+<td id="T_9cf4d_row0_col10" class="data row0 col10">46.000000</td>
+<td id="T_9cf4d_row0_col11" class="data row0 col11">49.000000</td>
+<td id="T_9cf4d_row0_col12" class="data row0 col12">50.000000</td>
+<td id="T_9cf4d_row0_col13" class="data row0 col13">57.000000</td>
+<td id="T_9cf4d_row0_col14" class="data row0 col14">58.000000</td>
+<td id="T_9cf4d_row0_col15" class="data row0 col15">58.000000</td>
+<td id="T_9cf4d_row0_col16" class="data row0 col16">58.000000</td>
+<td id="T_9cf4d_row0_col17" class="data row0 col17">58.000000</td>
+<td id="T_9cf4d_row0_col18" class="data row0 col18">60.000000</td>
+<td id="T_9cf4d_row0_col19" class="data row0 col19">60.000000</td>
+<td id="T_9cf4d_row0_col20" class="data row0 col20">61.000000</td>
+<td id="T_9cf4d_row0_col21" class="data row0 col21">67.000000</td>
+<td id="T_9cf4d_row0_col22" class="data row0 col22">67.000000</td>
+<td id="T_9cf4d_row0_col23" class="data row0 col23">69.000000</td>
+<td id="T_9cf4d_row0_col24" class="data row0 col24">70.000000</td>
+<td id="T_9cf4d_row0_col25" class="data row0 col25">71.000000</td>
+<td id="T_9cf4d_row0_col26" class="data row0 col26">74.000000</td>
+<td id="T_9cf4d_row0_col27" class="data row0 col27">74.000000</td>
+<td id="T_9cf4d_row0_col28" class="data row0 col28">75.000000</td>
+<td id="T_9cf4d_row0_col29" class="data row0 col29">75.000000</td>
+<td id="T_9cf4d_row0_col30" class="data row0 col30">76.000000</td>
+<td id="T_9cf4d_row0_col31" class="data row0 col31">77.000000</td>
+<td id="T_9cf4d_row0_col32" class="data row0 col32">77.000000</td>
+<td id="T_9cf4d_row0_col33" class="data row0 col33">78.000000</td>
+<td id="T_9cf4d_row0_col34" class="data row0 col34">78.000000</td>
+<td id="T_9cf4d_row0_col35" class="data row0 col35">82.000000</td>
+<td id="T_9cf4d_row0_col36" class="data row0 col36">82.000000</td>
+<td id="T_9cf4d_row0_col37" class="data row0 col37">84.000000</td>
+<td id="T_9cf4d_row0_col38" class="data row0 col38">86.000000</td>
+<td id="T_9cf4d_row0_col39" class="data row0 col39">88.000000</td>
+<td id="T_9cf4d_row0_col40" class="data row0 col40">90.000000</td>
+<td id="T_9cf4d_row0_col41" class="data row0 col41">91.000000</td>
+<td id="T_9cf4d_row0_col42" class="data row0 col42">96.000000</td>
+<td id="T_9cf4d_row0_col43" class="data row0 col43">inf</td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="cell-output cell-output-display">
-<pre><code>50.5</code></pre>
+<pre><code>46.5</code></pre>
 </div>
 </div>
-<div id="2222752b-b533-4e0f-b424-1003df985aad" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-04-22T00:14:33.276080Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-04-22T00:14:33.275870Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-04-22T00:14:33.281181Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-04-22T00:14:33.280357Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-04-22T00:14:33.276061Z&quot;}}" data-execution_count="6">
+<div id="2222752b-b533-4e0f-b424-1003df985aad" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:50:42.072048Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:50:42.071147Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:50:42.077916Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:50:42.076223Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:50:42.072020Z&quot;}}" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f&quot;calculated med == med: </span><span class="sc">{</span>med_calc <span class="op">==</span> med<span class="sc">}</span><span class="ss">&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>calculated med == med: True</code></pre>
@@ -4758,6 +4511,8 @@ background-color: lightblue;
 </div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

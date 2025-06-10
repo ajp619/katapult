@@ -2,8 +2,22 @@
 title: "Services"
 ---
 
-There is a default web app here: <a href="../webapp" target="_blank">webapp</a>  
-You should provide a brief description here.
+<a href="../webapp" target="_blank">webapp</a>  
 
-The JupyterLab server is here: <a href="../jlab" target="_blank">JupyterLab</a>
+> This is an example webapp that uses [FastHTML](https://www.fastht.ml/) and demonstrates 
+> how you can have a long running process that still returns a plotly object. 
+> Long running processes were difficult in Dash.
+
+<a href="../jlab" target="_blank">JupyterLab</a>  
+
+> If this is your first time connecting to the server, you will be asked to enter your 
+> token. To get the token, go back to your project directory and run:
+> 
+> ```bash
+> katx jlab
+> ```
+> 
+> This will give you an address that includes the token. After your first connection 
+> your browser will cache the token and you will not be required to reenter it (unless 
+> your browser cache is cleared).
 

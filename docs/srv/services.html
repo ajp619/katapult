@@ -20,6 +20,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -141,9 +176,16 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>There is a default web app here: <a href="../webapp" target="_blank">webapp</a><br>
-You should provide a brief description here.</p>
-<p>The JupyterLab server is here: <a href="../jlab" target="_blank">JupyterLab</a></p>
+<p><a href="../webapp" target="_blank">webapp</a></p>
+<blockquote class="blockquote">
+<p>This is an example webapp that uses <a href="https://www.fastht.ml/">FastHTML</a> and demonstrates how you can have a long running process that still returns a plotly object. Long running processes were difficult in Dash.</p>
+</blockquote>
+<p><a href="../jlab" target="_blank">JupyterLab</a></p>
+<blockquote class="blockquote">
+<p>If this is your first time connecting to the server, you will be asked to enter your token. To get the token, go back to your project directory and run:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> jlab</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This will give you an address that includes the token. After your first connection your browser will cache the token and you will not be required to reenter it (unless your browser cache is cleared).</p>
+</blockquote>
 
 
 

@@ -1,11 +1,5 @@
 [
   {
-    "listing": "/lib/src/katapult/project_template/{{cookiecutter.project_slug}}/srv/reports.html",
-    "items": [
-      "/lib/src/katapult/project_template/{{cookiecutter.project_slug}}/nbk/reports/med_2_sorted_lists_3.html"
-    ]
-  },
-  {
     "listing": "/srv/reports.html",
     "items": [
       "/nbk/reports/med_2_sorted_lists_3.html"

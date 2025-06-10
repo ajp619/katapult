@@ -68,11 +68,26 @@ def progress_bar(percent_complete: float):
 def get():
     percent_complete = 0
     cts = Div(
+        P(
+            "This is an example webapp that uses websockets to update a progress bar "
+            "and display a 3D scatter chart. The point is to demonstrate the ability "
+            "to use a long-running job to return an artifact (the chart). Using "
+            "websockets allows us to avoid timeouts associated with "
+            "long-runnning callbacks."
+        ),
+        P(
+            "The progress bar will update every N steps, where each step lasts "
+            "for the specified duration (in seconds)."
+        ),
+        P(
+            "You can change the number of steps and the step duration in the form "
+            "below. The progress bar will update accordingly."
+        ),
         Form(
             #Label("msg", Input(id="msg", name="msg", value="msg")),
-            Label("num", Input(id="num", name="num", value=5)),
-            Label("wait", Input(id="wait", name="wait", value=1)),
-            Button("Send", type="submit"),
+            Label("Number of steps:", Input(id="num", name="num", value=5)),
+            Label("Step duration (seconds):", Input(id="wait", name="wait", value=1)),
+            Button("Submit", type="submit"),
             id="form",
             ws_send=True,
         ),

@@ -2,4 +2,63 @@
 title: "Documentation"
 ---
 
-This is where you can provide more detailed documentation about the project.
+## Usage overview
+
+[Guide](../nbk/docs/usage.ipynb)
+
+> A detailed guide to using katapult.
+
+## kat
+
+## katx
+
+## JupyterLab
+
+* How to use
+* Where files are saved
+* How to manage dependencies
+* Folders
+  * docs
+  * reports
+  * wip
+
+## API
+
+* Overview
+* How to use
+* Where files are saved
+* How to manage dependencies
+* How to use in production
+* How to turn off
+
+## Webapp
+
+* Overview
+* How to use
+* Where files are saved
+* How to manage dependencies
+* How to use in production
+* How to turn off
+
+## Quarto Documentation
+
+* How to write  
+* How to render  
+  What get's rendered?
+
+## Code documentation
+
+* How to write
+* How to render
+  Where does it get rendered?
+* How to link to pages
+
+Auto-generated documentation of the code.
+
+[Library](../lib/)
+
+[API]()
+
+> TODO: 
+
+[Webapp]()

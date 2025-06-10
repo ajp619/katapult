@@ -1,10 +1,12 @@
 project:
   type: website
+  output-dir: docs
   render:
     - README.md
     - srv/*
     - nbk/reports/*
     - nbk/wip/*
+    - "!project_template/"
 
 website:
   title: "{{cookiecutter.project_name}}"

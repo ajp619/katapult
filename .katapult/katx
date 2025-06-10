@@ -177,7 +177,7 @@ while (( "$#" )); do
       shift
       ;;
     render)
-      CMD='quarto render'
+      CMD="quarto render && uvx --with lib/. pdoc -o docs/lib $PROJECT_NAME"
       set -x
       docker exec \
         -it \

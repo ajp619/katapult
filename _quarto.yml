@@ -6,6 +6,8 @@ project:
     - srv/*
     - nbk/reports/*
     - nbk/wip/*
+    - nbk/docs/*
+    - "!project_template/"
 
 website:
   title: "katapult"

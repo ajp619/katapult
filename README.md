@@ -12,11 +12,9 @@ jupyter notebooks.
 
 ## Description
 
-As a data scientist, it would be nice to be able to work in an isolated environment 
-for each of our projects that is easily portable from your laptop to any network 
-infrastructure.
-
-Katapult provides a single container that has the following tools:
+Katapult creates an isolated environment for each project that is easily 
+portable from your laptop to any network infrastructure. It provides a single container 
+that has the following tools:
 
 * [JupyterHub](https://jupyter.org/hub): Explore data, prototype transformations 
   and models, and make publishable reports.
@@ -27,6 +25,9 @@ Katapult provides a single container that has the following tools:
 * [Quarto](https://quarto.org/): Publish stand alone, interactive reports that can be 
   downloaded and distributed in various formats. Create project documentation using 
   Markdown and Jupyter.
+
+It takes an opinionated view of the typical development process and provides many 
+convenience functions to facilitate this process.
 
 ## Getting Started
 
@@ -43,9 +44,14 @@ Install from github:
 pipx install "git+https://github.com/ajp619/katapult#subdirectory=lib"
 ```
 
-Now to enable katx (see [Help](#help)) use:
+Enable katx (see [Help](#help)):
 ```bash
 kat config
+```
+
+Launch entry point container:
+```bash
+kat hub
 ```
 
 ### Quickstart
