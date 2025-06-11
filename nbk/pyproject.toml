@@ -7,9 +7,14 @@ requires-python = ">=3.12"
 dependencies = [
     "jupyter>=1.1.1",
     "jupyterlab-execute-time>=3.2.0",
+    "jupyterlab-spellchecker>=0.8.4",
     "jupyterlab-vim>=4.1.4",
+    "katapult",
     "numpy>=2.2.4",
     "pandas>=2.2.3",
     "pydantic>=2.10.6",
     "rich>=14.0.0",
 ]
+
+[tool.uv.sources]
+katapult = { path = "../lib" }

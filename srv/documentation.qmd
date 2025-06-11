@@ -2,11 +2,11 @@
 title: "Documentation"
 ---
 
+A detailed guide to using katapult.
+
 ## Usage overview
 
 [Guide](../nbk/docs/usage.ipynb)
-
-> A detailed guide to using katapult.
 
 ## kat
 
@@ -48,17 +48,14 @@ title: "Documentation"
 
 ## Code documentation
 
+* Documentation of the code with docstrings: [Library](../lib/)
 * How to write
 * How to render
   Where does it get rendered?
 * How to link to pages
 
-Auto-generated documentation of the code.
-
-[Library](../lib/)
-
-[API]()
-
-> TODO: 
-
-[Webapp]()
+## VSCode integration
+* How to connect
+* How to set the appropriate python interpreter
+* Command prompt
+* Where to run git commands

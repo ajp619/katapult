@@ -3886,8 +3886,21 @@ max-height: 75px;
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#jupyterlab" id="toc-jupyterlab" class="nav-link active" data-scroll-target="#jupyterlab">JupyterLab</a>
+  <ul class="collapse">
+  <li><a href="#add-dependencies-from-jupyterlab-terminal" id="toc-add-dependencies-from-jupyterlab-terminal" class="nav-link" data-scroll-target="#add-dependencies-from-jupyterlab-terminal">Add dependencies from JupyterLab terminal</a></li>
+  <li><a href="#add-dependencies-using-katx-connect" id="toc-add-dependencies-using-katx-connect" class="nav-link" data-scroll-target="#add-dependencies-using-katx-connect">Add dependencies using <code>katx connect</code></a></li>
+  <li><a href="#publishing-notebooks" id="toc-publishing-notebooks" class="nav-link" data-scroll-target="#publishing-notebooks">Publishing notebooks</a></li>
+  </ul></li>
+  <li><a href="#creating-a-python-library" id="toc-creating-a-python-library" class="nav-link" data-scroll-target="#creating-a-python-library">Creating a python library</a></li>
+  <li><a href="#quarto" id="toc-quarto" class="nav-link" data-scroll-target="#quarto">Quarto</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -3912,26 +3925,228 @@ max-height: 75px;
 
 
 <p>Katapult can be used in different ways, but it has an opinion on the way most projects evolve.</p>
+<p>The general project structure is shown here:</p>
+<div id="fig-dirs" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T15:50:30.907264Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T15:50:30.906977Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T15:50:31.021080Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T15:50:31.020016Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T15:50:30.907242Z&quot;}}" data-execution_count="17">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dirs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-stdout">
+<pre><code>content
+├── LICENSE.md
+├── README.md
+├── _quarto.yml
+├── api
+├── app
+├── assets
+├── build
+├── docs
+├── lib
+├── nbk
+└── srv
+
+9 directories, 3 files</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-dirs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 1
+</figcaption>
+</figure>
+</div>
+<section id="jupyterlab" class="level2">
+<h2 class="anchored" data-anchor-id="jupyterlab">JupyterLab</h2>
+<p>The most basic usage is to just use the JupyterLab server which can be found by going to the project root and using the <a href="../../srv/services.html">Services</a> link.</p>
+<p>Dependencies are managed with <a href="https://docs.astral.sh/uv/">uv</a> and can be modified is several different ways:</p>
+<section id="add-dependencies-from-jupyterlab-terminal" class="level3">
+<h3 class="anchored" data-anchor-id="add-dependencies-from-jupyterlab-terminal">Add dependencies from JupyterLab terminal</h3>
+<p>The primary components of the <code>nbk/</code> directory are shown here:</p>
+<div id="fig-nbk" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T15:55:51.326514Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T15:55:51.325771Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T15:55:51.445225Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T15:55:51.444017Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T15:55:51.326480Z&quot;}}" data-execution_count="22">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-nbk-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-stdout">
+<pre><code>nbk/
+├── docs/
+├── pyproject.toml
+├── reports/
+├── uv.lock
+└── wip/
+
+4 directories, 3 files</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-nbk-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 2
+</figcaption>
+</figure>
+</div>
+<p>Launching a terminal from JupyterLab will give you a command prompt running from within the container. JupyterLab dependencies are controlled in the <code>nbk/</code> directory (see figure above).</p>
+<p>To add a dependency simply run (from within the <code>nbk/</code> directory):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> add xarray</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Dependencies are saved in the <code>pyproject.toml</code> and <code>uv.lock</code> files. See <a href="https://docs.astral.sh/uv/">uv</a> documentation for more information.</p>
+</section>
+<section id="add-dependencies-using-katx-connect" class="level3">
+<h3 class="anchored" data-anchor-id="add-dependencies-using-katx-connect">Add dependencies using <code>katx connect</code></h3>
+<p>You can also get a terminal in the container using <code>katx</code>.</p>
+<p>From within your project directory run <code>katx connect</code>.</p>
+<p>Change to your notebook (nbk) directory and use <a href="https://docs.astral.sh/uv/">uv</a> as described above.</p>
+</section>
+<section id="publishing-notebooks" class="level3">
+<h3 class="anchored" data-anchor-id="publishing-notebooks">Publishing notebooks</h3>
+<p>By default, three of the directories have special purposes:</p>
+<ul>
+<li><p><code>docs/</code><br>
+Notebooks in the <code>docs/</code> directory are intended to be used in the general project documentation and referenced from the <code>documentation.qmd</code> file in the <code>srv/</code> directory.</p></li>
+<li><p><code>report/</code><br>
+Notebooks in the <code>reports/</code> directory are stand alone documents that you can share with other people. They will automatically appear <a href="../../srv/reports.html">here</a>, and can be downloaded as standalone html files.</p></li>
+<li><p><code>wip/</code> Notebooks in the <code>wip/</code> directory are stand alone documents that are under development. As such, they are shareable if you know the link, but not discoverable when browsing the project website. For example, <a href="../../nbk/wip/med_2_sorted_lists_1.html">this document</a> is available through the given link, but you will not find it while browsing.</p></li>
+</ul>
+<p>For more information about publishing, refer to the <a href="#quarto">Quarto</a> section.</p>
+</section>
+</section>
+<section id="creating-a-python-library" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-python-library">Creating a python library</h2>
 <p>Typically, projects start in an exploration / experimentation phase. A great tool for this is a Jupyter Notebook.</p>
-<div id="90df5d03-4742-4c06-bb9b-cfbcb23149dc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:45:44.631019Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:45:44.630547Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:45:44.641248Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:45:44.640229Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:45:44.630988Z&quot;}}" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s try adding some numbers</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">+</span> <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="3">
+<div id="90df5d03-4742-4c06-bb9b-cfbcb23149dc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T04:09:09.616605Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T04:09:09.616317Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T04:09:09.623948Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T04:09:09.623048Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T04:09:09.616584Z&quot;}}" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s try adding some numbers</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">+</span> <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
 <pre><code>6</code></pre>
 </div>
 </div>
 <p>As you project evolves, you can refactor your notebook code into functions.</p>
-<div id="c9cc30da-8d15-487d-a4b3-c11b8f175ff6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-08T23:46:34.875174Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-08T23:46:34.874852Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-08T23:46:34.881883Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-08T23:46:34.880918Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-08T23:46:34.875148Z&quot;}}" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(a, b):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">+</span> b</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>add(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="4">
+<div id="c9cc30da-8d15-487d-a4b3-c11b8f175ff6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T04:09:10.508617Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T04:09:10.508353Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T04:09:10.514488Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T04:09:10.513598Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T04:09:10.508600Z&quot;}}" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(a, b):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">+</span> b</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>add(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
 <pre><code>6</code></pre>
 </div>
 </div>
+<p>As your functions stabilize you can pull those into the library directory (lib). As an example of this we can see the <code>calculations.py</code> file in the <code>lib</code> directory.</p>
+<div id="36216a31-a7b6-48cf-88e2-3c91d0693da6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T04:09:14.228610Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T04:09:14.228362Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T04:09:14.235464Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T04:09:14.234655Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T04:09:14.228593Z&quot;}}" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-yellow-fg">&quot;&quot;&quot;Provide several sample math calculations.</span>
+<span class="ansi-yellow-fg">This module allows the user to make mathematical calculations.</span>
+<span class="ansi-yellow-fg">Examples:</span>
+<span class="ansi-yellow-fg">    &gt;&gt;&gt; from calculator import calculations</span>
+<span class="ansi-yellow-fg">    &gt;&gt;&gt; calculations.add(2, 4)</span>
+<span class="ansi-yellow-fg">    6.0</span>
+<span class="ansi-yellow-fg">    &gt;&gt;&gt; calculations.multiply(2.0, 4.0)</span>
+<span class="ansi-yellow-fg">    8.0</span>
+<span class="ansi-yellow-fg">    &gt;&gt;&gt; from calculator.calculations import divide</span>
+<span class="ansi-yellow-fg">    &gt;&gt;&gt; divide(4.0, 2)</span>
+<span class="ansi-yellow-fg">    2.0</span>
+<span class="ansi-yellow-fg">The module contains the following functions:</span>
+<span class="ansi-yellow-fg">- `add(a, b)` - Returns the sum of two numbers.</span>
+<span class="ansi-yellow-fg">- `subtract(a, b)` - Returns the difference of two numbers.</span>
+<span class="ansi-yellow-fg">- `multiply(a, b)` - Returns the product of two numbers.</span>
+<span class="ansi-yellow-fg">- `divide(a, b)` - Returns the quotient of two numbers.</span>
+<span class="ansi-yellow-fg">&quot;&quot;&quot;</span>
+<span style="font-weight:bold;color:rgb(0,135,0)">from</span> typing <span style="font-weight:bold;color:rgb(0,135,0)">import</span> Union
+<span style="font-weight:bold;color:rgb(0,135,0)">def</span> add(a: Union[float, int], b: Union[float, int]) -&gt; float:
+    <span class="ansi-yellow-fg">&quot;&quot;&quot;Compute and return the sum of two numbers.</span>
+<span class="ansi-yellow-fg">    Examples:</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; add(4.0, 2.0)</span>
+<span class="ansi-yellow-fg">        6.0</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; add(4, 2)</span>
+<span class="ansi-yellow-fg">        6.0</span>
+<span class="ansi-yellow-fg">    Args:</span>
+<span class="ansi-yellow-fg">        a: A number representing the first addend in the addition.</span>
+<span class="ansi-yellow-fg">        b: A number representing the second addend in the addition.</span>
+<span class="ansi-yellow-fg">    Returns:</span>
+<span class="ansi-yellow-fg">        A number representing the arithmetic sum of `a` and `b`.</span>
+<span class="ansi-yellow-fg">    &quot;&quot;&quot;</span>
+    <span style="font-weight:bold;color:rgb(0,135,0)">return</span> float(a + b)
+<span style="font-weight:bold;color:rgb(0,135,0)">def</span> subtract(a: Union[float, int], b: Union[float, int]) -&gt; float:
+    <span class="ansi-yellow-fg">&quot;&quot;&quot;Calculate the difference of two numbers.</span>
+<span class="ansi-yellow-fg">    Examples:</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; subtract(4.0, 2.0)</span>
+<span class="ansi-yellow-fg">        2.0</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; subtract(4, 2)</span>
+<span class="ansi-yellow-fg">        2.0</span>
+<span class="ansi-yellow-fg">    Args:</span>
+<span class="ansi-yellow-fg">        a: A number representing the minuend in the subtraction.</span>
+<span class="ansi-yellow-fg">        b: A number representing the subtrahend in the subtraction.</span>
+<span class="ansi-yellow-fg">    Returns:</span>
+<span class="ansi-yellow-fg">        A number representing the difference between `a` and `b`.</span>
+<span class="ansi-yellow-fg">    &quot;&quot;&quot;</span>
+    <span style="font-weight:bold;color:rgb(0,135,0)">return</span> float(a - b)
+<span style="font-weight:bold;color:rgb(0,135,0)">def</span> multiply(a: Union[float, int], b: Union[float, int]) -&gt; float:
+    <span class="ansi-yellow-fg">&quot;&quot;&quot;Compute and return the product of two numbers.</span>
+<span class="ansi-yellow-fg">    Examples:</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; multiply(4.0, 2.0)</span>
+<span class="ansi-yellow-fg">        8.0</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; multiply(4, 2)</span>
+<span class="ansi-yellow-fg">        8.0</span>
+<span class="ansi-yellow-fg">    Args:</span>
+<span class="ansi-yellow-fg">        a: A number representing the multiplicand in the multiplication.</span>
+<span class="ansi-yellow-fg">        b: A number representing the multiplier in the multiplication.</span>
+<span class="ansi-yellow-fg">    Returns:</span>
+<span class="ansi-yellow-fg">        A number representing the product of `a` and `b`.</span>
+<span class="ansi-yellow-fg">    &quot;&quot;&quot;</span>
+    <span style="font-weight:bold;color:rgb(0,135,0)">return</span> float(a * b)
+<span style="font-weight:bold;color:rgb(0,135,0)">def</span> divide(a: Union[float, int], b: Union[float, int]) -&gt; float:
+    <span class="ansi-yellow-fg">&quot;&quot;&quot;Compute and return the quotient of two numbers.</span>
+<span class="ansi-yellow-fg">    Examples:</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; divide(4.0, 2.0)</span>
+<span class="ansi-yellow-fg">        2.0</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; divide(4, 2)</span>
+<span class="ansi-yellow-fg">        2.0</span>
+<span class="ansi-yellow-fg">        &gt;&gt;&gt; divide(4, 0)</span>
+<span class="ansi-yellow-fg">        Traceback (most recent call last):</span>
+<span class="ansi-yellow-fg">        ...</span>
+<span class="ansi-yellow-fg">        ZeroDivisionError: division by zero</span>
+<span class="ansi-yellow-fg">    Args:</span>
+<span class="ansi-yellow-fg">        a: A number representing the dividend in the division.</span>
+<span class="ansi-yellow-fg">        b: A number representing the divisor in the division.</span>
+<span class="ansi-yellow-fg">    Returns:</span>
+<span class="ansi-yellow-fg">        A number representing the quotient of `a` and `b`.</span>
+<span class="ansi-yellow-fg">    Raises:</span>
+<span class="ansi-yellow-fg">        ZeroDivisionError: An error occurs when the divisor is `0`.</span>
+<span class="ansi-yellow-fg">    &quot;&quot;&quot;</span>
+    <span style="font-weight:bold;color:rgb(0,135,0)">if</span> b == <span class="ansi-green-fg">0</span>:
+        <span style="font-weight:bold;color:rgb(0,135,0)">raise</span> ZeroDivisionError(<span class="ansi-yellow-fg">&quot;division by zero&quot;</span>)
+    <span style="font-weight:bold;color:rgb(0,135,0)">return</span> float(a / b)
+</pre>
+</div>
+</div>
+</div>
+<p>We can install the library from the command line with:</p>
+<div id="4d61c7ad-f510-4194-bbc8-1f1b641e7385" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T04:09:21.273741Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T04:09:21.272872Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T04:09:22.883946Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T04:09:22.883026Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T04:09:21.273721Z&quot;}}" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>uv add ..<span class="op">/</span>lib<span class="op">/</span>.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>Resolved <span style="font-weight:bold;opacity:0.7">124 packages</span> in 3ms                                         
+
+Prepared <span style="font-weight:bold;opacity:0.7">1 package</span> in 543ms                                              
+
+Uninstalled <span style="font-weight:bold;opacity:0.7">1 package</span> in 17ms
+
+Installed <span style="font-weight:bold;opacity:0.7">1 package</span> in 11msm file:///content/lib)           
+
+Bytecode compiled <span style="font-weight:bold;opacity:0.7">5128 files</span> in 834ms
+
+ <span class="ansi-yellow-fg">~</span> <span class="ansi-bold">katapult</span>==0.1.0 (from file:///content/lib)
+</pre>
+</div>
+</div>
+</div>
+<div id="0976ff39-cf0e-4b83-b61c-e561c07f7e1f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;execution&quot;,&quot;value&quot;:{&quot;iopub.execute_input&quot;:&quot;2025-06-11T04:09:25.143680Z&quot;,&quot;iopub.status.busy&quot;:&quot;2025-06-11T04:09:25.143424Z&quot;,&quot;iopub.status.idle&quot;:&quot;2025-06-11T04:09:25.151244Z&quot;,&quot;shell.execute_reply&quot;:&quot;2025-06-11T04:09:25.150386Z&quot;,&quot;shell.execute_reply.started&quot;:&quot;2025-06-11T04:09:25.143661Z&quot;}}" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> katapult <span class="im">import</span> calculations</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>calculations.add(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>6.0</code></pre>
+</div>
+</div>
+<p>This project can be pushed to github and the library can be installed by specifying the subdirectory. For example:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="st">&quot;git+https://github.com/ajp619/katapult#subdirectory=lib&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="quarto" class="level2">
+<h2 class="anchored" data-anchor-id="quarto">Quarto</h2>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

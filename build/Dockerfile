@@ -8,7 +8,9 @@ ARG QUARTO_VERSION="1.7.27"
 
 #SHELL ["sh", "-exc"]
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # set up default user and project directories
+# ------------------------------------------------------------------------------------------------------------------------------
 RUN <<EOF
 userdel --remove ubuntu
 useradd -m ${USERNAME}
@@ -17,10 +19,14 @@ mkdir -p /content/nbk/.venv && chown ${USERNAME}:${GROUPNAME} /content/nbk/.venv
 mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${GROUPNAME} /tmp/supervisor
 EOF
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # Ensure apt-get doesn't open a menu on you.
+# ------------------------------------------------------------------------------------------------------------------------------
 ENV DEBIAN_FRONTEND=noninteractive
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # add basic system essentials
+# ------------------------------------------------------------------------------------------------------------------------------
 RUN <<EOF
 apt-get update -qy
 apt-get install -qy \
@@ -37,7 +43,33 @@ apt-get install -qy \
     vim
 EOF
 
+# ------------------------------------------------------------------------------------------------------------------------------
+# install docker
+# ------------------------------------------------------------------------------------------------------------------------------
+
+# Add Docker's official GPG key:
+# RUN <<EOF
+# apt-get update -qy
+# apt-get install -qy ca-certificates curl
+# install -m 0755 -d /etc/apt/keyrings
+# curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+# chmod a+r /etc/apt/keyrings/docker.asc
+# EOF
+
+# Add the repository to Apt sources:
+# RUN <<EOF
+# echo \
+#   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+#   $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+#   tee /etc/apt/sources.list.d/docker.list > /dev/null
+# apt-get update -qy
+# 
+# apt-get install -qy docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# EOF
+
+# ------------------------------------------------------------------------------------------------------------------------------
 # download and install latest nginx
+# ------------------------------------------------------------------------------------------------------------------------------
 RUN <<EOF
 curl https://nginx.org/keys/nginx_signing.key \
     | gpg --dearmor \
@@ -54,31 +86,45 @@ apt-get update \
 && rm -rf /var/lib/apt/lists/*
 EOF
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # install quarto
+# ------------------------------------------------------------------------------------------------------------------------------
 WORKDIR /tmp
 RUN curl -o quarto-linux-amd64.deb -L https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb
 RUN apt-get install /tmp/quarto-linux-amd64.deb && rm quarto-linux-amd64.deb
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # configure nginx
+# ------------------------------------------------------------------------------------------------------------------------------
 COPY ./build/conf/nginx/default.conf /etc/nginx/conf.d/
 COPY ./build/conf/nginx/location_blocks/*.conf /etc/nginx/conf.d/location_blocks/
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # add uv executables from official site
+# ------------------------------------------------------------------------------------------------------------------------------
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # copy content
+# ------------------------------------------------------------------------------------------------------------------------------
 COPY --chown=${USERNAME}:${GROUPNAME} . /content/
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # configure supervisor
+# ------------------------------------------------------------------------------------------------------------------------------
 COPY ./build/conf/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./build/conf/supervisor/conf.d/* /etc/supervisor/conf.d/
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # - Silence uv complaining about not being able to use hard links,
 # - tell uv to byte-compile packages for faster application startups,
+# ------------------------------------------------------------------------------------------------------------------------------
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 
 
+# ------------------------------------------------------------------------------------------------------------------------------
 # copy jupyter configuration files
+# ------------------------------------------------------------------------------------------------------------------------------
 COPY --chown=${USERNAME}:${USERNAME}    \
      build/conf/nbk/config.jupyter  \
      /home/${USERNAME}/.jupyter

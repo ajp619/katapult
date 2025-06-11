@@ -64,7 +64,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "options:\n"
       printf "$format" "--build-args|-b" "add additional arguments to docker build."
       printf "$format" "--help" "prints this message."
-      printf "$format" "--host|-h" "sets current hostname to use with 'server' command. Remembers setting."
+      printf "$format" "--host|-h" "sets current hostname to use with 'jlab' command. Remembers setting."
       printf "$format" "--user|-u" "set the user option to use with docker exec. Defaults to ''. Remembers setting."
       printf "\n"
       printf "positional commands:\n"
@@ -78,7 +78,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "rm" "\`docker rm ...\`."
       printf "$format" "rmf" "\`docker rm -f ...\`."
       printf "$format" "run" "Shortcut for: katx build, katx up, katx render, katx status."
-      printf "$format" "server" "lists the address (including token) of the currently running jupyter server."
+      printf "$format" "jlab" "lists the address (including token) of the currently running jupyter server."
       printf "$format" "status" "supervisorctl status."
       printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
       printf "$format" "up" "\`docker compose up -d\`."
@@ -213,7 +213,7 @@ while (( "$#" )); do
       shift
       set -- "build" "up" "render" "status" $@
       ;;
-    server)
+    jlab)
       CMD='cd /content/nbk && uv run jupyter server list'
       set -x
       docker exec \
