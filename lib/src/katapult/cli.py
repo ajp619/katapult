@@ -12,3 +12,4 @@ def main():
 # main.add_command(commands.rich)
 main.add_command(commands.init)
 main.add_command(commands.hub)
+main.add_command(commands.config)
