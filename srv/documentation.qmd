@@ -59,3 +59,6 @@ A detailed guide to using katapult.
 * How to set the appropriate python interpreter
 * Command prompt
 * Where to run git commands
+
+## Github pages
+* How to configure

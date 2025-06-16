@@ -3,14 +3,14 @@
 This module allows the user to make mathematical calculations.
 
 Examples:
-    >>> from calculator import calculations
-    >>> calculations.add(2, 4)
-    6.0
-    >>> calculations.multiply(2.0, 4.0)
-    8.0
-    >>> from calculator.calculations import divide
-    >>> divide(4.0, 2)
-    2.0
+    >>> from calculator import calculations  
+    >>> calculations.add(2, 4)  
+    6.0  
+    >>> calculations.multiply(2.0, 4.0)  
+    8.0  
+    >>> from calculator.calculations import divide  
+    >>> divide(4.0, 2)  
+    2.0  
 
 The module contains the following functions:
 
@@ -27,10 +27,10 @@ def add(a: Union[float, int], b: Union[float, int]) -> float:
     """Compute and return the sum of two numbers.
 
     Examples:
-        >>> add(4.0, 2.0)
-        6.0
-        >>> add(4, 2)
-        6.0
+        >>> add(4.0, 2.0)  
+        6.0  
+        >>> add(4, 2)  
+        6.0  
 
     Args:
         a: A number representing the first addend in the addition.
@@ -45,10 +45,10 @@ def subtract(a: Union[float, int], b: Union[float, int]) -> float:
     """Calculate the difference of two numbers.
 
     Examples:
-        >>> subtract(4.0, 2.0)
-        2.0
-        >>> subtract(4, 2)
-        2.0
+        >>> subtract(4.0, 2.0)  
+        2.0  
+        >>> subtract(4, 2)  
+        2.0  
 
     Args:
         a: A number representing the minuend in the subtraction.
@@ -63,10 +63,10 @@ def multiply(a: Union[float, int], b: Union[float, int]) -> float:
     """Compute and return the product of two numbers.
 
     Examples:
-        >>> multiply(4.0, 2.0)
-        8.0
-        >>> multiply(4, 2)
-        8.0
+        >>> multiply(4.0, 2.0)  
+        8.0  
+        >>> multiply(4, 2)  
+        8.0  
 
     Args:
         a: A number representing the multiplicand in the multiplication.
@@ -81,14 +81,14 @@ def divide(a: Union[float, int], b: Union[float, int]) -> float:
     """Compute and return the quotient of two numbers.
 
     Examples:
-        >>> divide(4.0, 2.0)
-        2.0
-        >>> divide(4, 2)
-        2.0
-        >>> divide(4, 0)
-        Traceback (most recent call last):
-        ...
-        ZeroDivisionError: division by zero
+        >>> divide(4.0, 2.0)  
+        2.0  
+        >>> divide(4, 2)  
+        2.0  
+        >>> divide(4, 0)  
+        Traceback (most recent call last):  
+        ...  
+        ZeroDivisionError: division by zero  
 
     Args:
         a: A number representing the dividend in the division.
