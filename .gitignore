@@ -5,8 +5,13 @@ __pycache__/
 dist/
 wheels/
 *.egg-info
+**/.ipynb_checkpoints/
 
 # Virtual environments
 .venv
+
+# Jupyter files
+**/.Trash*/
+**/sandbox/
 
 /.quarto/

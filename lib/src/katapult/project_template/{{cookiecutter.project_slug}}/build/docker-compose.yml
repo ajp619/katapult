@@ -1,6 +1,7 @@
 services:
   {{cookiecutter.project_slug}}:
     image: ${IMAGE_ROOT}/${PROJECT_NAME}
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.{{cookiecutter.project_slug}}.rule=PathPrefix(`/{{cookiecutter.project_slug}}`)"
