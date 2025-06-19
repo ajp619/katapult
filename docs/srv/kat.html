@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Documentation – katapult</title>
+<title>kat – katapult</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -68,6 +68,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="../srv/styles.css">
@@ -98,7 +101,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Services</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="../srv/documentation.html" aria-current="page"> 
+    <a class="nav-link" href="../srv/documentation.html"> 
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
@@ -121,122 +124,114 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#usage-overview" id="toc-usage-overview" class="nav-link active" data-scroll-target="#usage-overview">Usage overview</a></li>
-  <li><a href="#kat" id="toc-kat" class="nav-link" data-scroll-target="#kat">kat</a></li>
-  <li><a href="#katx" id="toc-katx" class="nav-link" data-scroll-target="#katx">katx</a></li>
-  <li><a href="#jupyterlab" id="toc-jupyterlab" class="nav-link" data-scroll-target="#jupyterlab">JupyterLab</a></li>
-  <li><a href="#api" id="toc-api" class="nav-link" data-scroll-target="#api">API</a></li>
-  <li><a href="#webapp" id="toc-webapp" class="nav-link" data-scroll-target="#webapp">Webapp</a></li>
-  <li><a href="#quarto-documentation" id="toc-quarto-documentation" class="nav-link" data-scroll-target="#quarto-documentation">Quarto Documentation</a></li>
-  <li><a href="#code-documentation" id="toc-code-documentation" class="nav-link" data-scroll-target="#code-documentation">Code documentation</a></li>
-  <li><a href="#vscode-integration" id="toc-vscode-integration" class="nav-link" data-scroll-target="#vscode-integration">VSCode integration</a></li>
-  <li><a href="#github-pages" id="toc-github-pages" class="nav-link" data-scroll-target="#github-pages">Github pages</a></li>
+  <li><a href="#kat" id="toc-kat" class="nav-link active" data-scroll-target="#kat"><code>kat</code></a>
+  <ul class="collapse">
+  <li><a href="#kat-init" id="toc-kat-init" class="nav-link" data-scroll-target="#kat-init"><code>kat init</code></a></li>
+  <li><a href="#kat-hub" id="toc-kat-hub" class="nav-link" data-scroll-target="#kat-hub"><code>kat hub</code></a></li>
+  <li><a href="#kat-config" id="toc-kat-config" class="nav-link" data-scroll-target="#kat-config"><code>kat config</code></a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Documentation</h1>
-</div>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
 
 
-<div class="quarto-title-meta">
 
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
-<p>A detailed guide to using katapult.</p>
-<section id="usage-overview" class="level2">
-<h2 class="anchored" data-anchor-id="usage-overview">Usage overview</h2>
-<p><a href="../nbk/docs/usage.html">Guide</a></p>
-</section>
 <section id="kat" class="level2">
-<h2 class="anchored" data-anchor-id="kat"><a href="../srv/kat.html">kat</a></h2>
+<h2 class="anchored" data-anchor-id="kat"><code>kat</code></h2>
+<p>From the help command we can see that <code>kat</code> has three sub commands:</p>
+<pre><code>$ kat --help
+Usage: kat [OPTIONS] COMMAND [ARGS]...
+
+  Katapult CLI - A command line interface for managing Katapult applications.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  config  Add Katapult dynamic PATH augmentation to the user's .bashrc.
+  hub     Manage the Katapult hub and Traefik container.
+  init    Initialize a new Katapult application.</code></pre>
+<section id="kat-init" class="level3">
+<h3 class="anchored" data-anchor-id="kat-init"><code>kat init</code></h3>
+<p>The <code>init</code> command creates a new project using the the katapult template.</p>
+<p>For example:</p>
+<pre><code>$ kat init
+  [1/4] project_name (My Project):
+  [2/4] project_slug (my_project):
+  [3/4] python_version (3.12):
+  [4/4] host (localhost):
+</code></pre>
+<p>project_name:</p>
+<blockquote class="blockquote">
+<p>The “pretty” name of your project to be used as page titles, etc.</p>
+</blockquote>
+<p>project_slug:</p>
+<blockquote class="blockquote">
+<p>A “computer friendly” version of the project name (all lowercase and no spaces). This is used, for example, as a directory name and in the url. Probably best to just accept the default.</p>
+</blockquote>
+<p>python_version:</p>
+<blockquote class="blockquote">
+<p>Use whatever version of python you like.</p>
+</blockquote>
+<p>host:</p>
+<blockquote class="blockquote">
+<p>There are a few commands we will run later that display, for instance, the landing page of your server. If you are just running on your local machine, then “localhost” is likely appropriate, however, if you are running on a network machine, you can enter the appropriate ip address or name and the addresses will be properly formatted. For example, locally you might want <a href="">http://localhost/my_project/</a>, but if you are running this on an aws vm you might want something like <a href="">http://10.0.1.25/my_project/</a>. In that case you would enter “10.0.1.25” for host. This is really just a convenience function.</p>
+</blockquote>
 </section>
-<section id="katx" class="level2">
-<h2 class="anchored" data-anchor-id="katx">katx</h2>
+<section id="kat-hub" class="level3">
+<h3 class="anchored" data-anchor-id="kat-hub"><code>kat hub</code></h3>
+<p>This command manages the container that runs <a href="https://doc.traefik.io/traefik/">Traefik</a>, an open-source <em>Application Proxy</em>. New katapult applications are created with tags that tell the hub container to automatically create a route to the new application.</p>
+<p>This is what allows you to connect to your project via a sub-path, e.g.&nbsp;<a href="">http://localhost/project1/</a>.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph TB
+    Internet[Internet Traffic] --&gt; Traefik[katapult-traefik&lt;br/&gt;Hub Container&lt;br/&gt;:80]
+    
+    subgraph Network["Network: katapult (localhost)"]
+        Traefik
+        App1[Container 1&lt;br/&gt;katapult-project1]
+        App2[Container 2&lt;br/&gt;katapult-project2]
+        App3[Container 3&lt;br/&gt;katapult-project3]
+    end
+    
+    Traefik --&gt;|/localhost/project1/*| App1
+    Traefik --&gt;|/localhost/project2/*| App2
+    Traefik --&gt;|/localhost/project3/*| App3
+    
+    classDef hubContainer fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef appContainer fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef networkBox fill:#f5f5f5,stroke:#cccccc,stroke-width:1px
+    
+    class Traefik hubContainer
+    class App1,App2,App3 appContainer
+    class Network networkBox
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The <code>kat hub</code> command verifies whether the Docker network named katapult has been created. If the network does not exist, it will create it. The command then checks whether the hub container has been created, and creates it if it does not exist.</p>
 </section>
-<section id="jupyterlab" class="level2">
-<h2 class="anchored" data-anchor-id="jupyterlab">JupyterLab</h2>
-<ul>
-<li>How to use</li>
-<li>Where files are saved</li>
-<li>How to manage dependencies</li>
-<li>Folders
-<ul>
-<li>docs</li>
-<li>reports</li>
-<li>wip</li>
-</ul></li>
-</ul>
-</section>
-<section id="api" class="level2">
-<h2 class="anchored" data-anchor-id="api">API</h2>
-<ul>
-<li>Overview</li>
-<li>How to use</li>
-<li>Where files are saved</li>
-<li>How to manage dependencies</li>
-<li>How to use in production</li>
-<li>How to turn off</li>
-</ul>
-</section>
-<section id="webapp" class="level2">
-<h2 class="anchored" data-anchor-id="webapp">Webapp</h2>
-<ul>
-<li>Overview</li>
-<li>How to use</li>
-<li>Where files are saved</li>
-<li>How to manage dependencies</li>
-<li>How to use in production</li>
-<li>How to turn off</li>
-</ul>
-</section>
-<section id="quarto-documentation" class="level2">
-<h2 class="anchored" data-anchor-id="quarto-documentation">Quarto Documentation</h2>
-<ul>
-<li>How to write<br>
-</li>
-<li>How to render<br>
-What get’s rendered?</li>
-</ul>
-</section>
-<section id="code-documentation" class="level2">
-<h2 class="anchored" data-anchor-id="code-documentation">Code documentation</h2>
-<ul>
-<li>Documentation of the code with docstrings: <a href="../lib/">Library</a></li>
-<li>How to write</li>
-<li>How to render Where does it get rendered?</li>
-<li>How to link to pages</li>
-</ul>
-</section>
-<section id="vscode-integration" class="level2">
-<h2 class="anchored" data-anchor-id="vscode-integration">VSCode integration</h2>
-<ul>
-<li>How to connect</li>
-<li>How to set the appropriate python interpreter</li>
-<li>Command prompt</li>
-<li>Where to run git commands</li>
-</ul>
-</section>
-<section id="github-pages" class="level2">
-<h2 class="anchored" data-anchor-id="github-pages">Github pages</h2>
-<ul>
-<li>How to configure</li>
-</ul>
+<section id="kat-config" class="level3">
+<h3 class="anchored" data-anchor-id="kat-config"><code>kat config</code></h3>
+<p>When a project is initiated with <code>kat</code>, it includes a directory named <code>.katapult</code>:</p>
+<pre><code>my_project/
+├── .katapult
+│&nbsp;&nbsp; ├── HOSTVARS
+│&nbsp;&nbsp; └── katx
+├── ...</code></pre>
+<p>This contains the executable <a href="../srv/katx.html"><code>katx</code></a>, which has a selection of the commands necessary for managing the applications container.</p>
+<p>The goal of the Katapult template is to create a project that is completely independent, including being independent of the <code>kat</code> command (which may evolve over time). To support that goal, we use the executable <a href="../srv/katx.html"><code>katx</code></a> to store the commands necessary for managing the application container.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

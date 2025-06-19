@@ -1,0 +1,118 @@
+## `kat`
+
+From the help command we can see that `kat` has three sub commands:
+
+```
+$ kat --help
+Usage: kat [OPTIONS] COMMAND [ARGS]...
+
+  Katapult CLI - A command line interface for managing Katapult applications.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  config  Add Katapult dynamic PATH augmentation to the user's .bashrc.
+  hub     Manage the Katapult hub and Traefik container.
+  init    Initialize a new Katapult application.
+```
+
+### `kat init`
+
+The `init` command creates a new project using the the katapult template. 
+
+For example: 
+
+```
+$ kat init
+  [1/4] project_name (My Project):
+  [2/4] project_slug (my_project):
+  [3/4] python_version (3.12):
+  [4/4] host (localhost):
+
+```
+
+project_name:  
+
+  > The "pretty" name of your project to be used as page titles, etc.
+
+project_slug:  
+
+  > A "computer friendly" version of the project name (all lowercase and no spaces). 
+  > This is used, for example, as a directory name and in the url. 
+  > Probably best to just accept the default.
+  
+python_version:  
+
+  > Use whatever version of python you like.
+
+host:  
+
+  > There are a few commands we will run later that display, for instance, 
+  > the landing page of your server. If you are just running 
+  > on your local machine, then "localhost" is likely appropriate, however, if you are 
+  > running on a network machine, you can enter the appropriate ip address or name and 
+  > the addresses will be properly formatted. For example, locally you might want 
+  > [http://localhost/my_project/](), but if you are running this on an aws vm you 
+  > might want something like [http://10.0.1.25/my_project/](). In that case you would 
+  > enter "10.0.1.25"  for host. This is really just a convenience function.
+
+### `kat hub`
+
+This command manages the container that runs [Traefik](https://doc.traefik.io/traefik/), 
+an open-source *Application Proxy*. New katapult applications are created with tags 
+that tell the hub container to automatically create a route to the new application.
+
+This is what allows you to connect to your project via a sub-path, 
+e.g. [http://localhost/project1/]().
+
+```{mermaid}
+graph TB
+    Internet[Internet Traffic] --> Traefik[katapult-traefik<br/>Hub Container<br/>:80]
+    
+    subgraph Network["Network: katapult (localhost)"]
+        Traefik
+        App1[Container 1<br/>katapult-project1]
+        App2[Container 2<br/>katapult-project2]
+        App3[Container 3<br/>katapult-project3]
+    end
+    
+    Traefik -->|/localhost/project1/*| App1
+    Traefik -->|/localhost/project2/*| App2
+    Traefik -->|/localhost/project3/*| App3
+    
+    classDef hubContainer fill:#e1f5fe,stroke:#01579b,stroke-width:3px
+    classDef appContainer fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef networkBox fill:#f5f5f5,stroke:#cccccc,stroke-width:1px
+    
+    class Traefik hubContainer
+    class App1,App2,App3 appContainer
+    class Network networkBox
+```
+
+The `kat hub` command verifies whether the Docker network named katapult has 
+been created. If the network does not exist, it will create it. The command then 
+checks whether the hub container has been created, and creates it if it 
+does not exist.
+
+### `kat config`
+
+When a project is initiated with `kat`, it includes a directory named `.katapult`:
+
+```
+my_project/
+├── .katapult
+│   ├── HOSTVARS
+│   └── katx
+├── ...
+```
+
+This contains the executable [`katx`](katx.qmd), which has a selection of the commands 
+necessary for managing the applications container. 
+
+The goal of the Katapult template is to create a project that is completely 
+independent, including being independent of the `kat` command 
+(which may evolve over time). To support that goal, we use the executable 
+[`katx`](katx.qmd) to store the commands necessary for managing the 
+application container.
+

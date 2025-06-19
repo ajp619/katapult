@@ -1,0 +1,26 @@
+## `katx`
+
+```
+$ katx --help
+options:
+  --build-args|-b      add additional arguments to docker build.
+  --help               prints this message.
+  --host|-h            sets current hostname. Remembers setting.
+  --user|-u            set the user option to use with docker exec. Defaults to ''. Remembers setting.
+
+positional commands:
+  build                runs docker build.
+  connect              runs docker exec to start a shell in the project's container.
+  debug                Placeholder for custom docker run command intended for debugging.
+  down                 `docker compose down`.
+  jlab                 lists the address (including token) of the currently running jupyter server.
+  ps                   Lists containers associated with this project.
+  render               Run 'quarto render' to create static site files.
+  restart|rebuild      Shortcut for: katx down, katx build, katx up.
+  rm                   `docker rm ...`.
+  rmf                  `docker rm -f ...`.
+  run                  Shortcut for: katx build, katx up, katx render, katx status.
+  status               supervisorctl status.
+  stop                 manual docker stop command. Generally better to use 'down'
+  up                   `docker compose up -d`.
+```

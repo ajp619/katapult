@@ -8,7 +8,10 @@ A detailed guide to using katapult.
 
 [Guide](../nbk/docs/usage.ipynb)
 
-## kat
+## [kat](kat.qmd)
+
+
+
 
 ## katx
 
