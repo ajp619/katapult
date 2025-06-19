@@ -36,6 +36,7 @@ convenience functions to facilitate this process.
 * *nix environment (e.g. linux, macOS). On Windows use wsl2.
 * docker
 * Python 3.12
+* pipx
 
 ### Installing
 
@@ -44,7 +45,7 @@ Install from github:
 pipx install "git+https://github.com/ajp619/katapult#subdirectory=lib"
 ```
 
-Enable katx (see [Help](#help)):
+Enable `katx` (see [Help](#help)):
 ```bash
 kat config
 ```
