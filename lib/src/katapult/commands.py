@@ -70,7 +70,7 @@ def hub():
     else:
         if click.confirm("Traefik container is not running. Launch it?", default=True):
             client.containers.run(
-                "traefik:v3.4",
+                "traefik:v3.6",
                 detach=True,
                 network="katapult",
                 ports={"80/tcp": 80, "8080/tcp": 8080},
