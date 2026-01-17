@@ -1,1 +1,1 @@
-HOST=local.host
+USER='-u katapult'

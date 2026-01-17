@@ -3,7 +3,9 @@ ARG UBUNTU_RELEASE=1
 FROM ubuntu:${UBUNTU_RELEASE}
 
 ARG USERNAME
-ARG GROUPNAME
+ARG UID_
+ARG USERGROUP
+ARG GID_
 ARG QUARTO_VERSION="1.7.27"
 
 #SHELL ["sh", "-exc"]
@@ -13,10 +15,11 @@ ARG QUARTO_VERSION="1.7.27"
 # ------------------------------------------------------------------------------------------------------------------------------
 RUN <<EOF
 userdel --remove ubuntu
-useradd -m ${USERNAME}
-mkdir /content && chown ${USERNAME}:${GROUPNAME} /content
-mkdir -p /content/nbk/.venv && chown ${USERNAME}:${GROUPNAME} /content/nbk/.venv
-mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${GROUPNAME} /tmp/supervisor
+groupadd -g ${GID_} ${USERGROUP}
+useradd -m -u ${UID_} -g ${GID_} ${USERNAME}
+mkdir /content && chown ${USERNAME}:${USERGROUP} /content
+mkdir -p /content/nbk/.venv && chown ${USERNAME}:${USERGROUP} /content/nbk/.venv
+mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${USERGROUP} /tmp/supervisor
 EOF
 
 # ------------------------------------------------------------------------------------------------------------------------------
@@ -107,7 +110,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 # ------------------------------------------------------------------------------------------------------------------------------
 # copy content
 # ------------------------------------------------------------------------------------------------------------------------------
-COPY --chown=${USERNAME}:${GROUPNAME} . /content/
+COPY --chown=${USERNAME}:${USERGROUP} . /content/
 
 # ------------------------------------------------------------------------------------------------------------------------------
 # configure supervisor

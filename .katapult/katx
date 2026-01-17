@@ -9,6 +9,14 @@ source $PROJECT_DIR/build/BuildConfig
 
 # defaults
 BUILD_ARGS=$(awk 'NF {print "--build-arg " $0}' $PROJECT_DIR/build/BuildConfig)
+
+# If UID_ and GID_ are not in BuildConfig, detect and add them
+if ! grep -q "^UID_=" $PROJECT_DIR/build/BuildConfig 2>/dev/null; then
+    BUILD_ARGS="$BUILD_ARGS --build-arg UID_=$(id -u)"
+fi
+if ! grep -q "^GID_=" $PROJECT_DIR/build/BuildConfig 2>/dev/null; then
+    BUILD_ARGS="$BUILD_ARGS --build-arg GID_=$(id -g)"
+fi
 IMAGE_NAME="$IMAGE_ROOT/$PROJECT_NAME"
 CONTAINER_NAME="$IMAGE_ROOT-$PROJECT_NAME"
 USER=""
