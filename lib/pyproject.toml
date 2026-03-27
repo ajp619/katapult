@@ -1,6 +1,6 @@
 [project]
 name = "katapult"
-version = "0.6.0"
+version = "0.6.1"
 description = "Library to create projects with the Katapult template"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -13,6 +13,13 @@ dependencies = [
 
 [project.scripts]
 kat = "katapult:cli.main"
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
 
 [build-system]
 requires = ["hatchling"]

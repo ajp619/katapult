@@ -31,7 +31,7 @@ Run `kat init --help` for the full usage. The main flag is:
 
 If your home directory contains **`~/.katapult/template/`** with at least one file under it, `kat init` merges those files into the cookiecutter template before running cookiecutter. That lets you customize the default project layout or files for every new project without editing the installed package.
 
-- The layout under `~/.katapult/template/` mirrors the **full** katapult template (the same root as the built-in `project_template/`). Most overrides live under a directory named **`__project_slug__`**, which is renamed to **`{{cookiecutter.project_slug}}`** in the merged copy—matching the stock template’s project directory. You can also place files at the template root (for example next to `cookiecutter.json` or under `hooks/`) if you need to override those paths.
+- The layout under `~/.katapult/template/` mirrors the **generated project directory** (the contents of `{{cookiecutter.project_slug}}/` in the stock template). Files and folders you place there are merged into that directory before cookiecutter runs, so they appear at the root of each new project (for example `cursor_context/`, `.cursor/rules/`, extra `docs/`, etc.).
 
 When overrides are applied, the CLI prints a line such as `Applying overrides from ...` so you know the merged template is in use.
 

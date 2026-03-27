@@ -37,16 +37,11 @@ def rich():
 
 
 def _merge_overrides(src: Path, dst: Path) -> None:
-    """Copy override files into the template, renaming __project_slug__ directories."""
+    """Copy override files into the template project directory."""
     for item in src.rglob("*"):
         if not item.is_file():
             continue
-        rel = item.relative_to(src)
-        parts = [
-            "{{cookiecutter.project_slug}}" if p == "__project_slug__" else p
-            for p in rel.parts
-        ]
-        target = dst / Path(*parts)
+        target = dst / item.relative_to(src)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(item, target)
 
@@ -103,7 +98,7 @@ def init(no_overrides: bool) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             merged = Path(tmp) / "project_template"
             shutil.copytree(template_dir, merged)
-            _merge_overrides(override_dir, merged)
+            _merge_overrides(override_dir, merged / "{{cookiecutter.project_slug}}")
             _apply_copy_without_render(
                 katapult_dir / "copy_without_render",
                 merged / "cookiecutter.json",

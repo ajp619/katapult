@@ -22,6 +22,8 @@ TODO:
 
 ## [Create a python library](../nbk/docs/python_lib.ipynb)
 
+## [Katapult library tests](../nbk/docs/katapult_tests.ipynb)
+
 ## API
 
 TODO:

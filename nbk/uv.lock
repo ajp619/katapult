@@ -823,7 +823,7 @@ wheels = [
 
 [[package]]
 name = "katapult"
-version = "0.5.0"
+version = "0.6.0"
 source = { directory = "../lib" }
 dependencies = [
     { name = "click" },
@@ -837,8 +837,10 @@ requires-dist = [
     { name = "click", specifier = ">=8.2.1" },
     { name = "cookiecutter", specifier = ">=2.6.0" },
     { name = "docker", specifier = ">=7.1.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
     { name = "rich", specifier = ">=14.0.0" },
 ]
+provides-extras = ["test"]
 
 [[package]]
 name = "markdown-it-py"
