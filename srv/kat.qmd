@@ -19,7 +19,31 @@ Commands:
 
 ### `kat init`
 
-The `init` command creates a new project using the the katapult template. 
+The `init` command creates a new project using the katapult template.
+
+#### Options
+
+Run `kat init --help` for the full usage. The main flag is:
+
+- **`--no-overrides`** — Ignore the template override mechanism described below and use only the built-in katapult template.
+
+#### Template overrides (`~/.katapult/template/`)
+
+If your home directory contains **`~/.katapult/template/`** with at least one file under it, `kat init` merges those files into the cookiecutter template before running cookiecutter. That lets you customize the default project layout or files for every new project without editing the installed package.
+
+- The layout under `~/.katapult/template/` mirrors the **full** katapult template (the same root as the built-in `project_template/`). Most overrides live under a directory named **`__project_slug__`**, which is renamed to **`{{cookiecutter.project_slug}}`** in the merged copy—matching the stock template’s project directory. You can also place files at the template root (for example next to `cookiecutter.json` or under `hooks/`) if you need to override those paths.
+
+When overrides are applied, the CLI prints a line such as `Applying overrides from ...` so you know the merged template is in use.
+
+#### `copy_without_render` (`~/.katapult/copy_without_render`)
+
+If **`~/.katapult/copy_without_render`** exists, each non-empty, non-comment line is treated as a **glob pattern**. Those patterns are merged into the template’s `cookiecutter.json` **`_copy_without_render`** list for that run. Files matching those patterns are copied into the new project **without** Jinja rendering, which is useful for assets or files that would otherwise break if cookiecutter tried to template them.
+
+This merging happens only when template overrides are used (i.e. when `~/.katapult/template/` has content and you did not pass **`--no-overrides`**).
+
+#### Plain `kat init`
+
+With **no** override files (or with **`--no-overrides`**), `kat init` behaves as before: it runs cookiecutter against the built-in template only.
 
 For example: 
 

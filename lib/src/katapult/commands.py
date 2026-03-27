@@ -1,3 +1,6 @@
+import json
+import shutil
+import tempfile
 import textwrap
 from pathlib import Path
 
@@ -33,11 +36,82 @@ def rich():
     click.echo(capture.get())
 
 
+def _merge_overrides(src: Path, dst: Path) -> None:
+    """Copy override files into the template, renaming __project_slug__ directories."""
+    for item in src.rglob("*"):
+        if not item.is_file():
+            continue
+        rel = item.relative_to(src)
+        parts = [
+            "{{cookiecutter.project_slug}}" if p == "__project_slug__" else p
+            for p in rel.parts
+        ]
+        target = dst / Path(*parts)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(item, target)
+
+
+def _apply_copy_without_render(ignore_file: Path, cookiecutter_json: Path) -> None:
+    """Merge glob patterns from ignore_file into cookiecutter.json's _copy_without_render."""
+    if not ignore_file.is_file():
+        return
+    patterns = [
+        line.strip()
+        for line in ignore_file.read_text().splitlines()
+        if line.strip() and not line.strip().startswith("#")
+    ]
+    if not patterns:
+        return
+    cc = json.loads(cookiecutter_json.read_text())
+    existing = cc.get("_copy_without_render", [])
+    if not isinstance(existing, list):
+        existing = []
+    seen: set[str] = set()
+    merged: list[str] = []
+    for p in existing + patterns:
+        if p not in seen:
+            seen.add(p)
+            merged.append(p)
+    cc["_copy_without_render"] = merged
+    cookiecutter_json.write_text(json.dumps(cc, indent=4) + "\n")
+
+
+def _override_template_has_content(override_dir: Path) -> bool:
+    """True if override_dir exists and has at least one file under it."""
+    if not override_dir.is_dir():
+        return False
+    return any(p.is_file() for p in override_dir.rglob("*"))
+
+
 @click.command()
-def init():
+@click.option(
+    "--no-overrides",
+    is_flag=True,
+    help="Ignore ~/.katapult/template/ overrides.",
+)
+def init(no_overrides: bool) -> None:
     """Initialize a new Katapult application."""
     current_file_path = Path(__file__)
-    cookiecutter(str(current_file_path.parent / "project_template"))
+    template_dir = current_file_path.parent / "project_template"
+    katapult_dir = Path.home() / ".katapult"
+    override_dir = katapult_dir / "template"
+
+    if (
+        not no_overrides
+        and _override_template_has_content(override_dir)
+    ):
+        with tempfile.TemporaryDirectory() as tmp:
+            merged = Path(tmp) / "project_template"
+            shutil.copytree(template_dir, merged)
+            _merge_overrides(override_dir, merged)
+            _apply_copy_without_render(
+                katapult_dir / "copy_without_render",
+                merged / "cookiecutter.json",
+            )
+            click.echo(f"Applying overrides from {override_dir}")
+            cookiecutter(str(merged))
+    else:
+        cookiecutter(str(template_dir))
 
 
 @click.command()
