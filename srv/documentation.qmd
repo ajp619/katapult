@@ -10,70 +10,127 @@ A detailed guide to using katapult.
 
 ## [JupyterLab](../nbk/docs/jupyterlab.ipynb)
 
-TODO:
-
-* [x] How to use
-* Where files are saved
-* [x] How to manage dependencies
-* [x] Folders
-  * [x] docs
-  * [x] reports
-  * [x] wip
+JupyterLab runs inside the project container with working directory **`/content/`** (the project root). The host project directory is bind-mounted into the container (see `build/docker-compose.yml`), so all files under **`/content/`** persist on your machine.
 
 ## [Create a python library](../nbk/docs/python_lib.ipynb)
 
 ## [Katapult library tests](../nbk/docs/katapult_tests.ipynb)
 
-## API
+## [API](../nbk/docs/api.ipynb)
 
-TODO:
+Interactive examples (live HTTP calls) are in the linked notebook. Summary:
 
-* [ ] Overview
-* [ ] How to use
-* [ ] Where files are saved
-* [ ] How to manage dependencies
-* [ ] How to use in production
-* [ ] How to turn off
+* **Overview** — [Quart](https://palletsprojects.com/projects/quart/) async API in `api/src/api/` with [quart-schema](https://quart-schema.readthedocs.io/) for request/response validation.
+* **How to use** — Add routes in `api/src/api/__init__.py`. From outside the container, call paths under **`/<project_slug>/api/...`** (Nginx strips the prefix before proxying). From inside the container you can hit **`http://127.0.0.1:5000/...`** directly.
+* **Where files are saved** — Source in `api/`; dependencies in `api/pyproject.toml` and `api/uv.lock`.
+* **How to manage dependencies** — `katx connect`, then `cd /content/api` and `uv add <package>`.
+* **How to use in production** — [Supervisor](http://supervisord.org/) runs `uv run api` (see `build/conf/supervisor/conf.d/api.conf`). Nginx proxies **`/<project_slug>/api`** to port **5000**.
+* **How to turn off** — Remove or rename `build/conf/supervisor/conf.d/api.conf`, then `katx build` and `katx up` so the image picks up the change.
 
 ## Webapp
 
-TODO:
-
-* [ ] Overview
-* [ ] How to use
-* [ ] Where files are saved
-* [ ] How to manage dependencies
-* [ ] How to use in production
-* [ ] How to turn off
+* **Overview** — [FastHTML](https://www.fastht.ml/) app in `app/main.py` (HTMX-style patterns, WebSockets in the example).
+* **How to use** — Edit `app/main.py`. Routes use the **`/<project_slug>/webapp`** prefix so they work behind Nginx.
+* **Where files are saved** — Code in `app/`; dependencies in `app/pyproject.toml`.
+* **How to manage dependencies** — `katx connect`, `cd /content/app`, `uv add <package>`.
+* **How to use in production** — Supervisor runs `uv run python main.py` (`build/conf/supervisor/conf.d/webapp.conf`). Nginx proxies **`/<project_slug>/webapp`** to port **5001**.
+* **How to turn off** — Remove or rename `build/conf/supervisor/conf.d/webapp.conf`, then rebuild and restart the container.
 
 ## Quarto Documentation
 
-TODO:
-
-* [ ] How to write  
-* [ ] How to render  
-  * [ ] What get's rendered?
+* **How to write** — Add `.qmd` files under `srv/` or notebooks under `nbk/` (reports, wip, docs). Use normal Quarto markdown; Mermaid fenced blocks are supported via [`filters/mermaid.lua`](../filters/mermaid.lua) and the site script in `_quarto.yml`. Site title, navbar, and `site-path` are configured in [`_quarto.yml`](../_quarto.yml).
+* **How to render** — From the host: `katx render` (runs Quarto and pdoc inside the container). Inside the container: `quarto render` from `/content/`. Output is written to **`docs/`**.
+* **What gets rendered** — Whatever matches `project.render` in `_quarto.yml`: `README.md`, `srv/*`, `nbk/reports/*`, `nbk/wip/*`, `nbk/docs/*`, excluding `project_template/`.
 
 ## Code documentation
 
-TODO:
-
-* [ ] Documentation of the code with docstrings: [Library](../lib/)
-* [ ] How to write
-* [ ] How to render
-  * [ ] Where does it get rendered?
-* [ ] How to link to pages
+* **Documentation with docstrings** — Document Python in `lib/src/<project_slug>/` (this repo’s installable package lives under [`lib/`](../lib/)). HTML API docs are generated with [pdoc](https://pdoc.dev/).
+* **How to write** — Use normal module, class, and function docstrings (pdoc accepts common styles).
+* **How to render** — `katx render` runs `quarto render` and then `uvx --refresh --with lib/. pdoc -o docs/lib <PROJECT_NAME>` (see `.katapult/katx`). `<PROJECT_NAME>` comes from `build/BuildConfig`.
+* **Where does it get rendered?** — Under **`docs/lib/`** on disk. After a site render, they are available on the static site under **`/<project_slug>/lib/...`** (same origin as the Quarto site).
+* **How to link to pages** — From Quarto or notebooks, use project-relative links, e.g. `[module](../../lib/<module>.html)` from a page under `docs/` (adjust depth as needed).
 
 ## VSCode integration
 
-TODO:
-
-* [ ] How to connect
-* [ ] How to set the appropriate python interpreter
-* [ ] Command prompt
-* [ ] Where to run git commands
+* **How to connect** — Use the **Dev Containers** extension (or **Remote - Containers**). With the project container running (`katx up`), open VS Code, run **Dev Containers: Attach to Running Container...** from the Command Palette, and select the project container (e.g. `katapult-katapult`). VS Code will open with the full container environment — the same Python version, system packages, and tools as in production. Open the folder **`/content/`** when prompted.
+* **How to set the appropriate python interpreter** — The container has separate virtualenvs for each package: `nbk/.venv`, `api/.venv`, `app/.venv`, `lib/.venv`. Use **Python: Select Interpreter** in the Command Palette and point to the `.venv/bin/python` for the area you are editing. Because you are inside the container, all environments are available.
+* **Command prompt** — The integrated terminal opens a shell **inside the container**. You have direct access to `uv`, `quarto`, `supervisorctl`, and all project tooling without needing `katx connect`.
+* **Where to run git commands** — Run `git` from the **host** terminal (outside the container), in the repository root. The container sees the same files via the bind mount, but git credentials and remotes are typically configured on the host.
 
 ## Github pages
-TODO:
 
-* [ ] How to configure
+* **How to configure** — Quarto builds the site into **`docs/`**. In the GitHub repository, enable **Pages** with source **Deploy from a branch**, branch **main** (or your default), folder **`/docs`**. Set **`website.site-path`** in `_quarto.yml` to **`/<repository-name>/`** so links match `https://<user>.github.io/<repo>/`. After changing content, run **`katx render`**, commit the updated **`docs/`** output, and push. (CI workflows are optional; this repo may not ship a `.github/workflows` file.)
+
+## Container architecture
+
+Traffic flows from the browser through Traefik on the host into the project container’s Nginx, then to each service:
+
+```{mermaid}
+flowchart LR
+  subgraph client [Client]
+    Browser[Browser]
+  end
+  subgraph host [Host]
+    Traefik[Traefik port 80]
+  end
+  subgraph container [Project container]
+    Nginx[Nginx port 80]
+    Static[Static docs port 8080]
+    APIsvc[Quart API 5000]
+    Webapp[FastHTML 5001]
+    JLab[JupyterLab 8888]
+    Nginx --> Static
+    Nginx --> APIsvc
+    Nginx --> Webapp
+    Nginx --> JLab
+  end
+  Browser --> Traefik
+  Traefik -->|"PathPrefix project"| Nginx
+```
+
+* **Traefik** (`kat hub`) routes **`/<project_slug>`** to the container’s port **80** (see `build/docker-compose.yml` labels).
+* **Nginx** (`build/conf/nginx/default.conf`) serves the main site on **80** and includes snippets from **`build/conf/nginx/location_blocks/`**. A second server listens on **8080** and serves the rendered Quarto site from **`/content/docs/`**; **`/<project_slug>/`** is proxied there (see `html.conf`).
+* **Supervisor** starts **nginx**, **api**, **webapp**, and **jupyter** (see `build/conf/supervisor/conf.d/`).
+
+Typical path prefixes (replace `katapult` with your `PROJECT_NAME` / repo slug): **`/katapult/`** (static docs), **`/katapult/api`** → Quart on 5000, **`/katapult/webapp`** → FastHTML on 5001, **`/katapult/jlab`** → JupyterLab on 8888.
+
+## Docker / build configuration
+
+* **`build/BuildConfig`** — `IMAGE_ROOT`, `PROJECT_NAME`, `USERNAME`, `USERGROUP`, `UBUNTU_RELEASE`, `PYTHON_VERSION`, `NODE_VERSION`, `QUARTO_VERSION`. Passed as Docker build args and compose env.
+* **`build/docker-compose.yml`** — Builds/runs image `${IMAGE_ROOT}/${PROJECT_NAME}`, attaches to external network **`katapult`**, mounts **`../.:/content/`**, and uses **anonymous volumes** for `api/.venv`, `app/.venv`, `lib/.venv`, `nbk/.venv` so container virtualenvs are not overwritten by the host mount.
+* **`build/Dockerfile`** — Ubuntu base, **nginx**, **supervisor**, **uv**, **Quarto**, copies project to `/content/`, installs nginx and supervisor configs, runs **`supervisord`** as the container user.
+* **Changing versions** — Edit `BuildConfig`, then **`katx build`** (and **`katx up`**) so the image is rebuilt.
+
+## Supervisor / service management
+
+* **`katx status`** — Runs `supervisorctl status` inside the container (all programs).
+* **Inside the container** (`katx connect`): `supervisorctl restart <program>`, `supervisorctl stop <program>`, `supervisorctl tail -f <program>` (programs are named in `conf.d/*.conf`, e.g. `api`, `webapp`, `jupyter`, `nginx`).
+* **Config location** — `build/conf/supervisor/conf.d/*.conf`; each file is one `[program:...]` block.
+* **Adding a service** — Add a new `.conf` file, ensure the command and `directory=` are correct, rebuild the image so the file is copied into `/etc/supervisor/conf.d/`, then start the container.
+
+## Nginx routing
+
+* **Port 80** — Default server proxies **`/<project_slug>/...`** to backends; static HTML for the docs site is reached via the `html.conf` rewrite/proxy to **127.0.0.1:8080**.
+* **Port 8080** — Serves files from **`/content/docs/`** (Quarto output).
+* **Location snippets** — `build/conf/nginx/location_blocks/*.conf` (e.g. `api.conf` strips **`/<project_slug>/api`** and proxies to **localhost:5000**). `default.conf` includes this directory.
+* **New route** — Add a `location` file, add a matching Supervisor program if you need a new process, **`katx build`**, **`katx up`**.
+
+## Reports
+
+* Put notebooks (or other Quarto sources) in **`nbk/reports/`**. They are included in `_quarto.yml` `render` and listed on [Reports](reports.qmd) via the Quarto listing.
+* Run **`katx render`** to regenerate **`docs/`** and the reports index.
+* Published URLs look like **`/<project_slug>/nbk/reports/<name>.html`** on your deployed site.
+
+## Template customization
+
+* **`~/.katapult/template/`** — Mirror the **generated project tree**. `kat init` merges these files into the template before Cookiecutter runs so every new project includes your additions (e.g. extra `srv/` pages, `.cursor/rules/`).
+* **`~/.katapult/copy_without_render`** — Non-empty lines are glob patterns appended to Cookiecutter’s `_copy_without_render` for that run, so matching files copy **without** Jinja templating (useful for assets containing `{{` `}}`).
+* **When it applies** — Only if `~/.katapult/template/` has content and you do **not** pass **`kat init --no-overrides`**. See [kat init](kat.qmd#kat-init) for details.
+
+## Troubleshooting / FAQ
+
+* **Port 80 already in use on the host** — Another process (or another Traefik) is using port 80. Stop it or adjust Traefik’s published ports outside this template.
+* **JupyterLab asks for a token** — Run **`katx jlab`** on the host and open the printed URL (includes the token).
+* **Changes to code not visible in the container** — Application code is bind-mounted; restart the relevant process (`supervisorctl restart api`) if a reload is not enough.
+* **Supervisor or Nginx config changes ignored** — Those files are **copied at image build time**. Run **`katx build`** then **`katx up`**.
+* **`katx: command not found`** — Run **`kat config`**, open a new shell (or `source ~/.bashrc`), and **`cd`** into a directory that contains **`.katapult/katx`** (the project root).

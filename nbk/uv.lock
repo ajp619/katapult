@@ -927,6 +927,7 @@ name = "nb"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "httpx" },
     { name = "jupyter" },
     { name = "jupyterlab-execute-time" },
     { name = "jupyterlab-spellchecker" },
@@ -940,6 +941,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "jupyterlab-execute-time", specifier = ">=3.2.0" },
     { name = "jupyterlab-spellchecker", specifier = ">=0.8.4" },

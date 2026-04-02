@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Creating a python library – katapult</title>
+<title>API – katapult</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -3891,11 +3891,12 @@ max-height: 75px;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#exploration" id="toc-exploration" class="nav-link active" data-scroll-target="#exploration">Exploration</a></li>
-  <li><a href="#refactor" id="toc-refactor" class="nav-link" data-scroll-target="#refactor">Refactor</a></li>
-  <li><a href="#library" id="toc-library" class="nav-link" data-scroll-target="#library">Library</a></li>
-  <li><a href="#documentation" id="toc-documentation" class="nav-link" data-scroll-target="#documentation">Documentation</a></li>
-  <li><a href="#install" id="toc-install" class="nav-link" data-scroll-target="#install">Install</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#live-requests" id="toc-live-requests" class="nav-link" data-scroll-target="#live-requests">Live requests</a></li>
+  <li><a href="#where-files-are-saved" id="toc-where-files-are-saved" class="nav-link" data-scroll-target="#where-files-are-saved">Where files are saved</a></li>
+  <li><a href="#dependencies" id="toc-dependencies" class="nav-link" data-scroll-target="#dependencies">Dependencies</a></li>
+  <li><a href="#production-layout" id="toc-production-layout" class="nav-link" data-scroll-target="#production-layout">Production layout</a></li>
+  <li><a href="#turn-off-the-api-service" id="toc-turn-off-the-api-service" class="nav-link" data-scroll-target="#turn-off-the-api-service">Turn off the API service</a></li>
   </ul>
 </nav>
     </div>
@@ -3904,7 +3905,7 @@ max-height: 75px;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Creating a python library</h1>
+<h1 class="title">API</h1>
 </div>
 
 
@@ -3921,190 +3922,123 @@ max-height: 75px;
 </header>
 
 
-<section id="exploration" class="level2">
-<h2 class="anchored" data-anchor-id="exploration">Exploration</h2>
-<p>Typically, projects start in an exploration / experimentation phase. A great tool for this is a Jupyter Notebook.</p>
-<div id="90df5d03-4742-4c06-bb9b-cfbcb23149dc" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;python&quot;}}" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Let&#39;s try adding some numbers</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">+</span> <span class="dv">5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="2">
-<pre><code>6</code></pre>
-</div>
-</div>
-</section>
-<section id="refactor" class="level2">
-<h2 class="anchored" data-anchor-id="refactor">Refactor</h2>
-<p>As your project evolves, you can refactor your notebook code into functions.</p>
-<div id="c9cc30da-8d15-487d-a4b3-c11b8f175ff6" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;python&quot;}}" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(a, b):</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">+</span> b</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>add(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="3">
-<pre><code>6</code></pre>
-</div>
-</div>
-</section>
-<section id="library" class="level2">
-<h2 class="anchored" data-anchor-id="library">Library</h2>
-<p>As your functions stabilize you can pull those into the library directory (lib). As an example of this we can see the <code>calculations.py</code> file in the <code>lib</code> directory.</p>
-<div id="9c40dad6-c082-4b6e-b3a0-e77720ef49e9" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;python&quot;}}" data-execution_count="7">
-<div class="cell-output cell-output-display cell-output-markdown">
-<p>lib/src/katapult/calculations.py:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;Provide several sample math calculations.</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">This module allows the user to make mathematical calculations.</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">Examples:</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; from calculator import calculations  </span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; calculations.add(2, 4)  </span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">    6.0  </span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; calculations.multiply(2.0, 4.0)  </span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">    8.0  </span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; from calculator.calculations import divide  </span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; divide(4.0, 2)  </span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">    2.0  </span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">The module contains the following functions:</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co">- `add(a, b)` - Returns the sum of two numbers.</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">- `subtract(a, b)` - Returns the difference of two numbers.</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co">- `multiply(a, b)` - Returns the product of two numbers.</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co">- `divide(a, b)` - Returns the quotient of two numbers.</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Union</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> add(a: Union[<span class="bu">float</span>, <span class="bu">int</span>], b: Union[<span class="bu">float</span>, <span class="bu">int</span>]) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Compute and return the sum of two numbers.</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples:</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; add(4.0, 2.0)  </span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="co">        6.0  </span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; add(4, 2)  </span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co">        6.0  </span></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co">        a: A number representing the first addend in the addition.</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co">        b: A number representing the second addend in the addition.</span></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="co">        A number representing the arithmetic sum of `a` and `b`.</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(a <span class="op">+</span> b)</span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> subtract(a: Union[<span class="bu">float</span>, <span class="bu">int</span>], b: Union[<span class="bu">float</span>, <span class="bu">int</span>]) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Calculate the difference of two numbers.</span></span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples:</span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; subtract(4.0, 2.0)  </span></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a><span class="co">        2.0  </span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; subtract(4, 2)  </span></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a><span class="co">        2.0  </span></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="co">        a: A number representing the minuend in the subtraction.</span></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a><span class="co">        b: A number representing the subtrahend in the subtraction.</span></span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a><span class="co">        A number representing the difference between `a` and `b`.</span></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(a <span class="op">-</span> b)</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> multiply(a: Union[<span class="bu">float</span>, <span class="bu">int</span>], b: Union[<span class="bu">float</span>, <span class="bu">int</span>]) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Compute and return the product of two numbers.</span></span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples:</span></span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; multiply(4.0, 2.0)  </span></span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="co">        8.0  </span></span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; multiply(4, 2)  </span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="co">        8.0  </span></span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="co">        a: A number representing the multiplicand in the multiplication.</span></span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="co">        b: A number representing the multiplier in the multiplication.</span></span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="co">        A number representing the product of `a` and `b`.</span></span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(a <span class="op">*</span> b)</span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> divide(a: Union[<span class="bu">float</span>, <span class="bu">int</span>], b: Union[<span class="bu">float</span>, <span class="bu">int</span>]) <span class="op">-&gt;</span> <span class="bu">float</span>:</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Compute and return the quotient of two numbers.</span></span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples:</span></span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; divide(4.0, 2.0)  </span></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="co">        2.0  </span></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; divide(4, 2)  </span></span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a><span class="co">        2.0  </span></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="co">        &gt;&gt;&gt; divide(4, 0)  </span></span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="co">        Traceback (most recent call last):  </span></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="co">        ...  </span></span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="co">        ZeroDivisionError: division by zero  </span></span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="co">    Args:</span></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a><span class="co">        a: A number representing the dividend in the division.</span></span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="co">        b: A number representing the divisor in the division.</span></span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns:</span></span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a><span class="co">        A number representing the quotient of `a` and `b`.</span></span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="co">    Raises:</span></span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="co">        ZeroDivisionError: An error occurs when the divisor is `0`.</span></span>
-<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> b <span class="op">==</span> <span class="dv">0</span>:</span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> <span class="pp">ZeroDivisionError</span>(<span class="st">&quot;division by zero&quot;</span>)</span>
-<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(a <span class="op">/</span> b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</div>
-</section>
-<section id="documentation" class="level2">
-<h2 class="anchored" data-anchor-id="documentation">Documentation</h2>
-<p>Don’t forget to add docstrings to your modules and functions (as seen above).</p>
-<p>With the docstrings in place you can use <a href="https://pdoc.dev/">pdoc</a> to auto-generate the code documentation.</p>
-<p>This can be done in two different ways:</p>
+<p>The project ships a small <a href="https://palletsprojects.com/projects/quart/">Quart</a> API with <a href="https://quart-schema.readthedocs.io/">quart-schema</a> validation. Use the <a href="../../srv/services.html">Services</a> page to open the site; this notebook calls the API <strong>from inside the container</strong> on <strong><code>http://127.0.0.1:5000</code></strong> (the same port Supervisor uses — see <code>build/conf/supervisor/conf.d/api.conf</code>).</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>Routes live in <code>api/src/api/__init__.py</code>. Request and response models use <strong>Pydantic</strong> <code>BaseModel</code> classes so <a href="https://quart-schema.readthedocs.io/">quart-schema</a> can validate and serialize JSON (including <code>datetime</code> fields). Example endpoints:</p>
 <ul>
-<li>from your project directory (not in a container shell) run <code>katx render</code> (RECOMMENDED)</li>
-<li>from a shell within the container (<code>katx connect</code>) by running <code>uvx --with lib/. pdoc -o docs/lib katapult</code> from <code>/content</code></li>
+<li><code>GET /healthcheck</code> — JSON status</li>
+<li><code>POST /echo</code> — echoes JSON body</li>
+<li><code>POST /todos/</code> — validates a <code>TodoIn</code> payload and returns a <code>TodoOut</code></li>
 </ul>
-<p>You can see the result <a href="../../lib/katapult/calculations.html">here</a>.</p>
-<p>For more information see documentation for both <a href="https://docs.astral.sh/uv/guides/tools/">uvx</a> and <a href="https://pdoc.dev/">pdoc</a>.</p>
 </section>
-<section id="install" class="level2">
-<h2 class="anchored" data-anchor-id="install">Install</h2>
-<p>We can install the library from the container command line with:</p>
-<div id="4d61c7ad-f510-4194-bbc8-1f1b641e7385" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;python&quot;}}" data-execution_count="14">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># from /content/nbk</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>uv add ..<span class="op">/</span>lib<span class="op">/</span>.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<div class="ansi-escaped-output">
-<pre>Resolved <span style="font-weight:bold;opacity:0.7">124 packages</span> in 2ms
-
-Prepared <span style="font-weight:bold;opacity:0.7">1 package</span> in 354ms
-
-Uninstalled <span style="font-weight:bold;opacity:0.7">1 package</span> in 6ms
-
-Installed <span style="font-weight:bold;opacity:0.7">1 package</span> in 10ms
-
-Bytecode compiled <span style="font-weight:bold;opacity:0.7">5128 files</span> in 511ms
-
- <span class="ansi-yellow-fg">~</span> <span class="ansi-bold">katapult</span>==0.1.0 (from file:///content/lib)
-</pre>
+<section id="live-requests" class="level2">
+<h2 class="anchored" data-anchor-id="live-requests">Live requests</h2>
+<p>The cells below require the <strong>api</strong> Supervisor program to be running (<code>katx status</code>).</p>
+<div id="api-healthcheck" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> httpx.Client(base_url<span class="op">=</span>BASE, timeout<span class="op">=</span><span class="fl">10.0</span>) <span class="im">as</span> client:</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> client.get(<span class="st">&quot;/healthcheck&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.status_code)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.json())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>200
+{&#39;status&#39;: &#39;alive&#39;}</code></pre>
 </div>
 </div>
+<div id="api-echo" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>payload <span class="op">=</span> {<span class="st">&quot;hello&quot;</span>: <span class="st">&quot;katapult&quot;</span>}</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> httpx.Client(base_url<span class="op">=</span>BASE, timeout<span class="op">=</span><span class="fl">10.0</span>) <span class="im">as</span> client:</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> client.post(<span class="st">&quot;/echo&quot;</span>, json<span class="op">=</span>payload)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.status_code)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(json.dumps(r.json(), indent<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>200
+{
+  &quot;extra&quot;: true,
+  &quot;input&quot;: {
+    &quot;hello&quot;: &quot;katapult&quot;
+  }
+}</code></pre>
 </div>
-<div id="0976ff39-cf0e-4b83-b61c-e561c07f7e1f" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;vscode&quot;,&quot;value&quot;:{&quot;languageId&quot;:&quot;python&quot;}}" data-execution_count="13">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> katapult <span class="im">import</span> calculations</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>calculations.add(<span class="dv">1</span>, <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
-<pre><code>6.0</code></pre>
+</div>
+<div id="api-todos-ok" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime, timezone</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>todo <span class="op">=</span> {<span class="st">&quot;task&quot;</span>: <span class="st">&quot;Write docs&quot;</span>, <span class="st">&quot;due&quot;</span>: datetime.now(timezone.utc).isoformat()}</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> httpx.Client(base_url<span class="op">=</span>BASE, timeout<span class="op">=</span><span class="fl">10.0</span>) <span class="im">as</span> client:</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> client.post(<span class="st">&quot;/todos/&quot;</span>, json<span class="op">=</span>todo)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.status_code)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>ct <span class="op">=</span> r.headers.get(<span class="st">&quot;content-type&quot;</span>, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">&quot;application/json&quot;</span> <span class="kw">in</span> ct <span class="kw">and</span> r.content:</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(json.dumps(r.json(), indent<span class="op">=</span><span class="dv">2</span>))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(r.text <span class="kw">or</span> <span class="st">&quot;(empty body)&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>200
+{
+  &quot;due&quot;: &quot;2026-04-02T22:40:53.409007Z&quot;,
+  &quot;id&quot;: 1,
+  &quot;task&quot;: &quot;Write docs&quot;
+}</code></pre>
 </div>
 </div>
-<p>This project can be pushed to github and the library can be installed by specifying the subdirectory. For example:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="st">&quot;git+https://github.com/ajp619/katapult#subdirectory=lib&quot;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="api-todos-bad" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>bad <span class="op">=</span> {<span class="st">&quot;task&quot;</span>: <span class="dv">123</span>}  <span class="co"># wrong type for quart-schema validation</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> httpx.Client(base_url<span class="op">=</span>BASE, timeout<span class="op">=</span><span class="fl">10.0</span>) <span class="im">as</span> client:</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> client.post(<span class="st">&quot;/todos/&quot;</span>, json<span class="op">=</span>bad)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.status_code)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(r.text)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>400
+&lt;!doctype html&gt;
+&lt;html lang=en&gt;
+&lt;title&gt;400 Bad Request&lt;/title&gt;
+&lt;h1&gt;Bad Request&lt;/h1&gt;
+&lt;p&gt;The browser (or proxy) sent a request that this server could not understand.&lt;/p&gt;
+</code></pre>
+</div>
+</div>
+</section>
+<section id="where-files-are-saved" class="level2">
+<h2 class="anchored" data-anchor-id="where-files-are-saved">Where files are saved</h2>
+<p>Package layout under <code>api/</code>:</p>
+<div id="fig-api-tree" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-api-tree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-stdout">
+<pre><code>api/
+├── README.md
+├── pyproject.toml
+├── src/
+│   └── api/
+│       └── __init__.py
+└── uv.lock
+
+3 directories, 4 files</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-api-tree-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure 1
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="dependencies">Dependencies</h2>
+<p>From a shell in the container (<code>katx connect</code>):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /content/api</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> add <span class="op">&lt;</span>package<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="production-layout" class="level2">
+<h2 class="anchored" data-anchor-id="production-layout">Production layout</h2>
+<ul>
+<li>Supervisor runs <code>uv run api</code> in <code>/content/api</code>.</li>
+<li>Nginx exposes the app at <strong><code>/&lt;project_slug&gt;/api</code></strong> and strips that prefix before proxying to port <strong>5000</strong>.</li>
+</ul>
+</section>
+<section id="turn-off-the-api-service" class="level2">
+<h2 class="anchored" data-anchor-id="turn-off-the-api-service">Turn off the API service</h2>
+<p>Remove or rename <code>build/conf/supervisor/conf.d/api.conf</code>, then <strong><code>katx build</code></strong> and <strong><code>katx up</code></strong>.</p>
 
 
 </section>

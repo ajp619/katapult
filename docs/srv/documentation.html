@@ -68,6 +68,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 <link rel="stylesheet" href="../srv/styles.css">
@@ -132,6 +135,13 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#code-documentation" id="toc-code-documentation" class="nav-link" data-scroll-target="#code-documentation">Code documentation</a></li>
   <li><a href="#vscode-integration" id="toc-vscode-integration" class="nav-link" data-scroll-target="#vscode-integration">VSCode integration</a></li>
   <li><a href="#github-pages" id="toc-github-pages" class="nav-link" data-scroll-target="#github-pages">Github pages</a></li>
+  <li><a href="#container-architecture" id="toc-container-architecture" class="nav-link" data-scroll-target="#container-architecture">Container architecture</a></li>
+  <li><a href="#docker-build-configuration" id="toc-docker-build-configuration" class="nav-link" data-scroll-target="#docker-build-configuration">Docker / build configuration</a></li>
+  <li><a href="#supervisor-service-management" id="toc-supervisor-service-management" class="nav-link" data-scroll-target="#supervisor-service-management">Supervisor / service management</a></li>
+  <li><a href="#nginx-routing" id="toc-nginx-routing" class="nav-link" data-scroll-target="#nginx-routing">Nginx routing</a></li>
+  <li><a href="#reports" id="toc-reports" class="nav-link" data-scroll-target="#reports">Reports</a></li>
+  <li><a href="#template-customization" id="toc-template-customization" class="nav-link" data-scroll-target="#template-customization">Template customization</a></li>
+  <li><a href="#troubleshooting-faq" id="toc-troubleshooting-faq" class="nav-link" data-scroll-target="#troubleshooting-faq">Troubleshooting / FAQ</a></li>
   </ul>
 </nav>
     </div>
@@ -166,18 +176,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="jupyterlab" class="level2">
 <h2 class="anchored" data-anchor-id="jupyterlab"><a href="../nbk/docs/jupyterlab.html">JupyterLab</a></h2>
-<p>TODO:</p>
-<ul>
-<li><label><input type="checkbox" checked="">How to use</label></li>
-<li>Where files are saved</li>
-<li><label><input type="checkbox" checked="">How to manage dependencies</label></li>
-<li><label><input type="checkbox" checked="">Folders</label>
-<ul class="task-list">
-<li><label><input type="checkbox" checked="">docs</label></li>
-<li><label><input type="checkbox" checked="">reports</label></li>
-<li><label><input type="checkbox" checked="">wip</label></li>
-</ul></li>
-</ul>
+<p>JupyterLab runs inside the project container with working directory <strong><code>/content/</code></strong> (the project root). The host project directory is bind-mounted into the container (see <code>build/docker-compose.yml</code>), so all files under <strong><code>/content/</code></strong> persist on your machine.</p>
 </section>
 <section id="create-a-python-library" class="level2">
 <h2 class="anchored" data-anchor-id="create-a-python-library"><a href="../nbk/docs/python_lib.html">Create a python library</a></h2>
@@ -186,69 +185,153 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="katapult-library-tests"><a href="../nbk/docs/katapult_tests.html">Katapult library tests</a></h2>
 </section>
 <section id="api" class="level2">
-<h2 class="anchored" data-anchor-id="api">API</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">Overview</label></li>
-<li><label><input type="checkbox">How to use</label></li>
-<li><label><input type="checkbox">Where files are saved</label></li>
-<li><label><input type="checkbox">How to manage dependencies</label></li>
-<li><label><input type="checkbox">How to use in production</label></li>
-<li><label><input type="checkbox">How to turn off</label></li>
+<h2 class="anchored" data-anchor-id="api"><a href="../nbk/docs/api.html">API</a></h2>
+<p>Interactive examples (live HTTP calls) are in the linked notebook. Summary:</p>
+<ul>
+<li><strong>Overview</strong> — <a href="https://palletsprojects.com/projects/quart/">Quart</a> async API in <code>api/src/api/</code> with <a href="https://quart-schema.readthedocs.io/">quart-schema</a> for request/response validation.</li>
+<li><strong>How to use</strong> — Add routes in <code>api/src/api/__init__.py</code>. From outside the container, call paths under <strong><code>/&lt;project_slug&gt;/api/...</code></strong> (Nginx strips the prefix before proxying). From inside the container you can hit <strong><code>http://127.0.0.1:5000/...</code></strong> directly.</li>
+<li><strong>Where files are saved</strong> — Source in <code>api/</code>; dependencies in <code>api/pyproject.toml</code> and <code>api/uv.lock</code>.</li>
+<li><strong>How to manage dependencies</strong> — <code>katx connect</code>, then <code>cd /content/api</code> and <code>uv add &lt;package&gt;</code>.</li>
+<li><strong>How to use in production</strong> — <a href="http://supervisord.org/">Supervisor</a> runs <code>uv run api</code> (see <code>build/conf/supervisor/conf.d/api.conf</code>). Nginx proxies <strong><code>/&lt;project_slug&gt;/api</code></strong> to port <strong>5000</strong>.</li>
+<li><strong>How to turn off</strong> — Remove or rename <code>build/conf/supervisor/conf.d/api.conf</code>, then <code>katx build</code> and <code>katx up</code> so the image picks up the change.</li>
 </ul>
 </section>
 <section id="webapp" class="level2">
 <h2 class="anchored" data-anchor-id="webapp">Webapp</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">Overview</label></li>
-<li><label><input type="checkbox">How to use</label></li>
-<li><label><input type="checkbox">Where files are saved</label></li>
-<li><label><input type="checkbox">How to manage dependencies</label></li>
-<li><label><input type="checkbox">How to use in production</label></li>
-<li><label><input type="checkbox">How to turn off</label></li>
+<ul>
+<li><strong>Overview</strong> — <a href="https://www.fastht.ml/">FastHTML</a> app in <code>app/main.py</code> (HTMX-style patterns, WebSockets in the example).</li>
+<li><strong>How to use</strong> — Edit <code>app/main.py</code>. Routes use the <strong><code>/&lt;project_slug&gt;/webapp</code></strong> prefix so they work behind Nginx.</li>
+<li><strong>Where files are saved</strong> — Code in <code>app/</code>; dependencies in <code>app/pyproject.toml</code>.</li>
+<li><strong>How to manage dependencies</strong> — <code>katx connect</code>, <code>cd /content/app</code>, <code>uv add &lt;package&gt;</code>.</li>
+<li><strong>How to use in production</strong> — Supervisor runs <code>uv run python main.py</code> (<code>build/conf/supervisor/conf.d/webapp.conf</code>). Nginx proxies <strong><code>/&lt;project_slug&gt;/webapp</code></strong> to port <strong>5001</strong>.</li>
+<li><strong>How to turn off</strong> — Remove or rename <code>build/conf/supervisor/conf.d/webapp.conf</code>, then rebuild and restart the container.</li>
 </ul>
 </section>
 <section id="quarto-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="quarto-documentation">Quarto Documentation</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">How to write<br>
-</label></li>
-<li><label><input type="checkbox">How to render</label>
-<ul class="task-list">
-<li><label><input type="checkbox">What get’s rendered?</label></li>
-</ul></li>
+<ul>
+<li><strong>How to write</strong> — Add <code>.qmd</code> files under <code>srv/</code> or notebooks under <code>nbk/</code> (reports, wip, docs). Use normal Quarto markdown; Mermaid fenced blocks are supported via <a href="../filters/mermaid.lua"><code>filters/mermaid.lua</code></a> and the site script in <code>_quarto.yml</code>. Site title, navbar, and <code>site-path</code> are configured in <a href="../_quarto.yml"><code>_quarto.yml</code></a>.</li>
+<li><strong>How to render</strong> — From the host: <code>katx render</code> (runs Quarto and pdoc inside the container). Inside the container: <code>quarto render</code> from <code>/content/</code>. Output is written to <strong><code>docs/</code></strong>.</li>
+<li><strong>What gets rendered</strong> — Whatever matches <code>project.render</code> in <code>_quarto.yml</code>: <code>README.md</code>, <code>srv/*</code>, <code>nbk/reports/*</code>, <code>nbk/wip/*</code>, <code>nbk/docs/*</code>, excluding <code>project_template/</code>.</li>
 </ul>
 </section>
 <section id="code-documentation" class="level2">
 <h2 class="anchored" data-anchor-id="code-documentation">Code documentation</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">Documentation of the code with docstrings: <a href="../lib/">Library</a></label></li>
-<li><label><input type="checkbox">How to write</label></li>
-<li><label><input type="checkbox">How to render</label>
-<ul class="task-list">
-<li><label><input type="checkbox">Where does it get rendered?</label></li>
-</ul></li>
-<li><label><input type="checkbox">How to link to pages</label></li>
+<ul>
+<li><strong>Documentation with docstrings</strong> — Document Python in <code>lib/src/&lt;project_slug&gt;/</code> (this repo’s installable package lives under <a href="../lib/"><code>lib/</code></a>). HTML API docs are generated with <a href="https://pdoc.dev/">pdoc</a>.</li>
+<li><strong>How to write</strong> — Use normal module, class, and function docstrings (pdoc accepts common styles).</li>
+<li><strong>How to render</strong> — <code>katx render</code> runs <code>quarto render</code> and then <code>uvx --refresh --with lib/. pdoc -o docs/lib &lt;PROJECT_NAME&gt;</code> (see <code>.katapult/katx</code>). <code>&lt;PROJECT_NAME&gt;</code> comes from <code>build/BuildConfig</code>.</li>
+<li><strong>Where does it get rendered?</strong> — Under <strong><code>docs/lib/</code></strong> on disk. After a site render, they are available on the static site under <strong><code>/&lt;project_slug&gt;/lib/...</code></strong> (same origin as the Quarto site).</li>
+<li><strong>How to link to pages</strong> — From Quarto or notebooks, use project-relative links, e.g.&nbsp;<code>[module](../../lib/&lt;module&gt;.html)</code> from a page under <code>docs/</code> (adjust depth as needed).</li>
 </ul>
 </section>
 <section id="vscode-integration" class="level2">
 <h2 class="anchored" data-anchor-id="vscode-integration">VSCode integration</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">How to connect</label></li>
-<li><label><input type="checkbox">How to set the appropriate python interpreter</label></li>
-<li><label><input type="checkbox">Command prompt</label></li>
-<li><label><input type="checkbox">Where to run git commands</label></li>
+<ul>
+<li><strong>How to connect</strong> — Use the <strong>Dev Containers</strong> extension (or <strong>Remote - Containers</strong>). With the project container running (<code>katx up</code>), open VS Code, run <strong>Dev Containers: Attach to Running Container…</strong> from the Command Palette, and select the project container (e.g.&nbsp;<code>katapult-katapult</code>). VS Code will open with the full container environment — the same Python version, system packages, and tools as in production. Open the folder <strong><code>/content/</code></strong> when prompted.</li>
+<li><strong>How to set the appropriate python interpreter</strong> — The container has separate virtualenvs for each package: <code>nbk/.venv</code>, <code>api/.venv</code>, <code>app/.venv</code>, <code>lib/.venv</code>. Use <strong>Python: Select Interpreter</strong> in the Command Palette and point to the <code>.venv/bin/python</code> for the area you are editing. Because you are inside the container, all environments are available.</li>
+<li><strong>Command prompt</strong> — The integrated terminal opens a shell <strong>inside the container</strong>. You have direct access to <code>uv</code>, <code>quarto</code>, <code>supervisorctl</code>, and all project tooling without needing <code>katx connect</code>.</li>
+<li><strong>Where to run git commands</strong> — Run <code>git</code> from the <strong>host</strong> terminal (outside the container), in the repository root. The container sees the same files via the bind mount, but git credentials and remotes are typically configured on the host.</li>
 </ul>
 </section>
 <section id="github-pages" class="level2">
 <h2 class="anchored" data-anchor-id="github-pages">Github pages</h2>
-<p>TODO:</p>
-<ul class="task-list">
-<li><label><input type="checkbox">How to configure</label></li>
+<ul>
+<li><strong>How to configure</strong> — Quarto builds the site into <strong><code>docs/</code></strong>. In the GitHub repository, enable <strong>Pages</strong> with source <strong>Deploy from a branch</strong>, branch <strong>main</strong> (or your default), folder <strong><code>/docs</code></strong>. Set <strong><code>website.site-path</code></strong> in <code>_quarto.yml</code> to <strong><code>/&lt;repository-name&gt;/</code></strong> so links match <code>https://&lt;user&gt;.github.io/&lt;repo&gt;/</code>. After changing content, run <strong><code>katx render</code></strong>, commit the updated <strong><code>docs/</code></strong> output, and push. (CI workflows are optional; this repo may not ship a <code>.github/workflows</code> file.)</li>
+</ul>
+</section>
+<section id="container-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="container-architecture">Container architecture</h2>
+<p>Traffic flows from the browser through Traefik on the host into the project container’s Nginx, then to each service:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  subgraph client [Client]
+    Browser[Browser]
+  end
+  subgraph host [Host]
+    Traefik[Traefik port 80]
+  end
+  subgraph container [Project container]
+    Nginx[Nginx port 80]
+    Static[Static docs port 8080]
+    APIsvc[Quart API 5000]
+    Webapp[FastHTML 5001]
+    JLab[JupyterLab 8888]
+    Nginx --&gt; Static
+    Nginx --&gt; APIsvc
+    Nginx --&gt; Webapp
+    Nginx --&gt; JLab
+  end
+  Browser --&gt; Traefik
+  Traefik --&gt;|"PathPrefix project"| Nginx
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Traefik</strong> (<code>kat hub</code>) routes <strong><code>/&lt;project_slug&gt;</code></strong> to the container’s port <strong>80</strong> (see <code>build/docker-compose.yml</code> labels).</li>
+<li><strong>Nginx</strong> (<code>build/conf/nginx/default.conf</code>) serves the main site on <strong>80</strong> and includes snippets from <strong><code>build/conf/nginx/location_blocks/</code></strong>. A second server listens on <strong>8080</strong> and serves the rendered Quarto site from <strong><code>/content/docs/</code></strong>; <strong><code>/&lt;project_slug&gt;/</code></strong> is proxied there (see <code>html.conf</code>).</li>
+<li><strong>Supervisor</strong> starts <strong>nginx</strong>, <strong>api</strong>, <strong>webapp</strong>, and <strong>jupyter</strong> (see <code>build/conf/supervisor/conf.d/</code>).</li>
+</ul>
+<p>Typical path prefixes (replace <code>katapult</code> with your <code>PROJECT_NAME</code> / repo slug): <strong><code>/katapult/</code></strong> (static docs), <strong><code>/katapult/api</code></strong> → Quart on 5000, <strong><code>/katapult/webapp</code></strong> → FastHTML on 5001, <strong><code>/katapult/jlab</code></strong> → JupyterLab on 8888.</p>
+</section>
+<section id="docker-build-configuration" class="level2">
+<h2 class="anchored" data-anchor-id="docker-build-configuration">Docker / build configuration</h2>
+<ul>
+<li><strong><code>build/BuildConfig</code></strong> — <code>IMAGE_ROOT</code>, <code>PROJECT_NAME</code>, <code>USERNAME</code>, <code>USERGROUP</code>, <code>UBUNTU_RELEASE</code>, <code>PYTHON_VERSION</code>, <code>NODE_VERSION</code>, <code>QUARTO_VERSION</code>. Passed as Docker build args and compose env.</li>
+<li><strong><code>build/docker-compose.yml</code></strong> — Builds/runs image <code>${IMAGE_ROOT}/${PROJECT_NAME}</code>, attaches to external network <strong><code>katapult</code></strong>, mounts <strong><code>../.:/content/</code></strong>, and uses <strong>anonymous volumes</strong> for <code>api/.venv</code>, <code>app/.venv</code>, <code>lib/.venv</code>, <code>nbk/.venv</code> so container virtualenvs are not overwritten by the host mount.</li>
+<li><strong><code>build/Dockerfile</code></strong> — Ubuntu base, <strong>nginx</strong>, <strong>supervisor</strong>, <strong>uv</strong>, <strong>Quarto</strong>, copies project to <code>/content/</code>, installs nginx and supervisor configs, runs <strong><code>supervisord</code></strong> as the container user.</li>
+<li><strong>Changing versions</strong> — Edit <code>BuildConfig</code>, then <strong><code>katx build</code></strong> (and <strong><code>katx up</code></strong>) so the image is rebuilt.</li>
+</ul>
+</section>
+<section id="supervisor-service-management" class="level2">
+<h2 class="anchored" data-anchor-id="supervisor-service-management">Supervisor / service management</h2>
+<ul>
+<li><strong><code>katx status</code></strong> — Runs <code>supervisorctl status</code> inside the container (all programs).</li>
+<li><strong>Inside the container</strong> (<code>katx connect</code>): <code>supervisorctl restart &lt;program&gt;</code>, <code>supervisorctl stop &lt;program&gt;</code>, <code>supervisorctl tail -f &lt;program&gt;</code> (programs are named in <code>conf.d/*.conf</code>, e.g.&nbsp;<code>api</code>, <code>webapp</code>, <code>jupyter</code>, <code>nginx</code>).</li>
+<li><strong>Config location</strong> — <code>build/conf/supervisor/conf.d/*.conf</code>; each file is one <code>[program:...]</code> block.</li>
+<li><strong>Adding a service</strong> — Add a new <code>.conf</code> file, ensure the command and <code>directory=</code> are correct, rebuild the image so the file is copied into <code>/etc/supervisor/conf.d/</code>, then start the container.</li>
+</ul>
+</section>
+<section id="nginx-routing" class="level2">
+<h2 class="anchored" data-anchor-id="nginx-routing">Nginx routing</h2>
+<ul>
+<li><strong>Port 80</strong> — Default server proxies <strong><code>/&lt;project_slug&gt;/...</code></strong> to backends; static HTML for the docs site is reached via the <code>html.conf</code> rewrite/proxy to <strong>127.0.0.1:8080</strong>.</li>
+<li><strong>Port 8080</strong> — Serves files from <strong><code>/content/docs/</code></strong> (Quarto output).</li>
+<li><strong>Location snippets</strong> — <code>build/conf/nginx/location_blocks/*.conf</code> (e.g.&nbsp;<code>api.conf</code> strips <strong><code>/&lt;project_slug&gt;/api</code></strong> and proxies to <strong>localhost:5000</strong>). <code>default.conf</code> includes this directory.</li>
+<li><strong>New route</strong> — Add a <code>location</code> file, add a matching Supervisor program if you need a new process, <strong><code>katx build</code></strong>, <strong><code>katx up</code></strong>.</li>
+</ul>
+</section>
+<section id="reports" class="level2">
+<h2 class="anchored" data-anchor-id="reports">Reports</h2>
+<ul>
+<li>Put notebooks (or other Quarto sources) in <strong><code>nbk/reports/</code></strong>. They are included in <code>_quarto.yml</code> <code>render</code> and listed on <a href="../srv/reports.html">Reports</a> via the Quarto listing.</li>
+<li>Run <strong><code>katx render</code></strong> to regenerate <strong><code>docs/</code></strong> and the reports index.</li>
+<li>Published URLs look like <strong><code>/&lt;project_slug&gt;/nbk/reports/&lt;name&gt;.html</code></strong> on your deployed site.</li>
+</ul>
+</section>
+<section id="template-customization" class="level2">
+<h2 class="anchored" data-anchor-id="template-customization">Template customization</h2>
+<ul>
+<li><strong><code>~/.katapult/template/</code></strong> — Mirror the <strong>generated project tree</strong>. <code>kat init</code> merges these files into the template before Cookiecutter runs so every new project includes your additions (e.g.&nbsp;extra <code>srv/</code> pages, <code>.cursor/rules/</code>).</li>
+<li><strong><code>~/.katapult/copy_without_render</code></strong> — Non-empty lines are glob patterns appended to Cookiecutter’s <code>_copy_without_render</code> for that run, so matching files copy <strong>without</strong> Jinja templating (useful for assets containing <code>{{</code> <code>}}</code>).</li>
+<li><strong>When it applies</strong> — Only if <code>~/.katapult/template/</code> has content and you do <strong>not</strong> pass <strong><code>kat init --no-overrides</code></strong>. See <a href="../srv/kat.html#kat-init">kat init</a> for details.</li>
+</ul>
+</section>
+<section id="troubleshooting-faq" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting-faq">Troubleshooting / FAQ</h2>
+<ul>
+<li><strong>Port 80 already in use on the host</strong> — Another process (or another Traefik) is using port 80. Stop it or adjust Traefik’s published ports outside this template.</li>
+<li><strong>JupyterLab asks for a token</strong> — Run <strong><code>katx jlab</code></strong> on the host and open the printed URL (includes the token).</li>
+<li><strong>Changes to code not visible in the container</strong> — Application code is bind-mounted; restart the relevant process (<code>supervisorctl restart api</code>) if a reload is not enough.</li>
+<li><strong>Supervisor or Nginx config changes ignored</strong> — Those files are <strong>copied at image build time</strong>. Run <strong><code>katx build</code></strong> then <strong><code>katx up</code></strong>.</li>
+<li><strong><code>katx: command not found</code></strong> — Run <strong><code>kat config</code></strong>, open a new shell (or <code>source ~/.bashrc</code>), and <strong><code>cd</code></strong> into a directory that contains <strong><code>.katapult/katx</code></strong> (the project root).</li>
 </ul>
 
 
@@ -671,10 +754,16 @@ ul.task-list li input[type="checkbox"] {
   </div>
 </footer>
 <script type="module">
-  if (!window.mermaid) {
+  async function initMermaid() {
+    if (window.mermaid) return;
     const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
     m.default.initialize({ startOnLoad: false });
     await m.default.run();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { void initMermaid(); });
+  } else {
+    void initMermaid();
   }
 </script>
 

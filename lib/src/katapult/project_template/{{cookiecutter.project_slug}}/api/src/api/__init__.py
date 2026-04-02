@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 
-from quart_schema import QuartSchema
-from quart_schema import validate_request
-from quart_schema import validate_response
-
-from quart import Quart
-from quart import request
+from pydantic import BaseModel, ConfigDict
+from quart import Quart, request
+from quart_schema import QuartSchema, validate_request, validate_response
 
 app = Quart(__name__)
 QuartSchema(app)
+
 
 @app.get("/healthcheck")
 async def healthcheck():
@@ -25,22 +22,26 @@ async def echo():
     return {"input": data, "extra": True}
 
 
-@dataclass
-class TodoIn:
+class TodoIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     task: str
-    due: datetime | None
+    due: datetime | None = None
 
 
-@dataclass
-class Todo(TodoIn):
+class TodoOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     id: int
+    task: str
+    due: datetime | None = None
 
 
 @app.post("/todos/")
 @validate_request(TodoIn)
-@validate_response(Todo)
-async def create_todo(data: Todo) -> Todo:
-    return Todo(id=1, task=data.task, due=data.due)
+@validate_response(TodoOut)
+async def create_todo(data: TodoIn) -> TodoOut:
+    return TodoOut(id=1, task=data.task, due=data.due)
 
 
 def run() -> None:
