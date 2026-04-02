@@ -56,16 +56,15 @@ while (( "$#" )); do #while there are still args to parse
       if [ -n "$2" ] && [ ${2:0:1} != "-" ]; then
         HOST="$2"
         echo "setting host to $2"
-        cat $PROJECT_DIR/.katapult/HOSTVARS \
-          | grep -v "^HOST=" \
-          > $PROJECT_DIR/.katapult/HOSTVARS
-        echo "HOST=$2" >> $PROJECT_DIR/.katapult/HOSTVARS
+        HOSTVARS_TMP=$(grep -v "^HOST=" "$PROJECT_DIR/.katapult/HOSTVARS")
+        printf '%s\n' "$HOSTVARS_TMP" > "$PROJECT_DIR/.katapult/HOSTVARS"
+        echo "HOST=$2" >> "$PROJECT_DIR/.katapult/HOSTVARS"
+        shift 2
       else
         # output an error msg, (> &2 redirects to stderr)
         echo "Error: Argument for $1 is missing" >&2
         exit 1
       fi
-      shift 2
       ;;
     --help)
       format='  %-20s %-s\n'
@@ -98,12 +97,9 @@ while (( "$#" )); do #while there are still args to parse
         # set the user option to use with docker exec. Defaults to ""
         USER="-u $2"
         echo "setting user to $2"
-        # remove previous USER definitions
-        cat $PROJECT_DIR/.katapult/HOSTVARS \
-          | grep -v "^USER=" \
-          > $PROJECT_DIR/.katapult/HOSTVARS
-        # add user to HOSTVARS
-        echo "USER='-u $2'" >> $PROJECT_DIR/.katapult/HOSTVARS
+        HOSTVARS_TMP=$(grep -v "^USER=" "$PROJECT_DIR/.katapult/HOSTVARS")
+        printf '%s\n' "$HOSTVARS_TMP" > "$PROJECT_DIR/.katapult/HOSTVARS"
+        echo "USER='-u $2'" >> "$PROJECT_DIR/.katapult/HOSTVARS"
         # drop the first two arguments
         shift 2
       else

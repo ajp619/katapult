@@ -192,7 +192,30 @@ Commands:
   init    Initialize a new Katapult application.</code></pre>
 <section id="kat-init" class="level3">
 <h3 class="anchored" data-anchor-id="kat-init"><code>kat init</code></h3>
-<p>The <code>init</code> command creates a new project using the the katapult template.</p>
+<p>The <code>init</code> command creates a new project using the katapult template.</p>
+<section id="options" class="level4">
+<h4 class="anchored" data-anchor-id="options">Options</h4>
+<p>Run <code>kat init --help</code> for the full usage. The main flag is:</p>
+<ul>
+<li><strong><code>--no-overrides</code></strong> — Ignore the template override mechanism described below and use only the built-in katapult template.</li>
+</ul>
+</section>
+<section id="template-overrides-.katapulttemplate" class="level4">
+<h4 class="anchored" data-anchor-id="template-overrides-.katapulttemplate">Template overrides (<code>~/.katapult/template/</code>)</h4>
+<p>If your home directory contains <strong><code>~/.katapult/template/</code></strong> with at least one file under it, <code>kat init</code> merges those files into the cookiecutter template before running cookiecutter. That lets you customize the default project layout or files for every new project without editing the installed package.</p>
+<ul>
+<li>The layout under <code>~/.katapult/template/</code> mirrors the <strong>generated project directory</strong> (the contents of <code>{cookiecutter.project_slug}/</code> in the stock template). Files and folders you place there are merged into that directory before cookiecutter runs, so they appear at the root of each new project (for example <code>cursor_context/</code>, <code>.cursor/rules/</code>, extra <code>docs/</code>, etc.).</li>
+</ul>
+<p>When overrides are applied, the CLI prints a line such as <code>Applying overrides from ...</code> so you know the merged template is in use.</p>
+</section>
+<section id="copy_without_render-.katapultcopy_without_render" class="level4">
+<h4 class="anchored" data-anchor-id="copy_without_render-.katapultcopy_without_render"><code>copy_without_render</code> (<code>~/.katapult/copy_without_render</code>)</h4>
+<p>If <strong><code>~/.katapult/copy_without_render</code></strong> exists, each non-empty, non-comment line is treated as a <strong>glob pattern</strong>. Those patterns are merged into the template’s <code>cookiecutter.json</code> <strong><code>_copy_without_render</code></strong> list for that run. Files matching those patterns are copied into the new project <strong>without</strong> Jinja rendering, which is useful for assets or files that would otherwise break if cookiecutter tried to template them.</p>
+<p>This merging happens only when template overrides are used (i.e.&nbsp;when <code>~/.katapult/template/</code> has content and you did not pass <strong><code>--no-overrides</code></strong>).</p>
+</section>
+<section id="plain-kat-init" class="level4">
+<h4 class="anchored" data-anchor-id="plain-kat-init">Plain <code>kat init</code></h4>
+<p>With <strong>no</strong> override files (or with <strong><code>--no-overrides</code></strong>), <code>kat init</code> behaves as before: it runs cookiecutter against the built-in template only.</p>
 <p>For example:</p>
 <pre><code>$ kat init
   [1/4] project_name (My Project):
@@ -216,6 +239,7 @@ Commands:
 <blockquote class="blockquote">
 <p>There are a few commands we will run later that display, for instance, the landing page of your server. If you are just running on your local machine, then “localhost” is likely appropriate, however, if you are running on a network machine, you can enter the appropriate ip address or name and the addresses will be properly formatted. For example, locally you might want <a href="">http://localhost/my_project/</a>, but if you are running this on an aws vm you might want something like <a href="">http://10.0.1.25/my_project/</a>. In that case you would enter “10.0.1.25” for host. This is really just a convenience function.</p>
 </blockquote>
+</section>
 </section>
 <section id="kat-hub" class="level3">
 <h3 class="anchored" data-anchor-id="kat-hub"><code>kat hub</code></h3>
