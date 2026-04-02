@@ -575,6 +575,13 @@ positional commands:
     </div>
   </div>
 </footer>
+<script type="module">
+  if (!window.mermaid) {
+    const m = await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs');
+    m.default.initialize({ startOnLoad: false });
+    await m.default.run();
+  }
+</script>
 
 
 
