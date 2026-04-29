@@ -549,10 +549,30 @@ def _find_dockerfiles(project: Path) -> list[Path]:
     return sorted(out)
 
 
+# Project-rooted Trivy ignore-file conventions, in priority order.
+# `.trivyignore.yaml` (richer schema) is preferred; `.trivyignore`
+# is the legacy plaintext form Trivy still reads.
+_TRIVY_IGNORE_BASENAMES = (".trivyignore.yaml", ".trivyignore")
+
+
+def _project_trivyignore(project: Path) -> str | None:
+    """Return ``/scan/<basename>`` if the project root has a Trivy ignore file.
+
+    Trivy's default ignore-file lookup is cwd-relative; under
+    ``kat scan`` the trivy container runs with cwd ``/`` and the project
+    is bind-mounted at ``/scan``, so we have to pass ``--ignorefile``
+    explicitly when one exists.
+    """
+    for name in _TRIVY_IGNORE_BASENAMES:
+        if (project / name).is_file():
+            return f"/scan/{name}"
+    return None
+
+
 def _trivy_fs_cmd(project: Path, severity: str, fmt: str, exit_on_vuln: bool) -> list[str]:
     # Trivy: --exit-code 1 => process exits 1 when vulnerabilities are found.
     exit_flag = "1" if exit_on_vuln else "0"
-    return [
+    cmd: list[str] = [
         "docker",
         "run",
         "--rm",
@@ -562,6 +582,11 @@ def _trivy_fs_cmd(project: Path, severity: str, fmt: str, exit_on_vuln: bool) ->
         f"{_trivy_cache_dir()}:/root/.cache",
         TRIVY_IMAGE,
         "fs",
+    ]
+    ignore_path = _project_trivyignore(project)
+    if ignore_path is not None:
+        cmd += ["--ignorefile", ignore_path]
+    cmd += [
         "--scanners",
         "vuln,misconfig,secret",
         "--severity",
@@ -572,9 +597,13 @@ def _trivy_fs_cmd(project: Path, severity: str, fmt: str, exit_on_vuln: bool) ->
         exit_flag,
         "/scan",
     ]
+    return cmd
 
 
 def _trivy_image_cmd(image: str, severity: str, fmt: str, exit_on_vuln: bool) -> list[str]:
+    # No --ignorefile here: image scans don't bind-mount the project tree,
+    # and ignore-file paths inside the image would have to use in-container
+    # layout, not project-relative paths. Filesystem scan only for now.
     exit_flag = "1" if exit_on_vuln else "0"
     return [
         "docker",

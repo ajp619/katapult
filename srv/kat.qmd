@@ -243,6 +243,12 @@ Run `kat scan --help` (or `kat scan fs --help` / `kat scan image --help`) for fu
 - **`--report`** — Write a Quarto page under **`srv/scans/scan_<timestamp>.qmd`**, create **`srv/scans.qmd`** as a listing index (same pattern as `srv/reports.qmd` listing notebook reports), and unless **`--no-wire`** is set, update **`_quarto.yml`** so `srv/scans/*` is rendered and a **Scans** navbar entry points at `srv/scans.qmd`. Without `--report`, the project files are not modified.
 - **`--no-wire`** — With `--report`, write the report and index only; do not edit `_quarto.yml`.
 
+#### Trivy ignore file
+
+If the project root contains **`.trivyignore.yaml`** (preferred — richer schema; see [Trivy docs](https://trivy.dev/latest/docs/configuration/filtering/)) or the legacy plaintext **`.trivyignore`**, `kat scan fs` automatically passes it to Trivy via `--ignorefile`. Use this to suppress findings on credentials-on-disk-by-design files such as docker-compose `env_file:` targets, or to acknowledge a CVE that does not apply to your build.
+
+The image scan does not honour these files: `kat scan image` does not bind-mount the project tree, and ignore-file paths inside the image would have to follow the in-container layout rather than project-relative paths. Suppress image findings via Trivy's own image-scan filtering options if needed.
+
 #### Alternatives (why Trivy)
 
 Open-source scanners such as **pip-audit** cover Python dependencies only; Trivy also covers OS packages in images, misconfigurations, and secrets in one tool. **Docker Scout** and **Snyk** overlap in features but are not appropriate when you require a fully open, self-contained workflow without vendor accounts or proprietary vulnerability databases driving the scan.

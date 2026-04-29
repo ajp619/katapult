@@ -742,6 +742,120 @@ def test_scan_fs_invokes_trivy_with_correct_args(tmp_path: Path, monkeypatch) ->
     assert "HIGH,CRITICAL" in trivy_runs[0]
 
 
+def test_scan_fs_passes_ignorefile_when_trivyignore_yaml_present(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / ".trivyignore.yaml").write_text(
+        "secrets:\n  - id: aws-access-key-id\n    paths:\n      - foo\n"
+    )
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0, result.output
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    assert "--ignorefile" in trivy
+    assert trivy[trivy.index("--ignorefile") + 1] == "/scan/.trivyignore.yaml"
+
+
+def test_scan_fs_passes_ignorefile_when_legacy_trivyignore_present(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / ".trivyignore").write_text("# CVE-1234-5678\n")
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0, result.output
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    assert "--ignorefile" in trivy
+    assert trivy[trivy.index("--ignorefile") + 1] == "/scan/.trivyignore"
+
+
+def test_scan_fs_prefers_yaml_when_both_ignorefiles_present(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / ".trivyignore.yaml").write_text("secrets: []\n")
+    (proj / ".trivyignore").write_text("# legacy\n")
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0, result.output
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    assert trivy[trivy.index("--ignorefile") + 1] == "/scan/.trivyignore.yaml"
+
+
+def test_scan_fs_omits_ignorefile_when_no_trivyignore(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0, result.output
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    assert "--ignorefile" not in trivy
+
+
+def test_scan_image_does_not_pass_ignorefile_even_when_present(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / ".trivyignore.yaml").write_text("secrets: []\n")
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.return_value = MagicMock()
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "image"])
+
+    assert result.exit_code == 0, result.output
+    img = [c for c in calls if commands.TRIVY_IMAGE in c and "image" in c][0]
+    assert "--ignorefile" not in img
+
+
 def test_scan_fs_invokes_hadolint_per_dockerfile(tmp_path: Path, monkeypatch) -> None:
     proj = _make_scan_project(tmp_path, dockerfile=True)
     monkeypatch.chdir(proj)
