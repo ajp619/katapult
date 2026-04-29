@@ -639,19 +639,19 @@ def _run_trivy_image(
 
 def _run_hadolint(dockerfile: Path, *, capture: bool) -> tuple[int, str]:
     cmd = _hadolint_cmd()
-    if capture:
-        r = subprocess.run(
-            cmd,
-            stdin=dockerfile.read_bytes(),
-            capture_output=True,
-            text=True,
-        )
-        combined = (r.stdout or "") + (r.stderr or "")
-        click.echo(combined, nl=False)
-        if combined and not combined.endswith("\n"):
-            click.echo()
-        return r.returncode, combined
     with dockerfile.open("rb") as stdin_f:
+        if capture:
+            r = subprocess.run(
+                cmd,
+                stdin=stdin_f,
+                capture_output=True,
+                text=True,
+            )
+            combined = (r.stdout or "") + (r.stderr or "")
+            click.echo(combined, nl=False)
+            if combined and not combined.endswith("\n"):
+                click.echo()
+            return r.returncode, combined
         r = subprocess.run(cmd, stdin=stdin_f)
     return r.returncode, ""
 
