@@ -83,6 +83,16 @@ host:
   > might want something like [http://10.0.1.25/my_project/](). In that case you would 
   > enter "10.0.1.25"  for host. This is really just a convenience function.
 
+### `kat export-docs`
+
+The `export-docs` command renders the project website with Quarto (inside a small Docker image) and writes a **self-contained HTML zip** to `~/outputs` by default (or to **`--output-dir`** if you pass it).
+
+#### Project directory
+
+`PROJECT_DIR` is optional. If omitted, `kat` walks up from the current directory until it finds a **`.katapult/`** directory (the same marker used by `kat scan` and `kat config`). If you pass a path, it must be a katapult project root (contain **`.katapult/`**) and a Quarto project root (contain **`_quarto.yml`**).
+
+Run `kat export-docs --help` for flags such as **`--rebuild`** (rebuild the export image), **`--name`** (override the zip stem), and **`--keep-build`**.
+
 ### `kat hub`
 
 This command manages the container that runs [Traefik](https://doc.traefik.io/traefik/), 

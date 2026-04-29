@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -415,6 +416,7 @@ def _make_project(root: Path) -> Path:
     """Create a minimal katapult-shaped project with _quarto.yml + BuildConfig."""
     proj = root / "proj"
     proj.mkdir()
+    (proj / ".katapult").mkdir()
     (proj / "_quarto.yml").write_text("project:\n  type: website\n")
     (proj / "build").mkdir()
     (proj / "build" / "BuildConfig").write_text(
@@ -449,11 +451,55 @@ def _patched_docker_env(images_get_side_effect=None):
     return client
 
 
+def test_export_docs_errors_without_katapult_marker(tmp_path: Path) -> None:
+    runner = CliRunner()
+    result = runner.invoke(main, ["export-docs", str(tmp_path)])
+    assert result.exit_code != 0
+    assert "does not look like a katapult project" in result.output
+
+
 def test_export_docs_errors_without_quarto_yml(tmp_path: Path) -> None:
+    (tmp_path / ".katapult").mkdir()
     runner = CliRunner()
     result = runner.invoke(main, ["export-docs", str(tmp_path)])
     assert result.exit_code != 0
     assert "does not look like a Quarto project" in result.output
+
+
+def test_export_docs_walks_up_to_project_root_when_no_arg(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_project(tmp_path)
+    nested = proj / "srv" / "nested"
+    nested.mkdir(parents=True)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+    monkeypatch.chdir(nested)
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir),
+        patch.object(commands.shutil, "make_archive"),
+        patch.object(commands.shutil, "copytree", wraps=shutil.copytree) as mock_copytree,
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["export-docs", "--output-dir", str(out)])
+
+    assert result.exit_code == 0, result.output
+    # copytree is invoked recursively; only the top-level src is the project root.
+    first_src = Path(mock_copytree.call_args_list[0][0][0])
+    assert first_src.resolve() == proj.resolve()
+
+
+def test_export_docs_errors_when_no_project_in_cwd_chain(
+    tmp_path: Path, monkeypatch
+) -> None:
+    out = tmp_path / "out"
+    out.mkdir()
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(main, ["export-docs", "--output-dir", str(out)])
+    assert result.exit_code != 0
+    assert "No katapult project found in CWD or parents" in result.output
 
 
 def test_export_docs_skips_build_when_image_exists(tmp_path: Path) -> None:

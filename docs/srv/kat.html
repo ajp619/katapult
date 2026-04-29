@@ -166,6 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#kat" id="toc-kat" class="nav-link active" data-scroll-target="#kat"><code>kat</code></a>
   <ul class="collapse">
   <li><a href="#kat-init" id="toc-kat-init" class="nav-link" data-scroll-target="#kat-init"><code>kat init</code></a></li>
+  <li><a href="#kat-export-docs" id="toc-kat-export-docs" class="nav-link" data-scroll-target="#kat-export-docs"><code>kat export-docs</code></a></li>
   <li><a href="#kat-hub" id="toc-kat-hub" class="nav-link" data-scroll-target="#kat-hub"><code>kat hub</code></a></li>
   <li><a href="#kat-config" id="toc-kat-config" class="nav-link" data-scroll-target="#kat-config"><code>kat config</code></a></li>
   <li><a href="#dynamic-path-manipulation" id="toc-dynamic-path-manipulation" class="nav-link" data-scroll-target="#dynamic-path-manipulation">Dynamic path manipulation</a></li>
@@ -246,6 +247,15 @@ Commands:
 <blockquote class="blockquote">
 <p>There are a few commands we will run later that display, for instance, the landing page of your server. If you are just running on your local machine, then “localhost” is likely appropriate, however, if you are running on a network machine, you can enter the appropriate ip address or name and the addresses will be properly formatted. For example, locally you might want <a href="">http://localhost/my_project/</a>, but if you are running this on an aws vm you might want something like <a href="">http://10.0.1.25/my_project/</a>. In that case you would enter “10.0.1.25” for host. This is really just a convenience function.</p>
 </blockquote>
+</section>
+</section>
+<section id="kat-export-docs" class="level3">
+<h3 class="anchored" data-anchor-id="kat-export-docs"><code>kat export-docs</code></h3>
+<p>The <code>export-docs</code> command renders the project website with Quarto (inside a small Docker image) and writes a <strong>self-contained HTML zip</strong> to <code>~/outputs</code> by default (or to <strong><code>--output-dir</code></strong> if you pass it).</p>
+<section id="project-directory" class="level4">
+<h4 class="anchored" data-anchor-id="project-directory">Project directory</h4>
+<p><code>PROJECT_DIR</code> is optional. If omitted, <code>kat</code> walks up from the current directory until it finds a <strong><code>.katapult/</code></strong> directory (the same marker used by <code>kat scan</code> and <code>kat config</code>). If you pass a path, it must be a katapult project root (contain <strong><code>.katapult/</code></strong>) and a Quarto project root (contain <strong><code>_quarto.yml</code></strong>).</p>
+<p>Run <code>kat export-docs --help</code> for flags such as <strong><code>--rebuild</code></strong> (rebuild the export image), <strong><code>--name</code></strong> (override the zip stem), and <strong><code>--keep-build</code></strong>.</p>
 </section>
 </section>
 <section id="kat-hub" class="level3">
@@ -355,8 +365,8 @@ Commands:
 <section id="kat-scan" class="level3">
 <h3 class="anchored" data-anchor-id="kat-scan"><code>kat scan</code></h3>
 <p>Security scanning for a katapult project. It runs <strong><a href="https://github.com/aquasecurity/trivy">Trivy</a></strong> (Apache-2.0) against the project tree and/or a built container image for OS and language CVEs, Dockerfile misconfiguration, and secrets, and <strong><a href="https://github.com/hadolint/hadolint">Hadolint</a></strong> (MIT) for Dockerfile linting (including shellcheck on <code>RUN</code> lines). Both tools are invoked via their official Docker images, so you need <strong>Docker</strong> available locally (same idea as <code>kat hub</code>).</p>
-<section id="project-directory" class="level4">
-<h4 class="anchored" data-anchor-id="project-directory">Project directory</h4>
+<section id="project-directory-1" class="level4">
+<h4 class="anchored" data-anchor-id="project-directory-1">Project directory</h4>
 <p><code>PROJECT_DIR</code> is optional. If omitted, <code>kat</code> walks up from the current directory until it finds a <strong><code>.katapult/</code></strong> directory (the same marker used by <code>kat config</code> for PATH augmentation). If you pass a path, it must be a katapult project root (contain <code>.katapult/</code>).</p>
 <p>You can also run <code>kat scan &lt;PROJECT_DIR&gt;</code> when the first argument is not <code>fs</code> or <code>image</code> — that path is treated as the project root for the default combined scan.</p>
 </section>

@@ -326,7 +326,8 @@ def _ensure_image(client, rebuild: bool) -> None:
 @click.argument(
     "project_dir",
     type=click.Path(file_okay=False, exists=True),
-    default=".",
+    required=False,
+    default=None,
 )
 @click.option(
     "--rebuild",
@@ -350,14 +351,14 @@ def _ensure_image(client, rebuild: bool) -> None:
     help="Override the inferred project name used in the zip filename.",
 )
 def export_docs(
-    project_dir: str,
+    project_dir: str | None,
     rebuild: bool,
     output_dir: str | None,
     keep_build: bool,
     name: str | None,
 ) -> None:
     """Render a project's docs to a self-contained HTML zip in ~/outputs."""
-    project = Path(project_dir).resolve()
+    project = _resolve_scan_project(project_dir, implicit_first_arg=None)
     if not (project / "_quarto.yml").is_file():
         raise click.ClickException(
             f"{project} does not look like a Quarto project (no _quarto.yml)."
