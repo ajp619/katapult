@@ -16,7 +16,7 @@ ARG QUARTO_VERSION="1.7.27"
 RUN <<EOF
 userdel --remove ubuntu
 groupadd -g ${GID_} ${USERGROUP}
-useradd -m -u ${UID_} -g ${GID_} ${USERNAME}
+useradd -m -l -u ${UID_} -g ${GID_} ${USERNAME}
 mkdir /content && chown ${USERNAME}:${USERGROUP} /content
 mkdir -p /content/nbk/.venv && chown ${USERNAME}:${USERGROUP} /content/nbk/.venv
 mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${USERGROUP} /tmp/supervisor
@@ -30,11 +30,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 # ------------------------------------------------------------------------------------------------------------------------------
 # add basic system essentials
 # ------------------------------------------------------------------------------------------------------------------------------
+# hadolint ignore=DL3008
 RUN <<EOF
 apt-get update -qy
-apt-get install -qy \
-    -o APT::Install-Recommends=false \
-    -o APT::Install-Suggests=false \
+apt-get install -qy --no-install-recommends --no-install-suggests \
     ca-certificates \
     curl \
     git \
@@ -44,6 +43,7 @@ apt-get install -qy \
     tree \
     ubuntu-keyring \
     vim
+rm -rf /var/lib/apt/lists/*
 EOF
 
 # ------------------------------------------------------------------------------------------------------------------------------
@@ -73,19 +73,18 @@ EOF
 # ------------------------------------------------------------------------------------------------------------------------------
 # download and install latest nginx
 # ------------------------------------------------------------------------------------------------------------------------------
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# hadolint ignore=DL3008
 RUN <<EOF
 curl https://nginx.org/keys/nginx_signing.key \
     | gpg --dearmor \
     | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
     | tee /etc/apt/sources.list.d/nginx.list
-echo "Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n" \
+printf 'Package: *\nPin: origin nginx.org\nPin: release o=nginx\nPin-Priority: 900\n' \
     | tee /etc/apt/preferences.d/99nginx
 apt-get update \
-&& apt-get install -qy \
-    -o APT::Install-Recommends=false \
-    -o APT::Install-Suggests=false \
-    nginx \
+&& apt-get install -qy --no-install-recommends --no-install-suggests nginx \
 && rm -rf /var/lib/apt/lists/*
 EOF
 
@@ -94,7 +93,10 @@ EOF
 # ------------------------------------------------------------------------------------------------------------------------------
 WORKDIR /tmp
 RUN curl -o quarto-linux-amd64.deb -L https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb
-RUN apt-get install /tmp/quarto-linux-amd64.deb && rm quarto-linux-amd64.deb
+RUN apt-get update -qy \
+    && apt-get install -y --no-install-recommends /tmp/quarto-linux-amd64.deb \
+    && rm -f /tmp/quarto-linux-amd64.deb \
+    && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------------------------------------------------------------------------------
 # configure nginx

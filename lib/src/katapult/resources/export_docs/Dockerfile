@@ -3,6 +3,7 @@ FROM ubuntu:${UBUNTU_RELEASE}
 
 ARG QUARTO_VERSION=1.7.27
 
+# hadolint ignore=DL3008
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       ca-certificates curl gdebi-core \
     && curl -fsSLo /tmp/quarto.deb \
@@ -12,5 +13,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     && rm -rf /var/lib/apt/lists/*
 
 RUN quarto --version
+
+USER 65534:65534
 
 WORKDIR /work
