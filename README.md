@@ -122,10 +122,30 @@ as path extensions (e.g. `http://localhost/<project name>/`).
 | `kat init` | Creates a new project from a cookiecutter template |
 | `kat hub` | Manages the Traefik reverse proxy container |
 | `kat config` | Sets up dynamic PATH augmentation for `katx` in `.bashrc` (see [`kat config`](srv/kat.qmd#kat-config)) |
+| `kat export-docs` | Renders a project's docs to a self-contained HTML zip in `~/outputs` |
 
 ```bash
 kat --help
 ```
+
+#### Distributing documentation
+
+Hand someone a runnable copy of a project's documentation without giving them
+access to a server, Python, or Quarto:
+
+```bash
+kat export-docs path/to/project
+```
+
+The first run builds a small Quarto-only Docker image (`katapult/export-docs:latest`);
+subsequent runs reuse it. The output lands at
+`~/outputs/<project_name>_docs_<YYYYmmdd_HHMMSS>.zip`. Unzip on any machine and
+open the pages directly from `file://` — no local web server required.
+
+> An internet connection is needed for Mermaid diagrams (loaded from a CDN).
+> Quarto's local search box won't function over `file://` because most browsers
+> block its XHR; the rest of the site (navigation, cross-links, syntax
+> highlighting, embedded notebook outputs) works regardless.
 
 ### `katx` (project-level management)
 

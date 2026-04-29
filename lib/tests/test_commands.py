@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import docker.errors
 import pytest
 from click.testing import CliRunner
 
@@ -335,3 +337,279 @@ def test_hub_aborts_when_traefik_launch_declined() -> None:
     assert result.exit_code == 0
     assert "Traefik container is required" in result.output
     client.containers.run.assert_not_called()
+
+
+# --- _make_copy_ignore ---
+
+
+def test_make_copy_ignore_excludes_top_level_docs(tmp_path: Path) -> None:
+    ignore = commands._make_copy_ignore(tmp_path)
+    skipped = ignore(str(tmp_path), ["docs", "srv", "README.md", ".git"])
+    assert "docs" in skipped
+    assert ".git" in skipped
+    assert "srv" not in skipped
+    assert "README.md" not in skipped
+
+
+def test_make_copy_ignore_keeps_nested_docs(tmp_path: Path) -> None:
+    """Nested directories named `docs` (e.g. srv/docs/) are documentation sources."""
+    nested = tmp_path / "srv"
+    nested.mkdir()
+    ignore = commands._make_copy_ignore(tmp_path)
+    skipped = ignore(str(nested), ["docs", "documentation.qmd", "__pycache__"])
+    assert "docs" not in skipped
+    assert "__pycache__" in skipped
+
+
+def test_make_copy_ignore_at_any_depth_patterns_apply_everywhere(tmp_path: Path) -> None:
+    deep = tmp_path / "a" / "b" / "c"
+    deep.mkdir(parents=True)
+    ignore = commands._make_copy_ignore(tmp_path)
+    skipped = ignore(str(deep), [".venv", "__pycache__", ".quarto", "real_file.py"])
+    assert {".venv", "__pycache__", ".quarto"}.issubset(skipped)
+    assert "real_file.py" not in skipped
+
+
+# --- _read_build_config_name ---
+
+
+def test_read_build_config_name_parses_value(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=my_project\nUSERNAME=katapult\n"
+    )
+    assert commands._read_build_config_name(tmp_path) == "my_project"
+
+
+def test_read_build_config_name_returns_none_when_missing_field(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text("IMAGE_ROOT=katapult\n")
+    assert commands._read_build_config_name(tmp_path) is None
+
+
+def test_read_build_config_name_returns_none_when_no_file(tmp_path: Path) -> None:
+    assert commands._read_build_config_name(tmp_path) is None
+
+
+# --- _image_exists ---
+
+
+def test_image_exists_true_when_get_succeeds() -> None:
+    client = MagicMock()
+    client.images.get.return_value = MagicMock()
+    assert commands._image_exists(client, "katapult/export-docs:latest") is True
+    client.images.get.assert_called_once_with("katapult/export-docs:latest")
+
+
+def test_image_exists_false_when_image_not_found() -> None:
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+    assert commands._image_exists(client, "katapult/export-docs:latest") is False
+
+
+# --- CLI: export_docs ---
+
+
+def _make_project(root: Path) -> Path:
+    """Create a minimal katapult-shaped project with _quarto.yml + BuildConfig."""
+    proj = root / "proj"
+    proj.mkdir()
+    (proj / "_quarto.yml").write_text("project:\n  type: website\n")
+    (proj / "build").mkdir()
+    (proj / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=my_project\n"
+    )
+    (proj / "srv").mkdir()
+    (proj / "srv" / "index.qmd").write_text("# hi\n")
+    return proj
+
+
+def _docker_run_creates_render_dir(cmd, check=True, **kwargs):  # noqa: ARG001
+    """Stand-in for subprocess.run that creates export-docs-build inside the bind-mount."""
+    work_host = None
+    for i, a in enumerate(cmd):
+        if a == "-v" and i + 1 < len(cmd) and ":/work" in cmd[i + 1]:
+            work_host = cmd[i + 1].split(":/work", 1)[0]
+            break
+    if work_host is not None:
+        (Path(work_host) / "export-docs-build").mkdir(parents=True, exist_ok=True)
+    result = MagicMock()
+    result.returncode = 0
+    return result
+
+
+def _patched_docker_env(images_get_side_effect=None):
+    """Build a docker client mock and the patcher for docker.from_env."""
+    client = MagicMock()
+    if images_get_side_effect is not None:
+        client.images.get.side_effect = images_get_side_effect
+    else:
+        client.images.get.return_value = MagicMock()
+    return client
+
+
+def test_export_docs_errors_without_quarto_yml(tmp_path: Path) -> None:
+    runner = CliRunner()
+    result = runner.invoke(main, ["export-docs", str(tmp_path)])
+    assert result.exit_code != 0
+    assert "does not look like a Quarto project" in result.output
+
+
+def test_export_docs_skips_build_when_image_exists(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir) as mock_run,
+        patch.object(commands.shutil, "make_archive") as mock_archive,
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    client.images.build.assert_not_called()
+    assert mock_run.call_count == 1
+    argv = mock_run.call_args.args[0]
+    assert argv[:3] == ["docker", "run", "--rm"]
+    assert commands.IMAGE in argv
+    assert "quarto" in argv and "render" in argv
+    assert "--profile" in argv and "export-docs" in argv
+    mock_archive.assert_called_once()
+
+
+def test_export_docs_builds_when_image_missing(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env(
+        images_get_side_effect=docker.errors.ImageNotFound("missing")
+    )
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir),
+        patch.object(commands.shutil, "make_archive"),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    client.images.build.assert_called_once()
+    build_kwargs = client.images.build.call_args.kwargs
+    assert build_kwargs["tag"] == commands.IMAGE
+    assert build_kwargs["path"].endswith(os.path.join("resources", "export_docs"))
+    assert "Building export-docs image" in result.output
+
+
+def test_export_docs_rebuild_forces_build_even_when_present(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir),
+        patch.object(commands.shutil, "make_archive"),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            ["export-docs", str(proj), "--output-dir", str(out), "--rebuild"],
+        )
+
+    assert result.exit_code == 0, result.output
+    client.images.build.assert_called_once()
+
+
+def test_export_docs_name_override_used_in_zip_basename(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir),
+        patch.object(commands.shutil, "make_archive") as mock_archive,
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            ["export-docs", str(proj), "--output-dir", str(out), "--name", "custom"],
+        )
+
+    assert result.exit_code == 0, result.output
+    base_dir = mock_archive.call_args.kwargs["base_dir"]
+    base_name = mock_archive.call_args.kwargs["base_name"]
+    assert base_dir == "custom_docs"
+    assert "custom_docs_" in base_name
+    assert "my_project" not in base_name
+
+
+def test_export_docs_uses_build_config_name_when_no_override(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir),
+        patch.object(commands.shutil, "make_archive") as mock_archive,
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    assert mock_archive.call_args.kwargs["base_dir"] == "my_project_docs"
+
+
+def test_export_docs_passes_user_flag(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir) as mock_run,
+        patch.object(commands.shutil, "make_archive"),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    argv = mock_run.call_args.args[0]
+    expected_user = f"{os.getuid()}:{os.getgid()}"
+    assert "--user" in argv
+    user_idx = argv.index("--user")
+    assert argv[user_idx + 1] == expected_user
+
+
+def test_export_docs_blocks_known_slow_render_hosts(tmp_path: Path) -> None:
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_docker_run_creates_render_dir) as mock_run,
+        patch.object(commands.shutil, "make_archive"),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    argv = mock_run.call_args.args[0]
+    add_host_indices = [i for i, a in enumerate(argv) if a == "--add-host"]
+    blocked = {argv[i + 1] for i in add_host_indices}
+    for host in commands._BLOCKED_RENDER_HOSTS:
+        assert f"{host}:127.0.0.1" in blocked, f"missing block for {host}"

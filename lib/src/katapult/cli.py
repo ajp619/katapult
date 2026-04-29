@@ -13,3 +13,4 @@ def main():
 main.add_command(commands.init)
 main.add_command(commands.hub)
 main.add_command(commands.config)
+main.add_command(commands.export_docs)

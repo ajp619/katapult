@@ -1,11 +1,18 @@
+import fnmatch
 import json
+import os
+import re
 import shutil
+import subprocess
 import tempfile
 import textwrap
+from datetime import datetime
+from importlib import resources
 from pathlib import Path
 
 import click
 import docker
+import docker.errors
 from cookiecutter.main import cookiecutter
 from rich.console import Console
 from rich.table import Table
@@ -235,3 +242,192 @@ def config():
         with bashrc_path.open("a") as f:
             f.write("\n" + config_block + "\n")
             click.echo("Added Katapult PATH augmentation to .bashrc.")
+
+
+IMAGE = "katapult/export-docs:latest"
+
+# Hosts Pandoc tries to fetch when inlining external resources for
+# `embed-resources: true`. On networks where these CDNs are unreachable
+# (corporate egress filtering, restricted VPC), each fetch eats the full
+# default response timeout per page. Routing them to 127.0.0.1 makes the
+# connection fail immediately so the render never blocks on them. The
+# rendered HTML simply falls back to the system font stack for these
+# resources, which is what would have happened anyway after the timeout.
+_BLOCKED_RENDER_HOSTS = (
+    "fonts.googleapis.com",
+    "fonts.gstatic.com",
+    "cdnjs.cloudflare.com",
+)
+
+# Patterns matched at any directory depth (heavy / generated trees Quarto
+# does not need).
+_COPY_IGNORE_AT_ANY_DEPTH = (
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".quarto",
+    "node_modules",
+    "export-docs-build",
+)
+
+# Names ignored only at the top level of the project being copied.
+# `docs` is the conventional rendered-output folder in katapult projects
+# (per `_quarto.yml` `output-dir: docs`); excluding it avoids copying a
+# stale prior render. We must NOT exclude `docs` at deeper paths because
+# katapult projects use `srv/docs/`, `nbk/docs/`, etc. for documentation
+# source files; excluding those silently breaks internal links in the
+# rendered output.
+_COPY_IGNORE_TOP_LEVEL_ONLY = ("docs",)
+
+
+def _make_copy_ignore(src_root: Path):
+    src_real = os.path.realpath(src_root)
+
+    def _ignore(path: str, names: list[str]) -> set[str]:
+        ignored: set[str] = set()
+        for pattern in _COPY_IGNORE_AT_ANY_DEPTH:
+            ignored.update(fnmatch.filter(names, pattern))
+        if os.path.realpath(path) == src_real:
+            for pattern in _COPY_IGNORE_TOP_LEVEL_ONLY:
+                ignored.update(fnmatch.filter(names, pattern))
+        return ignored
+
+    return _ignore
+
+
+def _read_build_config_name(project: Path) -> str | None:
+    """Return PROJECT_NAME from <project>/build/BuildConfig if present."""
+    cfg = project / "build" / "BuildConfig"
+    if not cfg.is_file():
+        return None
+    m = re.search(r"^PROJECT_NAME=(.+)$", cfg.read_text(), re.MULTILINE)
+    return m.group(1).strip() if m else None
+
+
+def _image_exists(client, tag: str) -> bool:
+    try:
+        client.images.get(tag)
+        return True
+    except docker.errors.ImageNotFound:
+        return False
+
+
+def _ensure_image(client, rebuild: bool) -> None:
+    if not rebuild and _image_exists(client, IMAGE):
+        return
+    click.echo("Building export-docs image (first run)...")
+    build_ctx = resources.files("katapult.resources.export_docs")
+    with resources.as_file(build_ctx) as ctx_path:
+        client.images.build(path=str(ctx_path), tag=IMAGE, rm=True)
+
+
+@click.command(name="export-docs")
+@click.argument(
+    "project_dir",
+    type=click.Path(file_okay=False, exists=True),
+    default=".",
+)
+@click.option(
+    "--rebuild",
+    is_flag=True,
+    help="Force rebuild of the export-docs Docker image.",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(file_okay=False),
+    default=None,
+    help="Output directory for the zip (default: ~/outputs).",
+)
+@click.option(
+    "--keep-build",
+    is_flag=True,
+    help="Also write the unzipped render folder next to the zip and retain the temp working copy.",
+)
+@click.option(
+    "--name",
+    default=None,
+    help="Override the inferred project name used in the zip filename.",
+)
+def export_docs(
+    project_dir: str,
+    rebuild: bool,
+    output_dir: str | None,
+    keep_build: bool,
+    name: str | None,
+) -> None:
+    """Render a project's docs to a self-contained HTML zip in ~/outputs."""
+    project = Path(project_dir).resolve()
+    if not (project / "_quarto.yml").is_file():
+        raise click.ClickException(
+            f"{project} does not look like a Quarto project (no _quarto.yml)."
+        )
+
+    project_name = name or _read_build_config_name(project) or project.name
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    zip_stem = f"{project_name}_docs_{ts}"
+
+    out = Path(output_dir).expanduser() if output_dir else Path.home() / "outputs"
+    out.mkdir(parents=True, exist_ok=True)
+
+    client = docker.from_env()
+    _ensure_image(client, rebuild=rebuild)
+
+    work_parent = Path(tempfile.mkdtemp(prefix="kat-export-docs-"))
+    try:
+        work = work_parent / "work"
+        shutil.copytree(project, work, ignore=_make_copy_ignore(project))
+
+        profile_src = (
+            resources.files("katapult.resources.export_docs")
+            / "_quarto-export-docs.yml"
+        )
+        with resources.as_file(profile_src) as p:
+            shutil.copy2(p, work / "_quarto-export-docs.yml")
+
+        docker_cmd = [
+            "docker",
+            "run",
+            "--rm",
+            "--user",
+            f"{os.getuid()}:{os.getgid()}",
+            "-e",
+            "HOME=/work",
+        ]
+        for host in _BLOCKED_RENDER_HOSTS:
+            docker_cmd += ["--add-host", f"{host}:127.0.0.1"]
+        docker_cmd += [
+            "-v",
+            f"{work}:/work",
+            "-w",
+            "/work",
+            IMAGE,
+            "quarto",
+            "render",
+            "--profile",
+            "export-docs",
+        ]
+        subprocess.run(docker_cmd, check=True)
+
+        rendered = work / "export-docs-build"
+        staged = work / f"{project_name}_docs"
+        rendered.rename(staged)
+
+        zip_path = out / f"{zip_stem}.zip"
+        shutil.make_archive(
+            base_name=str(out / zip_stem),
+            format="zip",
+            root_dir=work,
+            base_dir=f"{project_name}_docs",
+        )
+
+        if keep_build:
+            dest = out / f"{zip_stem}_unzipped"
+            shutil.copytree(staged, dest)
+            click.echo(f"Kept unzipped tree at {dest}")
+
+        click.echo(f"Wrote {zip_path}")
+    finally:
+        if not keep_build:
+            shutil.rmtree(work_parent, ignore_errors=True)
+        else:
+            click.echo(f"Working copy retained at {work_parent}")
