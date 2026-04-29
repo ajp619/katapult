@@ -1,5 +1,11 @@
 [
   {
+    "listing": "/srv/scans.html",
+    "items": [
+      "/srv/scans/scan_20260429_184145.html"
+    ]
+  },
+  {
     "listing": "/srv/reports.html",
     "items": [
       "/nbk/reports/med_2_sorted_lists_3.html"

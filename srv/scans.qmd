@@ -1,0 +1,9 @@
+---
+title: "Security scans"
+listing:
+  type: table
+  contents:
+    - scans/*.qmd
+  sort: "date desc"
+  fields: [date, title]
+---

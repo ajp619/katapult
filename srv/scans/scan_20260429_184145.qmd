@@ -1,0 +1,103 @@
+---
+title: "Security scan: katapult"
+date: 2026-04-29T18:41:45
+---
+
+## Summary
+
+- Trivy filesystem scan: **PASS** (exit code 0)
+- Hadolint (build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/resources/export_docs/Dockerfile): **PASS** (exit code 0)
+- Trivy image scan: **PASS** (exit code 0)
+
+## Trivy filesystem scan
+
+```text
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬───────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Misconfigurations │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ api/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ app/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ nbk/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ build/Dockerfile                                                                 │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/resources/export_docs/Dockerfile                                │ dockerfile │        -        │         0         │    -    │
+└──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴───────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+2026-04-29T18:41:36Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-04-29T18:41:36Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-04-29T18:41:36Z	INFO	[checks-client] Using existing checks from cache	path="/root/.cache/trivy/policy/content"
+2026-04-29T18:41:38Z	INFO	[secret] Secret scanning is enabled
+2026-04-29T18:41:38Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-04-29T18:41:38Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-04-29T18:41:42Z	INFO	Number of language-specific files	num=4
+2026-04-29T18:41:42Z	INFO	[uv] Detecting vulnerabilities...
+2026-04-29T18:41:42Z	INFO	Detected config files	num=3
+
+```
+
+## Hadolint (build/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Hadolint (lib/src/katapult/resources/export_docs/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Trivy image scan
+
+```text
+
+Report Summary
+
+┌─────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+│                 Target                  │    Type    │ Vulnerabilities │ Secrets │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ katapult/katapult:latest (ubuntu 24.04) │   ubuntu   │        0        │    -    │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uv                        │ rustbinary │        0        │    -    │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uvx                       │ rustbinary │        0        │    -    │
+└─────────────────────────────────────────┴────────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+2026-04-29T18:41:44Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-04-29T18:41:44Z	INFO	[secret] Secret scanning is enabled
+2026-04-29T18:41:44Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-04-29T18:41:44Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-04-29T18:41:44Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-04-29T18:41:44Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=155
+2026-04-29T18:41:44Z	INFO	Number of language-specific files	num=2
+2026-04-29T18:41:44Z	INFO	[rustbinary] Detecting vulnerabilities...
+
+```
+

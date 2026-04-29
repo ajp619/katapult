@@ -137,6 +137,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./srv/scans.html"> 
+<span class="menu-text">Scans</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./srv/reports.html"> 
 <span class="menu-text">Reports</span></a>
   </li>  
@@ -286,9 +290,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>kat config</code></td>
 <td>Sets up dynamic PATH augmentation for <code>katx</code> in <code>.bashrc</code> (see <a href="./srv/kat.html#kat-config"><code>kat config</code></a>)</td>
 </tr>
+<tr class="even">
+<td><code>kat export-docs</code></td>
+<td>Renders a project’s docs to a self-contained HTML zip in <code>~/outputs</code></td>
+</tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="distributing-documentation" class="level4">
+<h4 class="anchored" data-anchor-id="distributing-documentation">Distributing documentation</h4>
+<p>Hand someone a runnable copy of a project’s documentation without giving them access to a server, Python, or Quarto:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> export-docs path/to/project</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The first run builds a small Quarto-only Docker image (<code>katapult/export-docs:latest</code>); subsequent runs reuse it. The output lands at <code>~/outputs/&lt;project_name&gt;_docs_&lt;YYYYmmdd_HHMMSS&gt;.zip</code>. Unzip on any machine and open the pages directly from <code>file://</code> — no local web server required.</p>
+<blockquote class="blockquote">
+<p>An internet connection is needed for Mermaid diagrams (loaded from a CDN). Quarto’s local search box won’t function over <code>file://</code> because most browsers block its XHR; the rest of the site (navigation, cross-links, syntax highlighting, embedded notebook outputs) works regardless.</p>
+</blockquote>
+</section>
 </section>
 <section id="katx-project-level-management" class="level3">
 <h3 class="anchored" data-anchor-id="katx-project-level-management"><code>katx</code> (project-level management)</h3>
@@ -344,7 +361,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <p>From within the project directory or a subfolder:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="project-structure" class="level2">
