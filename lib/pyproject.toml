@@ -9,6 +9,7 @@ dependencies = [
     "cookiecutter>=2.6.0",
     "docker>=7.1.0",
     "rich>=14.0.0",
+    "ruamel.yaml>=0.18",
 ]
 
 [project.scripts]

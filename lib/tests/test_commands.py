@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -613,3 +614,529 @@ def test_export_docs_blocks_known_slow_render_hosts(tmp_path: Path) -> None:
     blocked = {argv[i + 1] for i in add_host_indices}
     for host in commands._BLOCKED_RENDER_HOSTS:
         assert f"{host}:127.0.0.1" in blocked, f"missing block for {host}"
+
+
+# --- kat scan ---
+
+
+def _make_scan_project(root: Path, *, dockerfile: bool = True, quarto: bool = True) -> Path:
+    proj = root / "proj"
+    proj.mkdir()
+    (proj / ".katapult").mkdir()
+    (proj / "build").mkdir()
+    (proj / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=my_project\nUSERNAME=u\n"
+    )
+    if quarto:
+        (proj / "_quarto.yml").write_text(
+            "project:\n  type: website\n  render:\n    - srv/*\n"
+            "website:\n  navbar:\n    left:\n"
+            "      - href: srv/documentation.qmd\n        text: Documentation\n"
+        )
+    (proj / "srv").mkdir()
+    if dockerfile:
+        (proj / "Dockerfile").write_text("FROM scratch\n")
+    return proj
+
+
+def _scan_subprocess_fake():
+    calls: list[list[str]] = []
+
+    def fake_run(cmd, check=False, **kwargs):  # noqa: ARG001
+        calls.append(list(cmd))
+        stdout = kwargs.pop("stdout", None)
+        if kwargs.get("capture_output"):
+            return subprocess.CompletedProcess(cmd, 0, stdout="stub-out\n", stderr="")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    return calls, fake_run
+
+
+def test_find_project_root_returns_cwd_when_dot_katapult_present(tmp_path: Path) -> None:
+    (tmp_path / ".katapult").mkdir()
+    with patch.object(commands.Path, "cwd", return_value=tmp_path):
+        assert commands._find_project_root() == tmp_path.resolve()
+
+
+def test_find_project_root_walks_up_to_find_marker(tmp_path: Path) -> None:
+    proj = tmp_path / "myproj"
+    proj.mkdir()
+    (proj / ".katapult").mkdir()
+    sub = proj / "srv" / "deep"
+    sub.mkdir(parents=True)
+    with patch.object(commands.Path, "cwd", return_value=sub):
+        assert commands._find_project_root() == proj.resolve()
+
+
+def test_find_project_root_returns_none_when_no_marker(tmp_path: Path) -> None:
+    with patch.object(commands.Path, "cwd", return_value=tmp_path):
+        assert commands._find_project_root() is None
+
+
+def test_scan_fs_invokes_trivy_with_correct_args(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.return_value = MagicMock()
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0, result.output
+    trivy_runs = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c]
+    assert len(trivy_runs) == 1
+    mount = trivy_runs[0][trivy_runs[0].index("-v") + 1]
+    assert mount.startswith(str(proj.resolve()))
+    assert mount.endswith(":/scan:ro")
+    assert "HIGH,CRITICAL" in trivy_runs[0]
+
+
+def test_scan_fs_invokes_hadolint_per_dockerfile(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=True)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+
+    with patch.object(commands.subprocess, "run", side_effect=fake_run):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0
+    hadolint_runs = [c for c in calls if commands.HADOLINT_IMAGE in c]
+    assert len(hadolint_runs) >= 1
+
+
+def test_scan_fs_skip_hadolint_flag_skips(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=True)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+
+    with patch.object(commands.subprocess, "run", side_effect=fake_run):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--skip-hadolint"])
+
+    assert result.exit_code == 0
+    hadolint_runs = [c for c in calls if commands.HADOLINT_IMAGE in c]
+    assert not hadolint_runs
+
+
+def test_scan_image_uses_buildconfig_tag(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.return_value = MagicMock()
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "image"])
+
+    assert result.exit_code == 0
+    client.images.get.assert_called_once_with("katapult/my_project:latest")
+    img_runs = [c for c in calls if commands.TRIVY_IMAGE in c and "image" in c]
+    assert len(img_runs) == 1
+    assert img_runs[0][-1] == "katapult/my_project:latest"
+
+
+def test_scan_image_explicit_tag_overrides_buildconfig(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.return_value = MagicMock()
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "image", str(proj), "other:tag"])
+
+    assert result.exit_code == 0
+    client.images.get.assert_called_once_with("other:tag")
+    img_runs = [c for c in calls if commands.TRIVY_IMAGE in c and "image" in c]
+    assert img_runs[0][-1] == "other:tag"
+
+
+def test_scan_image_missing_image_raises_clickexception(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "image"])
+
+    assert result.exit_code != 0
+    assert "not found" in result.output.lower() or "build" in result.output.lower()
+
+
+def test_scan_default_runs_fs_then_image_and_skips_when_image_missing(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=True)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan"])
+
+    assert result.exit_code == 0
+    trivy_fs = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c]
+    trivy_img = [c for c in calls if commands.TRIVY_IMAGE in c and "image" in c]
+    assert len(trivy_fs) == 1
+    assert len(trivy_img) == 0
+    assert "Warning" in result.output or "Skipping" in result.output
+
+
+def test_scan_no_fail_passes_exit_code_zero_to_trivy(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--no-fail"])
+
+    assert result.exit_code == 0
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c][0]
+    assert "--exit-code" in trivy
+    assert trivy[trivy.index("--exit-code") + 1] == "0"
+
+
+def test_scan_aggregate_exit_code_nonzero_when_any_fails(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=True)
+    monkeypatch.chdir(proj)
+
+    def fake_run(cmd, check=False, **kwargs):  # noqa: ARG001
+        cmd_list = list(cmd)
+        if commands.TRIVY_IMAGE in cmd_list and "fs" in cmd_list:
+            rc = 1
+        else:
+            rc = 0
+        if kwargs.get("capture_output"):
+            return subprocess.CompletedProcess(cmd, rc, stdout="bad" if rc else "", stderr="")
+        return subprocess.CompletedProcess(cmd, rc)
+
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code != 0
+
+
+def test_scan_default_implicit_project_dir_as_first_token(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """`kat scan <dir>` when dir is not a subcommand name uses ScanGroup stash."""
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(tmp_path)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", str(proj)])
+
+    assert result.exit_code == 0
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    mount = trivy[trivy.index("-v") + 1]
+    assert mount.startswith(str(proj.resolve()))
+
+
+def test_scan_uses_explicit_project_dir_when_passed(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(tmp_path)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", str(proj)])
+
+    assert result.exit_code == 0
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    mount = trivy[trivy.index("-v") + 1]
+    assert mount.startswith(str(proj.resolve()))
+
+
+def test_scan_walks_up_from_subdirectory_when_no_arg(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    sub = proj / "srv"
+    monkeypatch.chdir(sub)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0
+    trivy = [c for c in calls if commands.TRIVY_IMAGE in c and "fs" in c][0]
+    mount = trivy[trivy.index("-v") + 1]
+    assert mount.startswith(str(proj.resolve()))
+
+
+def test_scan_errors_when_no_project_found_and_no_arg(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(main, ["scan", "fs"])
+    assert result.exit_code != 0
+    assert "No katapult project" in result.output
+
+
+def test_scan_errors_when_explicit_project_dir_lacks_dot_katapult(
+    tmp_path: Path, monkeypatch
+) -> None:
+    other = tmp_path / "not_kp"
+    other.mkdir()
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(main, ["scan", "fs", str(other)])
+    assert result.exit_code != 0
+    assert ".katapult" in result.output
+
+
+def test_scan_writes_qmd_report_to_srv_scans_when_report_enabled(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report"])
+
+    assert result.exit_code == 0
+    scans = list((proj / "srv" / "scans").glob("scan_*.qmd"))
+    assert len(scans) == 1
+    text = scans[0].read_text()
+    assert "## Summary" in text
+    assert "stub-out" in text
+
+
+def test_scan_creates_scans_index_when_missing(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report", "--no-wire"])
+
+    assert result.exit_code == 0
+    idx = proj / "srv" / "scans.qmd"
+    assert idx.is_file()
+    assert "scans/*.qmd" in idx.read_text()
+
+
+def test_scan_does_not_overwrite_existing_scans_index(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    idx = proj / "srv" / "scans.qmd"
+    idx.write_text("---\ntitle: Custom\n---\n")
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report", "--no-wire"])
+
+    assert result.exit_code == 0
+    assert idx.read_text().strip() == "---\ntitle: Custom\n---"
+
+
+def test_scan_no_report_is_default_and_skips_report_and_wiring(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs"])
+
+    assert result.exit_code == 0
+    assert not (proj / "srv" / "scans").exists() or not list(
+        (proj / "srv" / "scans").glob("scan_*.qmd")
+    )
+
+
+def test_scan_report_wires_navbar_when_missing(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report"])
+
+    assert result.exit_code == 0
+    yml = (proj / "_quarto.yml").read_text()
+    assert "srv/scans.qmd" in yml
+    assert "Scans" in yml
+
+
+def test_scan_report_wires_render_list_when_missing(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report"])
+
+    assert result.exit_code == 0
+    assert "srv/scans/*" in (proj / "_quarto.yml").read_text()
+
+
+def test_scan_report_navbar_wiring_is_idempotent(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        r1 = runner.invoke(main, ["scan", "fs", "--report"])
+        r2 = runner.invoke(main, ["scan", "fs", "--report"])
+
+    assert r1.exit_code == 0 and r2.exit_code == 0
+    text = (proj / "_quarto.yml").read_text()
+    assert text.count("srv/scans.qmd") == 1
+
+
+def test_scan_report_render_wiring_is_idempotent(tmp_path: Path, monkeypatch) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        runner.invoke(main, ["scan", "fs", "--report"])
+        runner.invoke(main, ["scan", "fs", "--report"])
+
+    text = (proj / "_quarto.yml").read_text()
+    assert text.count("srv/scans/*") == 1
+
+
+def test_scan_report_no_wire_flag_skips_quarto_yml_edit(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    before = (proj / "_quarto.yml").read_text()
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report", "--no-wire"])
+
+    assert result.exit_code == 0
+    assert (proj / "_quarto.yml").read_text() == before
+
+
+def test_scan_report_no_quarto_yml_present_skips_wiring_silently(
+    tmp_path: Path, monkeypatch
+) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False, quarto=False)
+    monkeypatch.chdir(proj)
+    calls, fake_run = _scan_subprocess_fake()
+    client = MagicMock()
+    client.images.get.side_effect = docker.errors.ImageNotFound("nope")
+
+    with (
+        patch.object(commands.subprocess, "run", side_effect=fake_run),
+        patch.object(commands.docker, "from_env", return_value=client),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(main, ["scan", "fs", "--report", "--no-wire"])
+
+    assert result.exit_code == 0
+    assert list((proj / "srv" / "scans").glob("scan_*.qmd"))
