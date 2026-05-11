@@ -40,6 +40,7 @@ format:
     theme:
     - cosmo
     - brand
+    - srv/no-remote-fonts.scss
     css: srv/styles.css
     toc: true
     include-after-body:

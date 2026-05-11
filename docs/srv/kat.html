@@ -75,7 +75,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-985aa47af68dae11cd4d235c71fb941e.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-dfb324f25d9b1687192fa8be62ac8f9c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-464cd0d458d13d16516a5f2cb31ed793.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -389,6 +389,11 @@ Commands:
 <li><strong><code>--report</code></strong> — Write a Quarto page under <strong><code>srv/scans/scan_&lt;timestamp&gt;.qmd</code></strong>, create <strong><code>srv/scans.qmd</code></strong> as a listing index (same pattern as <code>srv/reports.qmd</code> listing notebook reports), and unless <strong><code>--no-wire</code></strong> is set, update <strong><code>_quarto.yml</code></strong> so <code>srv/scans/*</code> is rendered and a <strong>Scans</strong> navbar entry points at <code>srv/scans.qmd</code>. Without <code>--report</code>, the project files are not modified.</li>
 <li><strong><code>--no-wire</code></strong> — With <code>--report</code>, write the report and index only; do not edit <code>_quarto.yml</code>.</li>
 </ul>
+</section>
+<section id="trivy-ignore-file" class="level4">
+<h4 class="anchored" data-anchor-id="trivy-ignore-file">Trivy ignore file</h4>
+<p>If the project root contains <strong><code>.trivyignore.yaml</code></strong> (preferred — richer schema; see <a href="https://trivy.dev/latest/docs/configuration/filtering/">Trivy docs</a>) or the legacy plaintext <strong><code>.trivyignore</code></strong>, <code>kat scan fs</code> automatically passes it to Trivy via <code>--ignorefile</code>. Use this to suppress findings on credentials-on-disk-by-design files such as docker-compose <code>env_file:</code> targets, or to acknowledge a CVE that does not apply to your build.</p>
+<p>The image scan does not honour these files: <code>kat scan image</code> does not bind-mount the project tree, and ignore-file paths inside the image would have to follow the in-container layout rather than project-relative paths. Suppress image findings via Trivy’s own image-scan filtering options if needed.</p>
 </section>
 <section id="alternatives-why-trivy" class="level4">
 <h4 class="anchored" data-anchor-id="alternatives-why-trivy">Alternatives (why Trivy)</h4>

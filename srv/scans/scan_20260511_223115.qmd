@@ -1,0 +1,188 @@
+---
+title: "Security scan: katapult"
+date: 2026-05-11T22:31:15
+result: PASS
+---
+
+## Summary
+
+- Trivy filesystem scan: **PASS** (exit code 0)
+- Hadolint (build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (docs/build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/resources/export_docs/Dockerfile): **PASS** (exit code 0)
+- Trivy image scan: **PASS** (exit code 0)
+
+## Trivy filesystem scan
+
+```text
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬───────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Misconfigurations │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ api/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ app/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ nbk/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ build/Dockerfile                                                                 │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ docs/build/Dockerfile                                                            │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/resources/export_docs/Dockerfile                                │ dockerfile │        -        │         0         │    -    │
+└──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴───────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+2026-05-11T22:30:43Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-11T22:30:43Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-05-11T22:30:43Z	INFO	[checks-client] Using existing checks from cache	path="/root/.cache/trivy/policy/content"
+2026-05-11T22:30:44Z	INFO	[secret] Secret scanning is enabled
+2026-05-11T22:30:44Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-05-11T22:30:44Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-05-11T22:30:49Z	INFO	Number of language-specific files	num=4
+2026-05-11T22:30:49Z	INFO	[uv] Detecting vulnerabilities...
+2026-05-11T22:30:49Z	INFO	Detected config files	num=4
+
+```
+
+## Hadolint (build/Dockerfile)
+
+```text
+(no issues found)
+
+```
+
+## Hadolint (docs/build/Dockerfile)
+
+```text
+(no issues found)
+
+```
+
+## Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile)
+
+```text
+(no issues found)
+
+```
+
+## Hadolint (lib/src/katapult/resources/export_docs/Dockerfile)
+
+```text
+(no issues found)
+
+```
+
+## Trivy image scan
+
+```text
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ katapult/katapult:latest (ubuntu 24.04)                                          │   ubuntu   │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/MarkupSafe-3.0.2.dist-info/METAD- │ python-pkg │        0        │    -    │
+│ ATA                                                                              │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/PyYAML-6.0.2.dist-info/METADATA   │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/arrow-1.3.0.dist-info/METADATA    │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/binaryornot-0.4.4.dist-info/META- │ python-pkg │        0        │    -    │
+│ DATA                                                                             │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/certifi-2025.4.26.dist-info/META- │ python-pkg │        0        │    -    │
+│ DATA                                                                             │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/chardet-5.2.0.dist-info/METADATA  │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/charset_normalizer-3.4.2.dist-in- │ python-pkg │        0        │    -    │
+│ fo/METADATA                                                                      │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/click-8.2.1.dist-info/METADATA    │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/cookiecutter-2.6.0.dist-info/MET- │ python-pkg │        0        │    -    │
+│ ADATA                                                                            │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/docker-7.1.0.dist-info/METADATA   │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/idna-3.10.dist-info/METADATA      │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/iniconfig-2.3.0.dist-info/METADA- │ python-pkg │        0        │    -    │
+│ TA                                                                               │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/jinja2-3.1.6.dist-info/METADATA   │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/katapult-0.8.2.dist-info/METADATA │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/markdown_it_py-3.0.0.dist-info/M- │ python-pkg │        0        │    -    │
+│ ETADATA                                                                          │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/mdurl-0.1.2.dist-info/METADATA    │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/packaging-26.0.dist-info/METADATA │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/pluggy-1.6.0.dist-info/METADATA   │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/pygments-2.19.1.dist-info/METADA- │ python-pkg │        0        │    -    │
+│ TA                                                                               │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/pytest-9.0.2.dist-info/METADATA   │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/python_dateutil-2.9.0.post0.dist- │ python-pkg │        0        │    -    │
+│ -info/METADATA                                                                   │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/python_slugify-8.0.4.dist-info/M- │ python-pkg │        0        │    -    │
+│ ETADATA                                                                          │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/requests-2.32.3.dist-info/METADA- │ python-pkg │        0        │    -    │
+│ TA                                                                               │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/rich-14.0.0.dist-info/METADATA    │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/ruamel_yaml-0.19.1.dist-info/MET- │ python-pkg │        0        │    -    │
+│ ADATA                                                                            │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/six-1.17.0.dist-info/METADATA     │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/text_unidecode-1.3.dist-info/MET- │ python-pkg │        0        │    -    │
+│ ADATA                                                                            │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/types_python_dateutil-2.9.0.2025- │ python-pkg │        0        │    -    │
+│ 0516.dist-info/METADATA                                                          │            │                 │         │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ content/lib/.venv/lib/python3.12/site-packages/urllib3-2.6.3.dist-info/METADATA  │ python-pkg │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uv                                                                 │ rustbinary │        0        │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uvx                                                                │ rustbinary │        0        │    -    │
+└──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+2026-05-11T22:30:51Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-11T22:30:51Z	INFO	[secret] Secret scanning is enabled
+2026-05-11T22:30:51Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-05-11T22:30:51Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-05-11T22:31:10Z	INFO	[python] Licenses acquired from one or more METADATA files may be subject to additional terms. Use `--debug` flag to see all affected packages.
+2026-05-11T22:31:14Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-05-11T22:31:14Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=155
+2026-05-11T22:31:14Z	INFO	Number of language-specific files	num=3
+2026-05-11T22:31:14Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-05-11T22:31:14Z	INFO	[rustbinary] Detecting vulnerabilities...
+
+```
+

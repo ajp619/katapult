@@ -1,0 +1,171 @@
+---
+title: "Security scan: katapult"
+date: 2026-05-11T21:05:47
+---
+
+## Summary
+
+- Trivy filesystem scan: **FAIL** (exit code 1)
+- Hadolint (build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile): **PASS** (exit code 0)
+- Hadolint (lib/src/katapult/resources/export_docs/Dockerfile): **PASS** (exit code 0)
+- Trivy image scan: **FAIL** (exit code 1)
+
+## Trivy filesystem scan
+
+```text
+
+Report Summary
+
+┌──────────────────────────────────────────────────────────────────────────────────┬────────────┬─────────────────┬───────────────────┬─────────┐
+│                                      Target                                      │    Type    │ Vulnerabilities │ Misconfigurations │ Secrets │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ api/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ app/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/uv.lock                                                                      │     uv     │        0        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ nbk/uv.lock                                                                      │     uv     │        9        │         -         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ build/Dockerfile                                                                 │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile │ dockerfile │        -        │         0         │    -    │
+├──────────────────────────────────────────────────────────────────────────────────┼────────────┼─────────────────┼───────────────────┼─────────┤
+│ lib/src/katapult/resources/export_docs/Dockerfile                                │ dockerfile │        -        │         0         │    -    │
+└──────────────────────────────────────────────────────────────────────────────────┴────────────┴─────────────────┴───────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+nbk/uv.lock (uv)
+================
+Total: 9 (HIGH: 9, CRITICAL: 0)
+
+┌────────────────┬────────────────┬──────────┬────────┬───────────────────┬───────────────┬─────────────────────────────────────────────────────────────┐
+│    Library     │ Vulnerability  │ Severity │ Status │ Installed Version │ Fixed Version │                            Title                            │
+├────────────────┼────────────────┼──────────┼────────┼───────────────────┼───────────────┼─────────────────────────────────────────────────────────────┤
+│ jupyter-server │ CVE-2026-35397 │ HIGH     │ fixed  │ 2.16.0            │ 2.18.0        │ Jupyter Server is the backend for Jupyter web applications. │
+│                │                │          │        │                   │               │ In version ......                                           │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-35397                  │
+│                ├────────────────┤          │        │                   │               ├─────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-40110 │          │        │                   │               │ Jupyter Server is the backend for Jupyter web applications. │
+│                │                │          │        │                   │               │ In version ......                                           │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-40110                  │
+│                ├────────────────┤          │        │                   │               ├─────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-40934 │          │        │                   │               │ Jupyter Server is the backend for Jupyter web applications. │
+│                │                │          │        │                   │               │ In version ......                                           │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-40934                  │
+├────────────────┼────────────────┤          │        ├───────────────────┼───────────────┼─────────────────────────────────────────────────────────────┤
+│ jupyterlab     │ CVE-2026-40171 │          │        │ 4.4.3             │ 4.5.7         │ Jupyter Notebook Vulnerable to Authentication Token Theft   │
+│                │                │          │        │                   │               │ via CommandLinker XSS                                       │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-40171                  │
+│                ├────────────────┤          │        │                   │               ├─────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-42266 │          │        │                   │               │ JupyterHub has an Extension Manager API/GUI Policy          │
+│                │                │          │        │                   │               │ Discrepancy, allowing 3rd party (malicious)...              │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-42266                  │
+│                ├────────────────┤          │        │                   │               ├─────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-42557 │          │        │                   │               │ JupyterLab's command linker attributes in HTML enable       │
+│                │                │          │        │                   │               │ one-click command execution from untrusted...               │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-42557                  │
+├────────────────┼────────────────┤          │        ├───────────────────┼───────────────┼─────────────────────────────────────────────────────────────┤
+│ mistune        │ CVE-2026-33079 │          │        │ 3.1.3             │ 3.2.1         │ In versions 3.0.0a1 through 3.2.0 of Mistune, there is a    │
+│                │                │          │        │                   │               │ ReDoS (Regula...                                            │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-33079                  │
+├────────────────┼────────────────┤          │        ├───────────────────┼───────────────┼─────────────────────────────────────────────────────────────┤
+│ notebook       │ CVE-2026-40171 │          │        │ 7.4.3             │ 7.5.6         │ Jupyter Notebook Vulnerable to Authentication Token Theft   │
+│                │                │          │        │                   │               │ via CommandLinker XSS                                       │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-40171                  │
+│                ├────────────────┤          │        │                   │               ├─────────────────────────────────────────────────────────────┤
+│                │ CVE-2026-42557 │          │        │                   │               │ JupyterLab's command linker attributes in HTML enable       │
+│                │                │          │        │                   │               │ one-click command execution from untrusted...               │
+│                │                │          │        │                   │               │ https://avd.aquasec.com/nvd/cve-2026-42557                  │
+└────────────────┴────────────────┴──────────┴────────┴───────────────────┴───────────────┴─────────────────────────────────────────────────────────────┘
+2026-05-11T21:05:39Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-11T21:05:39Z	INFO	[misconfig] Misconfiguration scanning is enabled
+2026-05-11T21:05:39Z	INFO	[checks-client] Using existing checks from cache	path="/root/.cache/trivy/policy/content"
+2026-05-11T21:05:40Z	INFO	[secret] Secret scanning is enabled
+2026-05-11T21:05:40Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln,misconfig' to disable secret scanning
+2026-05-11T21:05:40Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-05-11T21:05:44Z	INFO	Number of language-specific files	num=4
+2026-05-11T21:05:44Z	INFO	[uv] Detecting vulnerabilities...
+2026-05-11T21:05:44Z	INFO	Detected config files	num=3
+
+```
+
+## Hadolint (build/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Hadolint (lib/src/katapult/project_template/{{cookiecutter.project_slug}}/build/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Hadolint (lib/src/katapult/resources/export_docs/Dockerfile)
+
+```text
+(no output)
+
+```
+
+## Trivy image scan
+
+```text
+
+Report Summary
+
+┌─────────────────────────────────────────┬────────────┬─────────────────┬─────────┐
+│                 Target                  │    Type    │ Vulnerabilities │ Secrets │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ katapult/katapult:latest (ubuntu 24.04) │   ubuntu   │        0        │    -    │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uv                        │ rustbinary │        1        │    -    │
+├─────────────────────────────────────────┼────────────┼─────────────────┼─────────┤
+│ usr/local/bin/uvx                       │ rustbinary │        1        │    -    │
+└─────────────────────────────────────────┴────────────┴─────────────────┴─────────┘
+Legend:
+- '-': Not scanned
+- '0': Clean (no security findings detected)
+
+
+usr/local/bin/uv (rustbinary)
+=============================
+Total: 1 (HIGH: 1, CRITICAL: 0)
+
+┌───────────────┬─────────────────────┬──────────┬────────┬───────────────────┬───────────────────────────┬─────────────────────────────────────────────────────────────┐
+│    Library    │    Vulnerability    │ Severity │ Status │ Installed Version │       Fixed Version       │                            Title                            │
+├───────────────┼─────────────────────┼──────────┼────────┼───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ rustls-webpki │ GHSA-82j2-j2ch-gfr8 │ HIGH     │ fixed  │ 0.103.9           │ 0.103.13, 0.104.0-alpha.7 │ rustls-webpki: Denial of service via panic on malformed CRL │
+│               │                     │          │        │                   │                           │ BIT STRING                                                  │
+│               │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-82j2-j2ch-gfr8           │
+└───────────────┴─────────────────────┴──────────┴────────┴───────────────────┴───────────────────────────┴─────────────────────────────────────────────────────────────┘
+
+usr/local/bin/uvx (rustbinary)
+==============================
+Total: 1 (HIGH: 1, CRITICAL: 0)
+
+┌───────────────┬─────────────────────┬──────────┬────────┬───────────────────┬───────────────────────────┬─────────────────────────────────────────────────────────────┐
+│    Library    │    Vulnerability    │ Severity │ Status │ Installed Version │       Fixed Version       │                            Title                            │
+├───────────────┼─────────────────────┼──────────┼────────┼───────────────────┼───────────────────────────┼─────────────────────────────────────────────────────────────┤
+│ rustls-webpki │ GHSA-82j2-j2ch-gfr8 │ HIGH     │ fixed  │ 0.103.9           │ 0.103.13, 0.104.0-alpha.7 │ rustls-webpki: Denial of service via panic on malformed CRL │
+│               │                     │          │        │                   │                           │ BIT STRING                                                  │
+│               │                     │          │        │                   │                           │ https://github.com/advisories/GHSA-82j2-j2ch-gfr8           │
+└───────────────┴─────────────────────┴──────────┴────────┴───────────────────┴───────────────────────────┴─────────────────────────────────────────────────────────────┘
+2026-05-11T21:05:46Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-11T21:05:46Z	INFO	[secret] Secret scanning is enabled
+2026-05-11T21:05:46Z	INFO	[secret] If your scanning is slow, please try '--scanners vuln' to disable secret scanning
+2026-05-11T21:05:46Z	INFO	[secret] Please see https://trivy.dev/docs/v0.70/guide/scanner/secret#recommendation for faster secret detection
+2026-05-11T21:05:46Z	INFO	Detected OS	family="ubuntu" version="24.04"
+2026-05-11T21:05:46Z	INFO	[ubuntu] Detecting vulnerabilities...	os_version="24.04" pkg_num=155
+2026-05-11T21:05:46Z	INFO	Number of language-specific files	num=2
+2026-05-11T21:05:46Z	INFO	[rustbinary] Detecting vulnerabilities...
+
+```
+
