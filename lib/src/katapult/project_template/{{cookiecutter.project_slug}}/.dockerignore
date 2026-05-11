@@ -1,0 +1,37 @@
+# Git metadata
+.git/
+
+# Environment and secret material
+.env
+.env.*
+*.pem
+*.key
+.ssh/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+
+# Build artifacts
+dist/
+wheels/
+*.egg-info/
+*.zip
+
+# Development notes
+notes/
+
+# IDE files
+.vscode/
+.idea/
+
+# Quarto cache
+.quarto/
+
+# Jupyter artifacts
+**/.ipynb_checkpoints/
+**/.Trash*/
+**/sandbox/
