@@ -1118,8 +1118,26 @@ def test_scan_writes_qmd_report_to_srv_scans_when_report_enabled(
     scans = list((proj / "srv" / "scans").glob("scan_*.qmd"))
     assert len(scans) == 1
     text = scans[0].read_text()
+    assert "result: PASS" in text
     assert "## Summary" in text
     assert "stub-out" in text
+
+
+def test_scan_report_describes_empty_passing_sections(tmp_path: Path) -> None:
+    text = commands._render_scan_qmd(
+        [
+            ("Clean check", "", 0),
+            ("Silent failure", "", 1),
+        ],
+        tmp_path,
+        "2026-05-11T22:16:36",
+    )
+
+    assert "result: FAIL" in text
+    assert "## Clean check" in text
+    assert "(no issues found)" in text
+    assert "## Silent failure" in text
+    assert "(no output)" in text
 
 
 def test_scan_creates_scans_index_when_missing(tmp_path: Path, monkeypatch) -> None:
@@ -1139,7 +1157,11 @@ def test_scan_creates_scans_index_when_missing(tmp_path: Path, monkeypatch) -> N
     assert result.exit_code == 0
     idx = proj / "srv" / "scans.qmd"
     assert idx.is_file()
-    assert "scans/*.qmd" in idx.read_text()
+    text = idx.read_text()
+    assert "fields: [date, title, result]" in text
+    assert 'result: "Result"' in text
+    assert "## What is scanned" in text
+    assert "scans/*.qmd" in text
 
 
 def test_scan_does_not_overwrite_existing_scans_index(tmp_path: Path, monkeypatch) -> None:

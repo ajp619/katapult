@@ -443,13 +443,43 @@ HADOLINT_IMAGE = "hadolint/hadolint:latest-debian"
 SCANS_INDEX_BODY = """\
 ---
 title: "Security scans"
+description: "Automated vulnerability, misconfiguration, and secret scans of the repository and container image."
 listing:
   type: table
   contents:
     - scans/*.qmd
   sort: "date desc"
-  fields: [date, title]
+  fields: [date, title, result]
+  field-display-names:
+    result: "Result"
 ---
+
+## What is scanned
+
+Two scopes are covered each time a `kat scan` report is generated:
+
+- **Repository filesystem** - project files are checked for vulnerabilities in pinned dependencies, Dockerfile misconfigurations, and secrets in text content with Trivy.
+- **Container image** - the locally-built image from `build/BuildConfig` is checked for OS package CVEs and vulnerabilities in bundled binaries with Trivy.
+
+Dockerfiles are additionally linted with **Hadolint**, which catches Dockerfile and shell-script issues that vulnerability scanners do not.
+
+The image scan reflects whatever image tag exists in the local Docker daemon at scan time. Rebuild the image after Dockerfile or dependency changes if you need an up-to-date image report.
+
+## Tools
+
+- [Trivy](https://trivy.dev) - vulnerability, misconfiguration, and secret scanner. Invoked as `trivy fs` for the repository and `trivy image` for the container.
+- [Hadolint](https://github.com/hadolint/hadolint) - Dockerfile linter that wraps shellcheck for `RUN` blocks.
+- [`kat scan`](https://github.com/ajp619/katapult) - katapult CLI command that orchestrates Trivy and Hadolint with project-aware defaults. The `--report` flag writes each run as `srv/scans/scan_<timestamp>.qmd`.
+
+## Reproducing a report
+
+```bash
+kat scan --report
+```
+
+Then re-render the site (`quarto render` from the repository root, or a subset of targets) so `docs/` picks up the new `srv/scans/scan_<timestamp>.qmd` artifact.
+
+## Reports
 """
 
 
@@ -768,20 +798,27 @@ def _render_scan_qmd(
     for sec_title, _body, rc in sections:
         status = "PASS" if rc == 0 else "FAIL"
         summary_lines.append(f"- {sec_title}: **{status}** (exit code {rc})")
+    overall = "PASS" if all(rc == 0 for _, _, rc in sections) else "FAIL"
     summary = "\n".join(summary_lines)
     body_parts = [
         "---\n",
         f'title: "Security scan: {title_name}"\n',
         f"date: {ts_iso}\n",
+        f"result: {overall}\n",
         "---\n\n",
         "## Summary\n\n",
         summary,
         "\n\n",
     ]
-    for sec_title, body, _rc in sections:
+    for sec_title, body, rc in sections:
         body_parts.append(f"## {sec_title}\n\n")
         body_parts.append("```text\n")
-        body_parts.append(_escape_fence_body(body) if body else "(no output)\n")
+        if body:
+            body_parts.append(_escape_fence_body(body))
+        elif rc == 0:
+            body_parts.append("(no issues found)\n")
+        else:
+            body_parts.append("(no output)\n")
         body_parts.append("\n```\n\n")
     return "".join(body_parts)
 
