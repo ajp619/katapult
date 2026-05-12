@@ -148,6 +148,22 @@ def test_override_template_has_content_true_nested_file(tmp_path: Path) -> None:
     assert commands._override_template_has_content(d)
 
 
+# --- _write_context_manifest ---
+
+
+def test_write_context_manifest_lists_files(tmp_path: Path) -> None:
+    override = tmp_path / "template"
+    project = tmp_path / "project"
+    (override / "a" / "b").mkdir(parents=True)
+    (override / "a" / "b" / "one.txt").write_text("one")
+    (override / "z.txt").write_text("z")
+
+    commands._write_context_manifest(override, project)
+
+    manifest = project / ".katapult" / ".context_manifest"
+    assert manifest.read_text().splitlines() == ["a/b/one.txt", "z.txt"]
+
+
 # --- CLI: rich ---
 
 
@@ -224,6 +240,53 @@ def test_init_with_overrides_merges_and_calls_cookiecutter(tmp_path: Path) -> No
 
     assert result.exit_code == 0
     assert "Applying overrides" in result.output
+
+
+def test_init_writes_context_manifest_when_overrides_applied(tmp_path: Path) -> None:
+    kat = tmp_path / ".katapult"
+    (kat / "template" / ".cursor" / "rules").mkdir(parents=True)
+    (kat / "template" / "cursor_context").mkdir(parents=True)
+    (kat / "template" / ".cursor" / "rules" / "athena-data-context.mdc").write_text(
+        "rule"
+    )
+    (kat / "template" / "cursor_context" / "README.md").write_text("readme")
+    project = tmp_path / "generated"
+    (project / ".katapult").mkdir(parents=True)
+
+    def fake_cookiecutter(merged_arg: str) -> str:
+        merged = Path(merged_arg)
+        slug_dir = merged / "{{cookiecutter.project_slug}}"
+        assert (
+            slug_dir / ".cursor" / "rules" / "athena-data-context.mdc"
+        ).read_text() == "rule"
+        assert (slug_dir / "cursor_context" / "README.md").read_text() == "readme"
+        return str(project)
+
+    with patch.object(commands.Path, "home", return_value=tmp_path):
+        with patch.object(commands, "cookiecutter", side_effect=fake_cookiecutter):
+            runner = CliRunner()
+            result = runner.invoke(main, ["init"])
+
+    assert result.exit_code == 0
+    manifest = project / ".katapult" / ".context_manifest"
+    assert manifest.read_text().splitlines() == [
+        ".cursor/rules/athena-data-context.mdc",
+        "cursor_context/README.md",
+    ]
+
+
+def test_init_no_manifest_without_overrides(tmp_path: Path) -> None:
+    project = tmp_path / "generated"
+    (project / ".katapult").mkdir(parents=True)
+
+    with patch.object(commands.Path, "home", return_value=tmp_path):
+        with patch.object(commands, "cookiecutter", return_value=str(project)):
+            runner = CliRunner()
+            result = runner.invoke(main, ["init"])
+
+    assert result.exit_code == 0
+    assert not (project / ".katapult" / ".context_manifest").exists()
+    assert "Applying overrides" not in result.output
 
 
 def test_init_no_overrides_skips_merge_even_with_template_files(tmp_path: Path) -> None:

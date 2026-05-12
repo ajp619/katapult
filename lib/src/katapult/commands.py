@@ -86,6 +86,18 @@ def _override_template_has_content(override_dir: Path) -> bool:
     return any(p.is_file() for p in override_dir.rglob("*"))
 
 
+def _write_context_manifest(override_dir: Path, project_dir: Path) -> None:
+    """Record which files were copied from the override template."""
+    files = sorted(
+        p.relative_to(override_dir).as_posix()
+        for p in override_dir.rglob("*")
+        if p.is_file()
+    )
+    manifest = project_dir / ".katapult" / ".context_manifest"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text("\n".join(files) + "\n")
+
+
 @click.command()
 @click.option(
     "--no-overrides",
@@ -112,7 +124,9 @@ def init(no_overrides: bool) -> None:
                 merged / "cookiecutter.json",
             )
             click.echo(f"Applying overrides from {override_dir}")
-            cookiecutter(str(merged))
+            project_dir = cookiecutter(str(merged))
+            if project_dir is not None:
+                _write_context_manifest(override_dir, Path(project_dir))
     else:
         cookiecutter(str(template_dir))
 

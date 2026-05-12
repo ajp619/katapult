@@ -37,11 +37,17 @@ If your home directory contains **`~/.katapult/template/`** with at least one fi
 
 When overrides are applied, the CLI prints a line such as `Applying overrides from ...` so you know the merged template is in use.
 
+When overrides are applied, `kat init` also writes **`.katapult/.context_manifest`** in the generated project. This manifest records the relative paths copied from `~/.katapult/template/`, so the project-local **`katx update_context`** command can later remove stale managed files and copy the latest versions from `~/.katapult/template/`.
+
 #### `copy_without_render` (`~/.katapult/copy_without_render`)
 
 If **`~/.katapult/copy_without_render`** exists, each non-empty, non-comment line is treated as a **glob pattern**. Those patterns are merged into the template’s `cookiecutter.json` **`_copy_without_render`** list for that run. Files matching those patterns are copied into the new project **without** Jinja rendering, which is useful for assets or files that would otherwise break if cookiecutter tried to template them.
 
 This merging happens only when template overrides are used (i.e. when `~/.katapult/template/` has content and you did not pass **`--no-overrides`**).
+
+#### Updating context in existing projects
+
+Use **`katx update_context`** from an existing project to refresh files originally supplied by `~/.katapult/template/`. The command reads `.katapult/.context_manifest`, removes previously managed files, copies the current files from `~/.katapult/template/`, and writes a new manifest. Project-specific files that are not listed in the manifest are left alone.
 
 #### Plain `kat init`
 

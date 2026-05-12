@@ -22,5 +22,14 @@ positional commands:
   run                  Shortcut for: katx build, katx up, katx render, katx status.
   status               supervisorctl status.
   stop                 manual docker stop command. Generally better to use 'down'
+  update_context       Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh).
   up                   `docker compose up -d`.
 ```
+
+### `katx update_context`
+
+`katx update_context` refreshes project files that are managed by the user's Katapult template overrides.
+
+The command reads **`.katapult/.context_manifest`**, removes those previously managed files if they still exist, copies the current files from **`~/.katapult/template/`**, and writes a new manifest. This makes file renames safe: old managed names are removed and new names are added.
+
+Files not listed in the manifest are not removed, so project-specific Cursor rules and other local files are preserved.

@@ -125,6 +125,7 @@ Typical path prefixes (replace `katapult` with your `PROJECT_NAME` / repo slug):
 
 * **`~/.katapult/template/`** — Mirror the **generated project tree**. `kat init` merges these files into the template before Cookiecutter runs so every new project includes your additions (e.g. extra `srv/` pages, `.cursor/rules/`).
 * **`~/.katapult/copy_without_render`** — Non-empty lines are glob patterns appended to Cookiecutter’s `_copy_without_render` for that run, so matching files copy **without** Jinja templating (useful for assets containing `{{` `}}`).
+* **`katx update_context`** — Refresh existing projects from `~/.katapult/template/`. It removes previously managed files listed in `.katapult/.context_manifest`, copies the current template override files, and leaves project-specific files alone.
 * **When it applies** — Only if `~/.katapult/template/` has content and you do **not** pass **`kat init --no-overrides`**. See [kat init](kat.qmd#kat-init) for details.
 
 ## Troubleshooting / FAQ
