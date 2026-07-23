@@ -16,7 +16,13 @@ userdel --remove ubuntu
 groupadd -g ${GID_} ${USERGROUP}
 useradd -m -l -u ${UID_} -g ${GID_} ${USERNAME}
 mkdir /content && chown ${USERNAME}:${USERGROUP} /content
-mkdir -p /content/nbk/.venv && chown ${USERNAME}:${USERGROUP} /content/nbk/.venv
+# Pre-create every service's .venv mountpoint owned by the app user. Compose
+# mounts an anonymous volume at each /content/<svc>/.venv; Docker seeds a new
+# anon volume's ownership from the image path, so if the dir is absent the
+# volume comes up root-owned and the non-root app user can't create its venv at
+# runtime. This matters for projects without baked venvs (no uv.lock yet).
+for d in api app lib nbk; do mkdir -p /content/$d/.venv; done
+chown -R ${USERNAME}:${USERGROUP} /content
 mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${USERGROUP} /tmp/supervisor
 EOF
 
