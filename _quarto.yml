@@ -24,6 +24,8 @@ website:
       text: Services
     - href: srv/documentation.qmd
       text: Documentation
+    - href: srv/public-access.qmd
+      text: Public apps
     - href: srv/scans.qmd
       text: Scans
     - href: srv/reports.qmd

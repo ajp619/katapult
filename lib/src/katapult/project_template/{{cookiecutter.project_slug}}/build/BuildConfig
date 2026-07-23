@@ -9,3 +9,15 @@ UBUNTU_RELEASE=24.04
 PYTHON_VERSION={{cookiecutter.python_version}}
 NODE_VERSION=20.9.0
 QUARTO_VERSION=1.7.27
+
+# Optional: restrict which supervisor programs run AND which venvs bake, as a
+# comma-separated allowlist of program names (no spaces; the names shown by
+# `katx services`, e.g. api, webapp, jupyter, nginx). Normally leave unset and
+# manage services with `katx services`. Use for thin per-service images:
+# `katx build -b SERVICES=api` or `-b SERVICES=api,jupyter`.
+# SERVICES=api,jupyter
+#
+# NOTE: this file is sourced by katx as a shell script (and each line becomes a
+# docker --build-arg), so every value must be a single shell-safe token -- no
+# spaces. Dashboard display text (title/description) with spaces goes in
+# build/docker-compose.pub.yml label values instead, not here.

@@ -95,11 +95,64 @@ WORKDIR /content
 RUN chown -R ${USERNAME}:${USERNAME} /var/cache/nginx \
     && chown -R ${USERNAME}:${USERNAME} /var/log/nginx \
     && chown -R ${USERNAME}:${USERNAME} /etc/nginx/conf.d \
+    && chown -R ${USERNAME}:${USERNAME} /etc/supervisor/conf.d \
     && touch /var/run/nginx.pid \
     && chown -R ${USERNAME}:${USERNAME} /var/run/nginx.pid
 
 USER ${USERNAME}
 SHELL ["/bin/bash", "-c"]
 ENV SHELL=/bin/bash
+
+# Bake per-service virtualenvs into the image so the container is self-contained
+# (no runtime `uv run` sync into a writable/networked .venv). What gets baked is
+# governed by conf.d file-state (enabled = *.conf), matching what supervisor runs.
+# lib/ is always baked when present (shared library + working dir for
+# command-override consumers). SERVICES is an OPTIONAL override: when passed it is
+# validated and used to reconcile conf.d for this build only (thin per-service
+# images, e.g. `katx build -b SERVICES=api`); when unset, the committed conf.d
+# state governs.
+ARG SERVICES=""
+RUN --mount=type=cache,target=/home/${USERNAME}/.cache/uv,uid=${UID_},gid=${GID_} <<'EOF'
+set -euo pipefail
+shopt -s nullglob
+confd=/etc/supervisor/conf.d
+
+# Programs present now (enabled .conf + disabled .conf_), used to validate an override.
+present=( "$confd"/*.conf "$confd"/*.conf_ )
+all_progs=""
+if [ ${#present[@]} -gt 0 ]; then
+  all_progs=$(sed -n 's/^\[program:\(.*\)\]$/\1/p' "${present[@]}" | sort -u | tr '\n' ' ')
+fi
+
+# OVERRIDE PATH: only when SERVICES is passed. Validate, then reconcile conf.d
+# (mutates the image's copied conf.d only, never the repo).
+if [ -n "${SERVICES}" ]; then
+  for tok in ${SERVICES//,/ }; do
+    case " $all_progs " in *" $tok "*) : ;; *) echo "unknown service '$tok'; valid: $all_progs" >&2; exit 1 ;; esac
+  done
+  want=",${SERVICES},"
+  for f in "${present[@]}"; do
+    base=${f%.conf_}; base=${base%.conf}; name=${base##*/}
+    case "$want" in
+      *",$name,"*) [ -f "$base.conf"  ] || mv "$f" "$base.conf"  ;;
+      *)           [ -f "$base.conf_" ] || mv "$f" "$base.conf_" ;;
+    esac
+  done
+fi
+
+# DEFAULT PATH: bake dirs from whatever is enabled (*.conf) plus lib. Skip any dir
+# lacking pyproject.toml + uv.lock (e.g. freshly generated, unpopulated projects).
+enabled=( "$confd"/*.conf )
+dirs=""
+if [ ${#enabled[@]} -gt 0 ]; then
+  dirs=$(sed -n 's/^directory=//p' "${enabled[@]}" | sort -u)
+fi
+for d in $dirs /content/lib; do
+  if [ -f "$d/pyproject.toml" ] && [ -f "$d/uv.lock" ]; then
+    (cd "$d" && uv sync --frozen)
+  fi
+done
+EOF
+
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 

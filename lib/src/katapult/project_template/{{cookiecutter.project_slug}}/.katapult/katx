@@ -7,8 +7,8 @@ PROJECT_DIR=$(dirname "$SCRIPT_DIR")
 # from BuildConfig
 source $PROJECT_DIR/build/BuildConfig
 
-# defaults
-BUILD_ARGS=$(awk 'NF {print "--build-arg " $0}' $PROJECT_DIR/build/BuildConfig)
+# defaults (skip blank lines and '#' comments so BuildConfig can be documented)
+BUILD_ARGS=$(awk 'NF && $0 !~ /^[[:space:]]*#/ {print "--build-arg " $0}' $PROJECT_DIR/build/BuildConfig)
 
 # If UID_ and GID_ are not in BuildConfig, detect and add them
 if ! grep -q "^UID_=" $PROJECT_DIR/build/BuildConfig 2>/dev/null; then
@@ -23,6 +23,33 @@ USER=""
 HOST="localhost"
 
 source $PROJECT_DIR/.katapult/HOSTVARS
+
+# Public-access state (managed by `katx pub` / `katx private`, persisted in HOSTVARS).
+# When PUBLIC=true, compose layers build/docker-compose.pub.yml on top of the base
+# file so this project is served on Traefik's `public` entrypoint (:8081) and
+# advertised to the pub_index dashboard. Default is private. PUBLIC is a per-host
+# setting, so it lives in HOSTVARS (not committed), like HOST and USER.
+PUBLIC="${PUBLIC:-false}"
+PUB_COMPOSE_FILE="$PROJECT_DIR/build/docker-compose.pub.yml"
+COMPOSE_FILES="-f $PROJECT_DIR/build/docker-compose.yml"
+if [ "$PUBLIC" = "true" ]; then
+  if [ -f "$PUB_COMPOSE_FILE" ]; then
+    COMPOSE_FILES="$COMPOSE_FILES -f $PUB_COMPOSE_FILE"
+  else
+    echo "warning: PUBLIC=true but build/docker-compose.pub.yml is missing; starting private." >&2
+    PUBLIC="false"
+  fi
+fi
+
+# Persist PUBLIC=<true|false> into HOSTVARS (rewrites any existing line).
+function set_public_hostvar {
+  local val="$1"
+  local hv="$PROJECT_DIR/.katapult/HOSTVARS"
+  local tmp
+  tmp=$(grep -v "^PUBLIC=" "$hv" 2>/dev/null)
+  printf '%s\n' "$tmp" > "$hv"
+  echo "PUBLIC=$val" >> "$hv"
+}
 
 # create a place holder for positional args
 POS_ARGS=""
@@ -80,12 +107,15 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "debug" "Placeholder for custom docker run command intended for debugging."
       printf "$format" "down" "\`docker compose down\`."
       printf "$format" "jlab" "lists the address (including token) of the currently running jupyter server."
+      printf "$format" "private" "Unpublish: stop serving on the public entrypoint and recreate the container."
       printf "$format" "ps" "Lists containers associated with this project."
+      printf "$format" "pub" "Publish: serve this project on the public entrypoint (:8081) + dashboard. Remembers setting."
       printf "$format" "render" "Run 'quarto render' to create static site files."
       printf "$format" "restart|rebuild" "Shortcut for: katx down, katx build, katx up."
       printf "$format" "rm" "\`docker rm ...\`."
       printf "$format" "rmf" "\`docker rm -f ...\`."
       printf "$format" "run" "Shortcut for: katx build, katx up, katx render, katx status."
+      printf "$format" "services" "list | enable <name> | disable <name>: toggle supervisor programs (conf.d)."
       printf "$format" "status" "supervisorctl status."
       printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
       printf "$format" "update_context" "Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh)."
@@ -174,7 +204,7 @@ while (( "$#" )); do
       ;;
     down)
       set -x
-      docker compose --env-file $PROJECT_DIR/build/BuildConfig -f $PROJECT_DIR/build/docker-compose.yml down
+      docker compose --env-file $PROJECT_DIR/build/BuildConfig $COMPOSE_FILES down
       set +x
       clear_last_line
       shift
@@ -196,9 +226,32 @@ while (( "$#" )); do
       clear_last_line
       shift
       ;;
+    private)
+      echo "unpublishing $PROJECT_NAME (private)"
+      set_public_hostvar "false"
+      PUBLIC="false"
+      COMPOSE_FILES="-f $PROJECT_DIR/build/docker-compose.yml"
+      shift
+      # Recreate without the pub override so the public router is removed.
+      set -- "up" $@
+      ;;
     ps)
       docker ps -a | awk "FNR==1 || /$PROJECT_NAME/"
       shift
+      ;;
+    pub)
+      if [ ! -f "$PUB_COMPOSE_FILE" ]; then
+        echo "Error: build/docker-compose.pub.yml not found. This project predates the" >&2
+        echo "       public-access feature; run the retrofit script to add it." >&2
+        exit 1
+      fi
+      echo "publishing $PROJECT_NAME on the public entrypoint (:8081)"
+      set_public_hostvar "true"
+      PUBLIC="true"
+      COMPOSE_FILES="-f $PROJECT_DIR/build/docker-compose.yml -f $PUB_COMPOSE_FILE"
+      shift
+      # Recreate with the pub override so the public router + metadata are applied.
+      set -- "up" $@
       ;;
     render)
       CMD="quarto render && uvx --refresh --with lib/. pdoc -o docs/lib $PROJECT_NAME"
@@ -236,6 +289,61 @@ while (( "$#" )); do
       echo "starting $CONTAINER_NAME"
       shift
       set -- "build" "up" "render" "status" "home" $@
+      ;;
+    services)
+      # Manage which supervisor programs run by toggling conf.d/*.conf <-> *.conf_.
+      # conf.d file-state is the source of truth for both runtime and the build-time
+      # venv bake (see build/Dockerfile). Names are validated against the confs present.
+      confd="$PROJECT_DIR/build/conf/supervisor/conf.d"
+      sub="$2"
+      svc="$3"
+      # Collect available service names from both enabled (.conf) and disabled (.conf_) files.
+      avail=""
+      for f in "$confd"/*.conf "$confd"/*.conf_; do
+        [ -e "$f" ] || continue
+        b=$(basename "$f"); b=${b%.conf_}; b=${b%.conf}
+        case " $avail " in *" $b "*) : ;; *) avail="$avail $b" ;; esac
+      done
+      avail=$(printf '%s\n' $avail | sort | tr '\n' ' ')
+      case "$sub" in
+        ""|list)
+          printf '%-20s %s\n' "SERVICE" "STATE"
+          for s in $avail; do
+            if [ -f "$confd/$s.conf" ]; then
+              printf '%-20s %s\n' "$s" "enabled"
+            else
+              printf '%-20s %s\n' "$s" "disabled"
+            fi
+          done
+          if [ -z "$sub" ]; then shift 1; else shift 2; fi
+          ;;
+        enable)
+          if [ -z "$svc" ]; then echo "Error: 'services enable' requires a service name. Available:$avail" >&2; exit 1; fi
+          case " $avail " in *" $svc "*) : ;; *) echo "Error: unknown service '$svc'. Available:$avail" >&2; exit 1 ;; esac
+          if [ -f "$confd/$svc.conf" ]; then
+            echo "$svc already enabled"
+          else
+            mv "$confd/$svc.conf_" "$confd/$svc.conf"
+            echo "enabled $svc"
+          fi
+          shift 3
+          ;;
+        disable)
+          if [ -z "$svc" ]; then echo "Error: 'services disable' requires a service name. Available:$avail" >&2; exit 1; fi
+          case " $avail " in *" $svc "*) : ;; *) echo "Error: unknown service '$svc'. Available:$avail" >&2; exit 1 ;; esac
+          if [ -f "$confd/$svc.conf_" ]; then
+            echo "$svc already disabled"
+          else
+            mv "$confd/$svc.conf" "$confd/$svc.conf_"
+            echo "disabled $svc"
+          fi
+          shift 3
+          ;;
+        *)
+          echo "Error: unknown 'services' subcommand '$sub'. Use: list | enable <name> | disable <name>" >&2
+          exit 1
+          ;;
+      esac
       ;;
     status)
       CMD='supervisorctl status'
@@ -299,7 +407,7 @@ while (( "$#" )); do
       ;;
     up)
       set -x
-      docker compose --env-file $PROJECT_DIR/build/BuildConfig -f $PROJECT_DIR/build/docker-compose.yml up -d
+      docker compose --env-file $PROJECT_DIR/build/BuildConfig $COMPOSE_FILES up -d
       set +x
       clear_last_line
       shift

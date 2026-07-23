@@ -14,7 +14,9 @@ positional commands:
   debug                Placeholder for custom docker run command intended for debugging.
   down                 `docker compose down`.
   jlab                 lists the address (including token) of the currently running jupyter server.
+  private              Unpublish: stop serving on the public entrypoint and recreate the container.
   ps                   Lists containers associated with this project.
+  pub                  Publish: serve this project on the public entrypoint (:8081) + dashboard. Remembers setting.
   render               Run 'quarto render' to create static site files.
   restart|rebuild      Shortcut for: katx down, katx build, katx up.
   rm                   `docker rm ...`.
@@ -25,6 +27,17 @@ positional commands:
   update_context       Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh).
   up                   `docker compose up -d`.
 ```
+
+### `katx pub` / `katx private`
+
+`katx pub` publishes a project to the **public-apps dashboard**; `katx private`
+unpublishes it. See [Public apps](public-access.qmd) for the full model.
+
+`pub` layers `build/docker-compose.pub.yml` onto the base compose file, adding a
+second Traefik router on the hidden `public` entrypoint (`:8081`) plus
+`katapult.pub.*` metadata that the dashboard reads. The choice is remembered via
+`PUBLIC=true|false` in `.katapult/HOSTVARS` (host-local, not committed), so
+`up`/`restart`/`rebuild` keep serving it publicly until you run `katx private`.
 
 ### `katx update_context`
 

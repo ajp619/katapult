@@ -132,52 +132,139 @@ def init(no_overrides: bool) -> None:
 
 
 @click.command()
-def hub():
-    """Manage the Katapult hub and Traefik container."""
+@click.option(
+    "--yes",
+    "--no-input",
+    "assume_yes",
+    is_flag=True,
+    default=False,
+    help="Assume 'yes' to all prompts and run non-interactively (for Ansible).",
+)
+@click.option(
+    "--public-bind",
+    default="127.0.0.1",
+    show_default=True,
+    metavar="ADDRESS",
+    help=(
+        "Host address for the 'public' entrypoint (:8081) that serves published "
+        "(katx pub) apps. Use 127.0.0.1 for TUNNEL mode (reachable only via SSH "
+        "tunnel; the safe default) or 0.0.0.0 / a specific interface IP for DIRECT "
+        "mode (reachable over the network)."
+    ),
+)
+def hub(assume_yes, public_bind):
+    """Manage the Katapult hub and Traefik container.
+
+    Launches Traefik with two HTTP entrypoints:
+
+    \b
+      http    :80    the standard dev entrypoint (all projects)
+      public  :8081  the hidden-by-default entrypoint that only serves apps
+                     published with `katx pub` (bound per --public-bind)
+
+    The Traefik API/dashboard remains on :8080.
+    """
     client = docker.from_env()
+
+    def confirm(message, default=True):
+        if assume_yes:
+            return True
+        return click.confirm(message, default=default)
+
+    # Desired Traefik configuration. The 'public' entrypoint is what makes
+    # `katx pub` publishing work: pub routers attach to it, and its host bind
+    # (loopback vs reachable interface) is what selects tunnel vs direct access.
+    traefik_command = [
+        "--api.insecure=true",
+        "--providers.docker",
+        "--entrypoints.http.address=:80",
+        "--entrypoints.public.address=:8081",
+    ]
+    traefik_ports = {
+        "80/tcp": 80,
+        "8080/tcp": 8080,
+        # docker-py binds to a specific host IP when the value is an (ip, port) tuple.
+        "8081/tcp": (public_bind, 8081),
+    }
+    traefik_volumes = {
+        "/var/run/docker.sock": {
+            "bind": "/var/run/docker.sock",
+            "mode": "rw",
+        }
+    }
+
+    def launch():
+        client.containers.run(
+            "traefik:v3.6",
+            detach=True,
+            network="katapult",
+            ports=traefik_ports,
+            volumes=traefik_volumes,
+            command=traefik_command,
+            name="katapult-traefik",
+            restart_policy={"Name": "always"},
+        )
+        click.echo(
+            f"Launched Traefik container (public entrypoint :8081 bound to {public_bind})."
+        )
 
     # Check if 'katapult' network exists
     networks = [net.name for net in client.networks.list()]
     if "katapult" not in networks:
-        if click.confirm(
-            "Docker network 'katapult' does not exist. Create it?", default=True
-        ):
+        if confirm("Docker network 'katapult' does not exist. Create it?", default=True):
             client.networks.create("katapult")
             click.echo("Created 'katapult' network.")
         else:
             click.echo("Aborting: 'katapult' network is required.")
             return
 
-    # Check if Traefik container is running
-    traefik_containers = [
-        c
-        for c in client.containers.list(all=True)
-        if any("traefik" in tag for tag in c.image.tags)
-    ]
-    running = any(c.status == "running" for c in traefik_containers)
+    # Check if a Traefik container is running. Tolerate dangling containers whose
+    # backing image was deleted/replaced (c.image raises ImageNotFound): fall back
+    # to the image reference recorded on the container itself, which survives. This
+    # keeps `kat hub`/`kat hub --yes` robust for unattended (Ansible) runs.
+    def _is_traefik(c):
+        try:
+            if any("traefik" in tag for tag in c.image.tags):
+                return True
+        except docker.errors.ImageNotFound:
+            pass
+        return "traefik" in (c.attrs.get("Config", {}).get("Image", "") or "")
+
+    traefik_containers = [c for c in client.containers.list(all=True) if _is_traefik(c)]
+    running = [c for c in traefik_containers if c.status == "running"]
 
     if running:
-        click.echo("Traefik container is already running.")
-    else:
-        if click.confirm("Traefik container is not running. Launch it?", default=True):
-            client.containers.run(
-                "traefik:v3.6",
-                detach=True,
-                network="katapult",
-                ports={"80/tcp": 80, "8080/tcp": 8080},
-                volumes={
-                    "/var/run/docker.sock": {
-                        "bind": "/var/run/docker.sock",
-                        "mode": "rw",
-                    }
-                },
-                command=["--api.insecure=true", "--providers.docker"],
-                name="katapult-traefik",
-                restart_policy={"Name": "always"},
-            )
-            click.echo("Launched Traefik container.")
+        # Detect config drift: an older hub without the 'public' entrypoint.
+        current = running[0]
+        current_cmd = current.attrs.get("Args", []) or current.attrs.get(
+            "Config", {}
+        ).get("Cmd", [])
+        has_public = any(
+            "entrypoints.public.address" in str(arg) for arg in (current_cmd or [])
+        )
+        if has_public:
+            click.echo("Traefik container is already running with a public entrypoint.")
+            return
+        click.echo(
+            "Traefik is running but has no 'public' entrypoint (older hub config)."
+        )
+        if confirm(
+            "Recreate the Traefik container to add the public entrypoint?", default=True
+        ):
+            current.remove(force=True)
+            launch()
         else:
-            click.echo("Aborting: Traefik container is required.")
+            click.echo("Left existing Traefik container unchanged.")
+        return
+
+    if confirm("Traefik container is not running. Launch it?", default=True):
+        # Remove any stopped 'katapult-traefik' leftover so the name is free.
+        for c in traefik_containers:
+            if c.name == "katapult-traefik":
+                c.remove(force=True)
+        launch()
+    else:
+        click.echo("Aborting: Traefik container is required.")
 
 
 @click.command()

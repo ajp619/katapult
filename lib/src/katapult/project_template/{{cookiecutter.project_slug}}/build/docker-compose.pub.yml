@@ -1,0 +1,35 @@
+# Public-access override, included only when this project is published.
+#
+# `katx pub` sets PUBLIC=true in .katapult/HOSTVARS and layers this file on top of
+# docker-compose.yml; `katx private` drops it again. It adds a second Traefik router
+# on the hidden-by-default `public` entrypoint (:8081, created by `kat hub`) and
+# katapult.pub.* metadata that the pub_index dashboard reads to build a cross-VM
+# directory of published apps. The base http router (:80) is left untouched, so the
+# normal dev URL keeps working whether the app is public or private.
+#
+# Router/path values use ${PROJECT_NAME} compose interpolation (from build/BuildConfig)
+# so they stay portable. The dashboard display metadata below are plain label strings:
+# edit them here to customize how the app appears (spaces are fine in YAML). Do NOT put
+# multi-word titles in build/BuildConfig -- katx sources that file as shell, so a value
+# like `PUB_TITLE=My App` would try to run `App` as a command.
+services:
+  {{cookiecutter.project_slug}}:
+    labels:
+      - "traefik.http.routers.${PROJECT_NAME}_pub.rule=PathPrefix(`/${PROJECT_NAME}`)"
+      - "traefik.http.routers.${PROJECT_NAME}_pub.entrypoints=public"
+      - "traefik.http.routers.${PROJECT_NAME}_pub.service=${PROJECT_NAME}"
+      # --- Deferred basicauth hook -------------------------------------------------
+      # Auth is intentionally deferred: the current perimeter is the AWS WorkSpace
+      # (tunnel mode) or the internal network (direct mode). To require a login on
+      # the public entrypoint later, uncomment the two lines below and mount an
+      # htpasswd file into Traefik at /etc/traefik/pub_users (see `kat hub`).
+      # - "traefik.http.routers.${PROJECT_NAME}_pub.middlewares=${PROJECT_NAME}_pubauth"
+      # - "traefik.http.middlewares.${PROJECT_NAME}_pubauth.basicauth.usersfile=/etc/traefik/pub_users"
+      # --- pub_index dashboard metadata: edit these to customize (spaces OK) --------
+      - "katapult.pub.enabled=true"
+      - "katapult.pub.title={{cookiecutter.project_slug}}"
+      - "katapult.pub.description={{cookiecutter.project_slug}} (katapult public app)"
+      - "katapult.pub.category=uncategorized"
+      # If the app's entry point is not the project root prefix, point path at it,
+      # e.g. /${PROJECT_NAME}/webapp
+      - "katapult.pub.path=/${PROJECT_NAME}/"

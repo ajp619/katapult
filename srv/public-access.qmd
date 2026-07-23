@@ -1,0 +1,111 @@
+---
+title: "Public apps"
+---
+
+Katapult can turn any subset of your projects into a browsable **directory of public
+apps** across a fleet of VMs. You tag an app with `katx pub`, and a dashboard
+(`pub_index`) lists every published app on every VM with a working link.
+
+It is a durable feature — a lightweight way for a small team with several VMs to
+expose selected web apps elegantly — with two pluggable **access modes**:
+
+- **Direct** (durable default): a networked fleet; links go straight to
+  `http://<vm>:8081/<app>/`.
+- **Tunnel** (interim adapter): a locked-down setup (e.g. AWS WorkSpace) where the
+  only way in is SSH. One SSH gateway fans out to every VM and the browser uses
+  generated `localhost:900x` tunnels.
+
+Authentication is intentionally **deferred**: the current perimeter is the network
+(direct) or the SSH/WorkSpace boundary (tunnel). A commented basicauth hook is left
+in `docker-compose.pub.yml` for when you want it.
+
+## Architecture
+
+```{mermaid}
+flowchart LR
+  subgraph VM["Each VM"]
+    T["Traefik (kat hub)\nhttp :80  •  public :8081"]
+    A["your app\nkatx pub"]
+    PI["pub_index\nMODE=manifest"]
+    A -- "katapult.pub.* labels" --> PI
+    T --- A
+    T --- PI
+  end
+  DB["pub_index\nMODE=dashboard\n(one host)"]
+  PI -- "GET /pub-manifest.json" --> DB
+  U["browser"] --> DB
+```
+
+Every VM runs `pub_index` in **manifest** mode: it reads local `katapult.pub.*`
+Docker labels and serves `GET /pub-manifest.json`. One VM (the Ansible `[dashboard]`
+host) runs it in **dashboard** mode: it scrapes every peer's manifest and renders one
+cross-VM directory. Only *link generation* differs between access modes.
+
+## Publish your app (quickstart)
+
+1. Make sure your project has `build/docker-compose.pub.yml` (new projects have it;
+   retrofit older ones with `cursor_hub/scripts/retrofit_pub.sh`).
+2. (Optional) Describe the app for the dashboard by editing the metadata labels in
+   `build/docker-compose.pub.yml` (plain YAML values — spaces are fine):
+
+   ```yaml
+   - "katapult.pub.title=Lead Scoring"
+   - "katapult.pub.description=Score and rank inbound leads."
+   - "katapult.pub.category=analytics"
+   # if the app entry point isn't the project root prefix:
+   - "katapult.pub.path=/lead_score/webapp"
+   ```
+
+   Do **not** put multi-word values in `build/BuildConfig` — `katx` sources it as a
+   shell script, so `PUB_TITLE=Lead Scoring` would try to run `Scoring` as a command.
+
+3. Publish:
+
+   ```bash
+   katx pub        # serve on the public entrypoint + list in the dashboard
+   katx private    # stop publishing
+   ```
+
+That's the whole workflow — no compose or label editing. The setting is remembered
+(`PUBLIC=true` in `.katapult/HOSTVARS`), so ordinary `katx up`/`restart` keep it
+published until you run `katx private`.
+
+## App conformance checklist
+
+For an app to work cleanly behind the public entrypoint:
+
+- [ ] It serves under its path prefix `/<project>/` (the katapult default — nginx
+      strips the prefix; make sure app-generated links/assets are relative or
+      prefix-aware).
+- [ ] No reliance on being at the domain root `/`.
+- [ ] Health/landing works without a login (auth is deferred fleet-wide).
+- [ ] Any websockets/streaming tolerate a reverse proxy (they do by default).
+- [ ] Friendly `katapult.pub.title`/`description`/`category` labels set in
+      `build/docker-compose.pub.yml`.
+- [ ] Nothing sensitive is exposed — publishing makes the app reachable to everyone
+      inside the perimeter (network in direct mode; WorkSpace/SSH users in tunnel
+      mode).
+
+## Choosing an access mode
+
+| | Direct | Tunnel |
+|---|---|---|
+| When | VMs are network-reachable to users (flat VPC / VPN) | Users can only reach VMs via SSH (e.g. AWS WorkSpace) |
+| Public bind | `kat hub --public-bind 0.0.0.0` | `kat hub --public-bind 127.0.0.1` (default) |
+| Links | `http://<vm>:8081/<app>/` | `http://localhost:900x/<app>/` via one SSH tunnel |
+| Client setup | none (just a browser) | run `tunnels.sh` (one SSH tunnel to the gateway) |
+| Perimeter | internal network | WorkSpace + SSH keys + loopback bind |
+
+Start with **direct** if your network allows it; it is simpler and has no client-side
+setup. Use **tunnel** only for the locked-down case. Both are automated by the
+`public_access` role in `rhel_bootstrap`.
+
+## How it fits together
+
+- `kat hub` runs Traefik with a hidden `public` entrypoint on `:8081`
+  (`--public-bind` selects loopback vs reachable).
+- `katx pub` adds a router on that entrypoint + `katapult.pub.*` metadata.
+- `pub_index` (a thin katapult project) serves manifests and the dashboard.
+- `rhel_bootstrap`'s `public_access` role deploys all of the above across the fleet
+  and, in tunnel mode, sets up the `pubuser` accounts, fan-out SSH tunnels, and the
+  non-dev client kit (`pub_tunnels.config` + `tunnels.sh` + `update.sh`).

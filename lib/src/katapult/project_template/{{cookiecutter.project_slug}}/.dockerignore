@@ -12,8 +12,8 @@
 __pycache__/
 *.py[cod]
 
-# Virtual environments
-.venv/
+# Virtual environments (any depth; venvs are baked in-image, never copied from host)
+**/.venv/
 
 # Build artifacts
 dist/
