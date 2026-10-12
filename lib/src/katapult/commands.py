@@ -104,12 +104,75 @@ def _write_context_manifest(override_dir: Path, project_dir: Path) -> None:
     is_flag=True,
     help="Ignore ~/.katapult/template/ overrides.",
 )
-def init(no_overrides: bool) -> None:
-    """Initialize a new Katapult application."""
+@click.option(
+    "--name",
+    "project_name",
+    default=None,
+    help="Project name (sets project_name; the slug is derived from it).",
+)
+@click.option(
+    "--python",
+    "python_version",
+    default=None,
+    metavar="VERSION",
+    help="Python version for the project (e.g. 3.12).",
+)
+@click.option(
+    "--host",
+    "host",
+    default=None,
+    help="Host the project is served from (default: localhost).",
+)
+@click.option(
+    "--output-dir",
+    "output_dir",
+    type=click.Path(file_okay=False),
+    default=None,
+    help="Directory to create the project in (default: current directory).",
+)
+@click.option(
+    "--yes",
+    "--no-input",
+    "assume_yes",
+    is_flag=True,
+    default=False,
+    help="Run non-interactively: use provided values + template defaults, no prompts.",
+)
+def init(
+    no_overrides: bool,
+    project_name: str | None,
+    python_version: str | None,
+    host: str | None,
+    output_dir: str | None,
+    assume_yes: bool,
+) -> None:
+    """Initialize a new Katapult application.
+
+    With no options this prompts interactively (cookiecutter). Pass ``--yes`` (optionally
+    with ``--name`` / ``--python`` / ``--host``) to create a project unattended, e.g. when
+    an orchestrator drives project creation:
+
+    \b
+        kat init --yes --name "Lead Score" --python 3.12
+    """
     current_file_path = Path(__file__)
     template_dir = current_file_path.parent / "project_template"
     katapult_dir = Path.home() / ".katapult"
     override_dir = katapult_dir / "template"
+
+    extra_context: dict[str, str] = {}
+    if project_name is not None:
+        extra_context["project_name"] = project_name
+    if python_version is not None:
+        extra_context["python_version"] = python_version
+    if host is not None:
+        extra_context["host"] = host
+
+    cc_kwargs: dict = {"no_input": assume_yes}
+    if extra_context:
+        cc_kwargs["extra_context"] = extra_context
+    if output_dir is not None:
+        cc_kwargs["output_dir"] = output_dir
 
     if (
         not no_overrides
@@ -124,11 +187,33 @@ def init(no_overrides: bool) -> None:
                 merged / "cookiecutter.json",
             )
             click.echo(f"Applying overrides from {override_dir}")
-            project_dir = cookiecutter(str(merged))
+            project_dir = cookiecutter(str(merged), **cc_kwargs)
             if project_dir is not None:
                 _write_context_manifest(override_dir, Path(project_dir))
     else:
-        cookiecutter(str(template_dir))
+        project_dir = cookiecutter(str(template_dir), **cc_kwargs)
+
+    _stamp_new_project(project_dir)
+
+
+def _stamp_new_project(project_dir) -> None:
+    """Record the katapult version + mark all migrations applied on a fresh project.
+
+    A newly generated project is already at the latest template, so nothing should be
+    pending on a later ``kat upgrade``. Guarded so test doubles (which return a mock
+    instead of a real path) are a no-op.
+    """
+    if not project_dir:
+        return
+    try:
+        path = Path(str(project_dir))
+    except (TypeError, ValueError):
+        return
+    if not path.is_dir():
+        return
+    from katapult.migrations.runner import stamp_fresh_project
+
+    stamp_fresh_project(path)
 
 
 @click.command()
@@ -406,6 +491,26 @@ def _read_build_config_name(project: Path) -> str | None:
     return m.group(1).strip() if m else None
 
 
+def _read_build_config_identity(project: Path) -> tuple[str, str, str]:
+    """Return (IMAGE_ROOT, PROJECT_NAME, USERNAME) from build/BuildConfig.
+
+    The dev container name is ``IMAGE_ROOT-PROJECT_NAME``. USERNAME defaults to
+    ``katapult`` when the field is absent. Raises ClickException when the file or
+    the required IMAGE_ROOT/PROJECT_NAME fields are missing.
+    """
+    cfg = project / "build" / "BuildConfig"
+    if not cfg.is_file():
+        raise click.ClickException(f"{project} has no build/BuildConfig.")
+    text = cfg.read_text()
+    m_root = re.search(r"^IMAGE_ROOT=(.+)$", text, re.MULTILINE)
+    m_name = re.search(r"^PROJECT_NAME=(.+)$", text, re.MULTILINE)
+    if not m_root or not m_name:
+        raise click.ClickException(f"{cfg} is missing IMAGE_ROOT or PROJECT_NAME.")
+    m_user = re.search(r"^USERNAME=(.+)$", text, re.MULTILINE)
+    username = m_user.group(1).strip() if m_user else "katapult"
+    return m_root.group(1).strip(), m_name.group(1).strip(), username
+
+
 def _image_exists(client, tag: str) -> bool:
     try:
         client.images.get(tag)
@@ -534,6 +639,206 @@ def export_docs(
             shutil.rmtree(work_parent, ignore_errors=True)
         else:
             click.echo(f"Working copy retained at {work_parent}")
+
+
+# --- MCP delegate backend + endpoint registration ----------------------------
+
+# Map a delegate backend name to the optional-dependency extra declared in
+# mcp/pyproject.toml. Add a backend by declaring its extra there (plus a runtime
+# adapter under mcp/src/project_mcp/backends/) and an entry here -- data, not new
+# command logic. The neutral MCP server needs none of this.
+MCP_BACKEND_EXTRAS: dict[str, str] = {
+    "cursor": "cursor",
+}
+
+
+def _read_agent_tool(project: Path) -> str | None:
+    """Return the optional ``AGENT_TOOL`` from build/BuildConfig, or None if unset."""
+    cfg = project / "build" / "BuildConfig"
+    if not cfg.is_file():
+        return None
+    m = re.search(r"^AGENT_TOOL=(.+)$", cfg.read_text(), re.MULTILINE)
+    return m.group(1).strip() if m else None
+
+
+def _read_agent_backend(project: Path) -> str | None:
+    """Return ``AGENT_BACKEND`` from <project>/build/agent.env, or None if unset.
+
+    This small file is the overlay-friendly activation knob (see build/agent.env):
+    the ``~/.katapult`` overlay flips it to e.g. ``cursor`` without cloning
+    build/BuildConfig. ``none`` is treated as unset.
+    """
+    env = project / "build" / "agent.env"
+    if not env.is_file():
+        return None
+    m = re.search(r"^AGENT_BACKEND=(.+)$", env.read_text(), re.MULTILINE)
+    if not m:
+        return None
+    val = m.group(1).strip().strip('"').strip("'").lower()
+    return val or None
+
+
+@click.command(name="install-agent")
+@click.argument(
+    "project_dir",
+    type=click.Path(file_okay=False, exists=True),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--backend",
+    "backend",
+    type=click.Choice(sorted(MCP_BACKEND_EXTRAS)),
+    default=None,
+    help="Which MCP delegate backend to install. Defaults to AGENT_BACKEND in build/agent.env.",
+)
+def install_agent(project_dir: str | None, backend: str | None) -> None:
+    """(Optional, dev-only) Install an MCP delegate backend into a running dev container.
+
+    Thin host wrapper over the project's own standalone mechanism:
+    ``cd /content/mcp && uv sync --extra <backend>``. Not required by any core
+    workflow -- the neutral MCP server works with no backend. This only adds the
+    opt-in "second brain" dependency (e.g. the Cursor SDK) so the server's
+    ``delegate`` tool becomes available.
+
+    Dev-only: the extra installs into the dev container's ``mcp/.venv`` (an
+    anonymous volume), never baked into the shared image, so test/prod
+    scorer/finalize/producer containers (which run the same image) stay
+    agent-free. Re-run after a container recreate (``katx rebuild``).
+    """
+    project = _resolve_scan_project(project_dir, implicit_first_arg=None)
+    image_root, project_name, username = _read_build_config_identity(project)
+    container_name = f"{image_root}-{project_name}"
+
+    backend = backend or _read_agent_backend(project)
+    if not backend or backend == "none":
+        known = ", ".join(sorted(MCP_BACKEND_EXTRAS))
+        raise click.ClickException(
+            "No delegate backend selected. Set AGENT_BACKEND in build/agent.env "
+            f"(one of: {known}) or pass --backend."
+        )
+    if backend not in MCP_BACKEND_EXTRAS:
+        known = ", ".join(sorted(MCP_BACKEND_EXTRAS))
+        raise click.ClickException(
+            f"Unknown delegate backend {backend!r} (from --backend or agent.env). "
+            f"Known backends: {known}."
+        )
+    extra = MCP_BACKEND_EXTRAS[backend]
+
+    client = docker.from_env()
+    try:
+        container = client.containers.get(container_name)
+    except docker.errors.NotFound:
+        raise click.ClickException(
+            f"Dev container {container_name!r} is not running. Start it first "
+            f"(e.g. `{project}/.katapult/katx up`)."
+        )
+
+    cmd = f"cd /content/mcp && uv sync --extra {extra}"
+    rc, output = container.exec_run(["bash", "-lc", cmd], user=username, demux=False)
+    if output:
+        click.echo(output.decode(errors="replace"))
+    if rc not in (0, None):
+        raise click.ClickException(
+            f"MCP delegate backend {backend!r} install failed (exit {rc})."
+        )
+    click.echo(f"MCP delegate backend {backend!r} ready in {container_name}.")
+
+
+@click.command(name="register-mcp")
+@click.argument(
+    "project_dir",
+    type=click.Path(file_okay=False, exists=True),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--host",
+    "host",
+    default="localhost",
+    show_default=True,
+    help="Host serving the project's Traefik routes.",
+)
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(dir_okay=False),
+    default=".cursor/mcp.json",
+    show_default=True,
+    help="MCP client config (JSON) to update, e.g. the hub's .cursor/mcp.json.",
+)
+def register_mcp(project_dir: str | None, host: str, config_path: str) -> None:
+    """(Optional, host-side) Register a project's /mcp endpoint in an MCP client config.
+
+    Orchestration convenience for the VM-level hub agent: adds/updates an
+    ``mcpServers`` entry pointing at ``http://<host>/<project>/mcp`` so the hub
+    agent (configured with every project's endpoint) can reach it. Not required
+    for the project to run -- the project's MCP server is standalone.
+    """
+    project = _resolve_scan_project(project_dir, implicit_first_arg=None)
+    _, project_name, _ = _read_build_config_identity(project)
+    url = f"http://{host}/{project_name}/mcp"
+
+    cfg = Path(config_path)
+    if cfg.parent and not cfg.parent.exists():
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+    data: dict = {}
+    if cfg.is_file():
+        try:
+            data = json.loads(cfg.read_text() or "{}")
+        except json.JSONDecodeError as e:
+            raise click.ClickException(f"{cfg} is not valid JSON: {e}")
+    servers = data.setdefault("mcpServers", {})
+    servers[project_name] = {"url": url}
+    cfg.write_text(json.dumps(data, indent=2) + "\n")
+    click.echo(f"Registered MCP server {project_name!r} -> {url} in {cfg}.")
+
+
+# --- Project upgrade (versioned, scaffolding-only migrations) ------------------
+
+
+@click.command()
+@click.argument(
+    "project_dir",
+    type=click.Path(file_okay=False, exists=True),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Preview the planned changes without writing anything.",
+)
+@click.option(
+    "--allow-dirty",
+    is_flag=True,
+    help="Proceed even if the project's git working tree is dirty / not a repo.",
+)
+@click.option(
+    "--to",
+    "to_id",
+    default=None,
+    help="Stop after this migration id (inclusive) instead of applying all pending.",
+)
+def upgrade(
+    project_dir: str | None, dry_run: bool, allow_dirty: bool, to_id: str | None
+) -> None:
+    """Upgrade a katapult project's scaffolding to the latest template.
+
+    Reads the project's recorded version from ``.katapult/manifest.json`` and applies the
+    pending, idempotent, scaffolding-only migrations (never touching user code). By
+    default it refuses to run on a dirty git tree; use ``--dry-run`` to preview and
+    ``--allow-dirty`` to override.
+    """
+    project = _resolve_scan_project(project_dir, implicit_first_arg=None)
+    from katapult.migrations.runner import run_upgrade
+
+    run_upgrade(
+        project,
+        dry_run=dry_run,
+        allow_dirty=allow_dirty,
+        to_id=to_id,
+    )
 
 
 # --- Security scan (Trivy + Hadolint) -----------------------------------------

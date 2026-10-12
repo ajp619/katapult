@@ -217,7 +217,7 @@ def test_init_no_overrides_calls_cookiecutter_template_dir(tmp_path: Path) -> No
         result = runner.invoke(main, ["init", "--no-overrides"])
 
     assert result.exit_code == 0
-    mock_cc.assert_called_once_with(str(template_dir))
+    mock_cc.assert_called_once_with(str(template_dir), no_input=False)
 
 
 def test_init_with_overrides_merges_and_calls_cookiecutter(tmp_path: Path) -> None:
@@ -226,7 +226,7 @@ def test_init_with_overrides_merges_and_calls_cookiecutter(tmp_path: Path) -> No
     (kat / "template" / "cursor_context" / "x.txt").parent.mkdir(parents=True)
     (kat / "template" / "cursor_context" / "x.txt").write_text("ctx")
 
-    def assert_merged_template(merged_arg: str) -> None:
+    def assert_merged_template(merged_arg: str, **kwargs) -> None:
         # Still inside TemporaryDirectory in init(); merged tree exists until cookiecutter returns.
         merged = Path(merged_arg)
         assert merged.name == "project_template"
@@ -253,7 +253,7 @@ def test_init_writes_context_manifest_when_overrides_applied(tmp_path: Path) -> 
     project = tmp_path / "generated"
     (project / ".katapult").mkdir(parents=True)
 
-    def fake_cookiecutter(merged_arg: str) -> str:
+    def fake_cookiecutter(merged_arg: str, **kwargs) -> str:
         merged = Path(merged_arg)
         slug_dir = merged / "{{cookiecutter.project_slug}}"
         assert (
@@ -301,8 +301,71 @@ def test_init_no_overrides_skips_merge_even_with_template_files(tmp_path: Path) 
             result = runner.invoke(main, ["init", "--no-overrides"])
 
     assert result.exit_code == 0
-    mock_cc.assert_called_once_with(str(template_dir))
+    mock_cc.assert_called_once_with(str(template_dir), no_input=False)
     assert "Applying overrides" not in result.output
+
+
+def test_init_yes_passes_no_input_and_extra_context(tmp_path: Path) -> None:
+    template_dir = Path(commands.__file__).resolve().parent / "project_template"
+
+    with patch.object(commands, "cookiecutter") as mock_cc:
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            [
+                "init",
+                "--no-overrides",
+                "--yes",
+                "--name",
+                "Lead Score",
+                "--python",
+                "3.12",
+                "--host",
+                "example.com",
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    mock_cc.assert_called_once_with(
+        str(template_dir),
+        no_input=True,
+        extra_context={
+            "project_name": "Lead Score",
+            "python_version": "3.12",
+            "host": "example.com",
+        },
+    )
+
+
+def test_init_no_input_alias_and_partial_context(tmp_path: Path) -> None:
+    template_dir = Path(commands.__file__).resolve().parent / "project_template"
+
+    with patch.object(commands, "cookiecutter") as mock_cc:
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["init", "--no-overrides", "--no-input", "--name", "Just Name"]
+        )
+
+    assert result.exit_code == 0, result.output
+    mock_cc.assert_called_once_with(
+        str(template_dir), no_input=True, extra_context={"project_name": "Just Name"}
+    )
+
+
+def test_init_output_dir_passed_through(tmp_path: Path) -> None:
+    template_dir = Path(commands.__file__).resolve().parent / "project_template"
+    out = tmp_path / "dest"
+
+    with patch.object(commands, "cookiecutter") as mock_cc:
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["init", "--no-overrides", "--yes", "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    mock_cc.assert_called_once_with(
+        str(template_dir), no_input=True, output_dir=str(out)
+    )
 
 
 # --- CLI: hub ---
@@ -1385,3 +1448,233 @@ def test_scan_report_no_quarto_yml_present_skips_wiring_silently(
 
     assert result.exit_code == 0
     assert list((proj / "srv" / "scans").glob("scan_*.qmd"))
+
+
+# --- _read_build_config_identity ---
+
+
+def test_read_build_config_identity_parses_all_fields(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=my_project\nUSERNAME=someuser\n"
+    )
+    assert commands._read_build_config_identity(tmp_path) == (
+        "katapult",
+        "my_project",
+        "someuser",
+    )
+
+
+def test_read_build_config_identity_defaults_username(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=p\n"
+    )
+    assert commands._read_build_config_identity(tmp_path) == ("katapult", "p", "katapult")
+
+
+def test_read_build_config_identity_missing_file_raises(tmp_path: Path) -> None:
+    with pytest.raises(commands.click.ClickException):
+        commands._read_build_config_identity(tmp_path)
+
+
+def test_read_build_config_identity_missing_required_field_raises(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text("IMAGE_ROOT=katapult\n")
+    with pytest.raises(commands.click.ClickException):
+        commands._read_build_config_identity(tmp_path)
+
+
+# --- _read_agent_tool ---
+
+
+def test_read_agent_tool_parses_value(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=p\nAGENT_TOOL=claude\n"
+    )
+    assert commands._read_agent_tool(tmp_path) == "claude"
+
+
+def test_read_agent_tool_absent_returns_none(tmp_path: Path) -> None:
+    (tmp_path / "build").mkdir()
+    (tmp_path / "build" / "BuildConfig").write_text(
+        "IMAGE_ROOT=katapult\nPROJECT_NAME=p\n"
+    )
+    assert commands._read_agent_tool(tmp_path) is None
+
+
+def test_read_agent_tool_missing_file_returns_none(tmp_path: Path) -> None:
+    assert commands._read_agent_tool(tmp_path) is None
+
+
+# --- CLI: install-agent ---
+
+
+def _install_client(exec_return=(0, b"Installed 1 package\n"), *, not_found=False):
+    """Docker client mock for install-agent: containers.get -> container.exec_run."""
+    client = MagicMock()
+    if not_found:
+        client.containers.get.side_effect = docker.errors.NotFound("nope")
+    else:
+        container = MagicMock()
+        container.exec_run.return_value = exec_return
+        client.containers.get.return_value = container
+    return client
+
+
+def _exec_cmd(client) -> str:
+    """The shell string passed to the container's exec_run for install-agent."""
+    return client.containers.get.return_value.exec_run.call_args[0][0][2]
+
+
+def test_install_agent_execs_uv_sync_in_dev_container(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)  # USERNAME=u in BuildConfig
+    client = _install_client()
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj), "--backend", "cursor"])
+
+    assert result.exit_code == 0, result.output
+    client.containers.get.assert_called_once_with("katapult-my_project")
+    container = client.containers.get.return_value
+    container.exec_run.assert_called_once()
+    args, kwargs = container.exec_run.call_args
+    assert args[0][:2] == ["bash", "-lc"]
+    assert "cd /content/mcp" in args[0][2]
+    assert "uv sync --extra cursor" in args[0][2]
+    assert kwargs["user"] == "u"
+    assert "ready in katapult-my_project" in result.output
+
+
+def test_install_agent_errors_when_container_not_running(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    client = _install_client(not_found=True)
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj), "--backend", "cursor"])
+
+    assert result.exit_code != 0
+    assert "not running" in result.output
+
+
+def test_install_agent_nonzero_exec_raises(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    client = _install_client(exec_return=(1, b"boom\n"))
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj), "--backend", "cursor"])
+
+    assert result.exit_code != 0
+    assert "failed" in result.output.lower()
+
+
+def test_install_agent_errors_without_katapult_marker(tmp_path: Path) -> None:
+    runner = CliRunner()
+    result = runner.invoke(main, ["install-agent", str(tmp_path), "--backend", "cursor"])
+    assert result.exit_code != 0
+    assert "does not look like a katapult project" in result.output
+
+
+def test_install_agent_backend_from_agent_env(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / "build" / "agent.env").write_text("AGENT_BACKEND=cursor\n")
+    client = _install_client()
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj)])
+
+    assert result.exit_code == 0, result.output
+    assert "uv sync --extra cursor" in _exec_cmd(client)
+
+
+def test_install_agent_backend_option_overrides_agent_env(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / "build" / "agent.env").write_text("AGENT_BACKEND=none\n")
+    client = _install_client()
+
+    with patch.object(commands.docker, "from_env", return_value=client):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj), "--backend", "cursor"])
+
+    assert result.exit_code == 0, result.output
+    assert "uv sync --extra cursor" in _exec_cmd(client)
+
+
+def test_install_agent_no_backend_selected_raises(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)  # no agent.env
+
+    with patch.object(commands.docker, "from_env", return_value=_install_client()):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj)])
+
+    assert result.exit_code != 0
+    assert "No delegate backend selected" in result.output
+
+
+def test_install_agent_agent_env_none_raises(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    (proj / "build" / "agent.env").write_text("AGENT_BACKEND=none\n")
+
+    with patch.object(commands.docker, "from_env", return_value=_install_client()):
+        runner = CliRunner()
+        result = runner.invoke(main, ["install-agent", str(proj)])
+
+    assert result.exit_code != 0
+    assert "No delegate backend selected" in result.output
+
+
+def test_install_agent_invalid_backend_choice_rejected(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    runner = CliRunner()
+    result = runner.invoke(main, ["install-agent", str(proj), "--backend", "nope"])
+    assert result.exit_code != 0  # click.Choice rejects before the command body runs
+
+
+# --- _read_agent_backend ---
+
+
+def test_read_agent_backend_parses_value(tmp_path: Path) -> None:
+    build = tmp_path / "build"
+    build.mkdir()
+    (build / "agent.env").write_text("AGENT_BACKEND=cursor\n")
+    assert commands._read_agent_backend(tmp_path) == "cursor"
+
+
+def test_read_agent_backend_missing_file_returns_none(tmp_path: Path) -> None:
+    assert commands._read_agent_backend(tmp_path) is None
+
+
+# --- CLI: register-mcp ---
+
+
+def test_register_mcp_writes_server_entry(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)  # PROJECT_NAME=my_project
+    cfg = tmp_path / "mcp.json"
+
+    runner = CliRunner()
+    result = runner.invoke(
+        main, ["register-mcp", str(proj), "--host", "myhost", "--config", str(cfg)]
+    )
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(cfg.read_text())
+    assert data["mcpServers"]["my_project"]["url"] == "http://myhost/my_project/mcp"
+
+
+def test_register_mcp_merges_existing_config(tmp_path: Path) -> None:
+    proj = _make_scan_project(tmp_path, dockerfile=False)
+    cfg = tmp_path / "mcp.json"
+    cfg.write_text(json.dumps({"mcpServers": {"other": {"url": "http://x/other/mcp"}}}))
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["register-mcp", str(proj), "--config", str(cfg)])
+
+    assert result.exit_code == 0, result.output
+    data = json.loads(cfg.read_text())
+    assert "other" in data["mcpServers"]
+    assert "my_project" in data["mcpServers"]
