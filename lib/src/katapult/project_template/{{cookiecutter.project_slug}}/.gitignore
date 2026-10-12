@@ -33,6 +33,10 @@ htmlcov/
 !.env.example
 *.pem
 *.key
+build/.agent_credentials
+
+# MCP handoff data-plane (transient inter-agent exchange)
+.handoff/
 
 # IDE / editor
 **/.vscode/

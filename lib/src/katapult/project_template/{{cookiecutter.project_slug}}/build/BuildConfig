@@ -10,6 +10,12 @@ PYTHON_VERSION={{cookiecutter.python_version}}
 NODE_VERSION=20.9.0
 QUARTO_VERSION=1.7.27
 
+# MCP server (per-project, IDE-neutral). Set to `off` to omit the dev-only MCP
+# service from the image entirely (keeps test/prod agent-free). The opt-in
+# delegate backend is configured separately in build/agent.env (default none),
+# so the ~/.katapult overlay can activate it without cloning this file.
+MCP_SERVER=on
+
 # Optional: restrict which supervisor programs run AND which venvs bake, as a
 # comma-separated allowlist of program names (no spaces; the names shown by
 # `katx services`, e.g. api, webapp, jupyter, nginx). Normally leave unset and

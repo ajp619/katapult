@@ -21,7 +21,7 @@ mkdir /content && chown ${USERNAME}:${USERGROUP} /content
 # anon volume's ownership from the image path, so if the dir is absent the
 # volume comes up root-owned and the non-root app user can't create its venv at
 # runtime. This matters for projects without baked venvs (no uv.lock yet).
-for d in api app lib nbk; do mkdir -p /content/$d/.venv; done
+for d in api app lib nbk mcp; do mkdir -p /content/$d/.venv; done
 chown -R ${USERNAME}:${USERGROUP} /content
 mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${USERGROUP} /tmp/supervisor
 EOF
@@ -83,6 +83,16 @@ COPY --chown=${USERNAME}:${USERGROUP} . /content/
 # configure supervisor
 COPY ./build/conf/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./build/conf/supervisor/conf.d/* /etc/supervisor/conf.d/
+
+# Dev-only MCP service: when MCP_SERVER != on, disable it at build time so it
+# neither bakes a venv (the bake loop below only touches enabled *.conf dirs)
+# nor runs under supervisor -- keeping test/prod images agent-free.
+ARG MCP_SERVER=on
+RUN if [ "${MCP_SERVER}" != "on" ]; then \
+        [ -f /etc/supervisor/conf.d/mcp.conf ] && mv /etc/supervisor/conf.d/mcp.conf /etc/supervisor/conf.d/mcp.conf_; \
+        rm -f /etc/nginx/conf.d/location_blocks/mcp.conf; \
+        true; \
+    fi
 
 # - Silence uv complaining about not being able to use hard links,
 # - tell uv to byte-compile packages for faster application startups,

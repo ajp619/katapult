@@ -1,0 +1,54 @@
+---
+description: Standard katapult project anatomy and documentation organization
+---
+
+# Katapult project conventions
+
+Every katapult project shares the same structure and documentation conventions. Apply this
+when navigating or adding files to this project.
+
+## Project anatomy
+
+| Path | Role |
+|------|------|
+| `lib/` | Python library (`src/<pkg>/`), tests, own `uv` env. Editable-installed into other envs. |
+| `nbk/` | Jupyter notebooks + utilities; own `uv` env; installs the project `lib`. |
+| `api/` | Quart API service; own `uv` env. |
+| `app/` | FastHTML webapp; own `uv` env. |
+| `mcp/` | (dev-only) neutral MCP server exposing project operations as MCP tools; own `uv` env. |
+| `srv/` | Quarto documentation **source** (`.qmd`). |
+| `docs/` | Rendered documentation **output** (do not hand-edit; produced by `quarto render`). |
+| `build/` | `Dockerfile`, `docker-compose*.yml`, `BuildConfig`, gitignored credential/env files, supervisor/nginx `conf/`. |
+| `.katapult/` | `katx` script + `HOSTVARS` (host-side project tooling). |
+| `cursor_context/` | Project-specific query/data context (e.g. query guides, schema indexes), when present. |
+| `_quarto.yml` | Quarto project + website/sidebar config (repo root of the project). |
+
+Services inside the container (JupyterLab, Quart API, FastHTML, Nginx, and the dev-only MCP
+server) are managed by Supervisor; check with `.katapult/katx status`.
+
+## Documentation layout and medium
+
+| Kind | Path | Role |
+|------|------|------|
+| Prose / specs | `srv/docs/` | Stable narrative, architecture, specs. Code shown as **static** fenced ```python blocks (not `{python}` executable). |
+| Hub / link tree | `srv/documentation.qmd` (or project equivalent) | So every doc is reachable from the site root. |
+| Reviews | `srv/reviews/*.qmd` | Technical review write-ups. |
+| Executable reports | `nbk/reports/*.ipynb` | Rerun when code changes; plots, summaries, diagnostics. |
+
+### QMD vs notebook
+
+- **Use QMD** when the doc is specification, stakeholder narrative, or architecture that
+  does **not** need inline execution; outputs stay illustrative or hand-authored.
+- **Use a notebook** when readers need **regenerated** outputs (tables, plots) tied to
+  current library code.
+- **Pair them:** a major spec in `srv/docs/` should link to its report notebook under
+  `nbk/reports/`, and the notebook should link back to the spec. Do not bury long-lived
+  prose-only specs in notebooks without a QMD counterpart.
+
+## Quarto registration
+
+- Add new render targets and **sidebar** entries in the project-root `_quarto.yml`
+  (`project.render` + `website.sidebar`).
+- Cross-links use paths **relative to the file** you are editing (e.g. a QMD deep in
+  `srv/docs/` links to a notebook via `../../../nbk/reports/...`).
+- Render inside the container: `.katapult/katx render`.

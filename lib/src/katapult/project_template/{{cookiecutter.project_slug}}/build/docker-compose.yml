@@ -14,8 +14,19 @@ services:
       - /content/app/.venv
       - /content/lib/.venv
       - /content/nbk/.venv
+      - /content/mcp/.venv
+      # Persist the opt-in delegate backend's agent/session store across
+      # `katx rebuild` (used only when AGENT_BACKEND selects a backend).
+      - mcp_agent_store:/home/katapult/.cursor
+    env_file:
+      # Optional backend credentials (e.g. CURSOR_API_KEY). Absent by default;
+      # the ~/.katapult overlay drops this in when a backend is activated.
+      - path: ./.agent_credentials
+        required: false
     networks:
       - ${IMAGE_ROOT}
+volumes:
+  mcp_agent_store:
 networks:
   katapult:
     name: ${IMAGE_ROOT}

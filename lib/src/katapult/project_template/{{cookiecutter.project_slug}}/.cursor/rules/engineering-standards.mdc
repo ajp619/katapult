@@ -1,0 +1,65 @@
+---
+description: Core engineering standards for a katapult project - dependencies via uv, documentation/README upkeep, notebooks, security, and tests
+alwaysApply: true
+---
+
+# Engineering standards
+
+Apply these to all work in this project. They are intentionally generic to every katapult
+project; project-specific guidance lives in other rules under `.cursor/rules/` and in
+`cursor_context/` (when present).
+
+## Dependencies: always uv
+
+Each subdir (`lib/`, `nbk/`, `api/`, `app/`, `mcp/`) is its **own** uv environment with its
+own `pyproject.toml` + `uv.lock`.
+
+- Add/remove dependencies with uv in the relevant subdir, never by hand-editing the lock or
+  `pip install`-ing ad hoc:
+
+  ```bash
+  cd <subdir> && uv add <package>      # updates pyproject.toml + uv.lock
+  cd <subdir> && uv sync               # reconcile the environment
+  ```
+
+- Commit both `pyproject.toml` and `uv.lock`. Keep `requires-python` consistent across
+  subdirs. Images bake envs with `uv sync --frozen`, so after dependency changes rebuild
+  the container (`.katapult/katx rebuild`) to pick them up.
+- Run commands through the env with `uv run` (e.g. `cd lib && uv run pytest`), not a bare
+  interpreter.
+
+## Documentation and READMEs: keep them current
+
+Treat docs as part of the change, not an afterthought.
+
+- When you change behavior, an interface, or setup, update the relevant **README** and the
+  Quarto docs in the same change.
+- Prose/specs/architecture go in `srv/docs/` (Quarto `.qmd`); rerunnable analyses go in
+  `nbk/reports/` notebooks. See `katapult-project-conventions.mdc` for the layout and
+  `notebook-standards.mdc` for notebook structure.
+- `docs/` is **rendered output** - never hand-edit it; regenerate with
+  `.katapult/katx render`.
+- `kat export-docs <project>` produces a self-contained HTML zip for sharing without a
+  server.
+
+## Notebooks: jupytext-paired
+
+Report notebooks under `nbk/` are paired to plain-text percent `.py` via jupytext and are
+edited through the `.py`. Full workflow and cell-label scheme: `notebook-standards.mdc`.
+
+## Security
+
+- **Secrets** live only in gitignored env files under `build/` (e.g. credential env_files
+  referenced by `docker-compose.yml`). Never commit them, never bake them into the shared
+  image, and never write them into `.handoff/`.
+- The dev-only MCP service and any `delegate` backend are dev-only; **test/prod images stay
+  agent-free** and credential-free.
+- Scan before shipping: `kat scan` (Trivy for dependency/secret/misconfig findings +
+  Hadolint for the Dockerfile). Rebuild the image after dependency or Dockerfile changes so
+  the image scan is current.
+- Prefer least-privilege credentials; do not log secret values.
+
+## Tests
+
+- `lib/` carries the test suite: `cd lib && uv run pytest`. Add or update tests alongside
+  library changes, and keep the suite green before considering work done.

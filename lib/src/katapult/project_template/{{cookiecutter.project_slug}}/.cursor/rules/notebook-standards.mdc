@@ -1,0 +1,103 @@
+---
+description: Narrative structure, jupytext pairing, and Quarto cell-label scheme for nbk/**/*.ipynb notebooks
+globs: nbk/**/*.ipynb,nbk/**/*.py
+---
+
+# Notebook standards (`nbk/`)
+
+Applies to Jupyter notebooks in this project's `nbk/` directory. Notebooks are
+tutorial-style documents, not bare scripts.
+
+## Prose / narrative structure
+
+1. **Opening markdown:** title, purpose, where this fits (which pipeline/model/stage),
+   prerequisites (env, credentials).
+2. **Before each code cell:** what it runs, what output to expect, and how to read the
+   resulting tables/plots.
+3. **Closing markdown:** next steps and links to the related QMD spec (`srv/docs/...`) or
+   sibling notebooks.
+4. **No empty code cells** in committed notebooks.
+
+Anti-patterns: a single title cell followed by a long unbroken block of code; stale
+equations or parameter names that disagree with the library; hard-coded paths or
+secrets (use env vars and the project's config/connection helpers).
+
+## Editing format — jupytext-paired percent `.py` (required for report notebooks)
+
+`.ipynb` files that embed outputs (especially base64 chart images) become multi-MB with
+single lines >1M chars, which makes text edits by hand or by the agent extremely slow or
+hang outright. To avoid this, report notebooks are **paired** with a plain-text
+percent-format `.py` via [jupytext](https://jupytext.readthedocs.io). This is the standard
+convention across katapult projects.
+
+Setup (once per project):
+
+- Add `jupytext>=1.16` to `nbk/pyproject.toml` and `uv sync` the `nbk` env. (New projects
+  come with this preconfigured.)
+- Add `nbk/reports/jupytext.toml` with `formats = "ipynb,py//py:percent"` (paired `.py`
+  land in `nbk/reports/py/`).
+- Generate the pairing: `cd nbk && uv run jupytext --sync reports/*.ipynb`.
+
+Editing loop (**edit the `.py`, never hand-edit the big `.ipynb`**), run from the project
+root inside the container:
+
+1. Edit `nbk/reports/py/<name>.py` (small, plain text, no embedded outputs).
+2. `cd nbk && uv run jupytext --sync reports/<name>.ipynb` — writes the `.ipynb`,
+   **preserving existing outputs** for unchanged cells.
+3. `quarto render nbk/reports/<name>.ipynb` to refresh `docs/`.
+
+Output-preservation caveat: jupytext only keeps outputs for cells it can match.
+**Prose/markdown-only edits are 100% safe** (numbers/charts untouched, no re-execution). If
+you change **code** cells, the edited cell keeps its *old* output until you re-execute the
+notebook; after any manual re-execution, run `jupytext --sync` so `.py` and `.ipynb` stay
+consistent. Commit both the `.ipynb` and the paired `.py`.
+
+## Cell labels (required)
+
+Every code cell MUST start with a Quarto cell-options label as its **first non-blank
+line**, before any imports or executable code:
+
+```python
+#| label: <section>-<NN>
+```
+
+Other `#| ...` options (`#| echo: false`, `#| output: false`, ...) follow on subsequent
+lines.
+
+### Scheme — section-prefixed, sequential
+
+`<section>` mirrors the notebook's markdown sectioning; `<NN>` is a zero-padded 2-digit
+counter that resets per section. Recommended prefixes:
+
+| Prefix | Use for |
+|--------|---------|
+| `setup-` | imports, env, autoreload, building data/service clients |
+| `ingest-` | queries/pulls that load source data |
+| `clean-` | normalization, dedupe, schema resolution |
+| `match-` / `model-` | matching/scoring or modeling logic |
+| `validate-` | spot checks, sample tables, manual review exports |
+| `summary-` | final tables and CSV exports |
+| `debug-` | ad-hoc inspection cells |
+
+### Cross-reference prefixes
+
+- **Figures** (cells whose output is a plot): `#| label: fig-<section>-<name>` paired
+  with `#| fig-cap: "..."`. Reference as `@fig-...`.
+- **Tables** that are reference targets: `#| label: tbl-<section>-<name>` paired with
+  `#| tbl-cap: "..."`. Reference as `@tbl-...`.
+- **Markdown sections** that are link targets carry an anchor on the heading:
+  `## Setup and imports {#sec-setup}`. Reference as `@sec-setup`.
+
+### Constraints
+
+- Labels MUST be unique within a notebook. When duplicating a cell, bump the counter
+  rather than reusing a label.
+- Labels are kebab-case ASCII (`[a-z0-9-]+`): `debug-03`, not `debug_03` or `DBG_03`.
+- Do not relabel cells purely for re-ordering; the scheme is meant to be stable across
+  edits so reviewers can say "look at `match-03`" and find the same cell across commits.
+- Migrate older `DBG_NN` / one-off labels (e.g. `#| label: setup`) to the
+  `debug-NN` / `setup-NN` form opportunistically when otherwise editing the notebook.
+
+Why: lets reviewers, PR comments, and Cursor reference cells by stable name; activates
+Quarto cross-references (`@fig-`, `@tbl-`, `@sec-`) in rendered HTML; gives stable
+element IDs in `docs/` output for deep-linking.

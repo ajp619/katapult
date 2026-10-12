@@ -1,0 +1,25 @@
+[project]
+name = "project-mcp"
+version = "0.1.0"
+description = "Katapult per-project MCP server exposing project operations over the open MCP protocol (IDE-neutral)."
+readme = "README.md"
+requires-python = ">={{cookiecutter.python_version}}"
+dependencies = [
+    "mcp>=1.2,<2",
+]
+
+[project.optional-dependencies]
+# Opt-in "second brain" delegate backends. Enabled with `uv sync --extra <name>`
+# and activated at runtime by AGENT_BACKEND (see build/agent.env). Kept out of the
+# default closure so the neutral server stays vendor-free and IDE-independent.
+cursor = ["cursor-sdk"]
+
+[project.scripts]
+project-mcp = "project_mcp:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/project_mcp"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

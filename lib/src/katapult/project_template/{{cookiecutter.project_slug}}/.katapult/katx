@@ -107,6 +107,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "debug" "Placeholder for custom docker run command intended for debugging."
       printf "$format" "down" "\`docker compose down\`."
       printf "$format" "jlab" "lists the address (including token) of the currently running jupyter server."
+      printf "$format" "mcp" "prints the MCP server URL for this project and its service status."
       printf "$format" "private" "Unpublish: stop serving on the public entrypoint and recreate the container."
       printf "$format" "ps" "Lists containers associated with this project."
       printf "$format" "pub" "Publish: serve this project on the public entrypoint (:8081) + dashboard. Remembers setting."
@@ -196,6 +197,7 @@ while (( "$#" )); do
         --volume /content/api/.venv \
         --volume /content/app/.venv \
         --volume /content/nbk/.venv \
+        --volume /content/mcp/.venv \
         --network katapult \
         $IMAGE_NAME
       set +x
@@ -222,6 +224,18 @@ while (( "$#" )); do
         bash -c "$CMD" \
           | sed "s/\:8888//" \
           | sed "s/localhost/$HOST/" 
+      set +x
+      clear_last_line
+      shift
+      ;;
+    mcp)
+      echo "MCP endpoint: http://$HOST/$PROJECT_NAME/mcp"
+      CMD='supervisorctl status mcp 2>/dev/null || echo "mcp service not running (MCP_SERVER=off or not started)"'
+      set -x
+      docker exec \
+        -it \
+        $CONTAINER_NAME \
+        bash -c "$CMD"
       set +x
       clear_last_line
       shift

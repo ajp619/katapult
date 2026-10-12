@@ -7,6 +7,7 @@ requires-python = ">={{cookiecutter.python_version}}"
 dependencies = [
     "jupyter>=1.1.1",
     "jupyter-server>=2.18.0",
+    "jupytext>=1.16",
     "jupyterlab>=4.5.7",
     "jupyterlab-execute-time>=3.2.0",
     "jupyterlab-vim>=4.1.4",
