@@ -9,3 +9,9 @@ UBUNTU_RELEASE=24.04
 PYTHON_VERSION=3.12
 NODE_VERSION=20.9.0
 QUARTO_VERSION=1.7.27
+
+# MCP server (per-project, IDE-neutral). Set to `off` to omit the dev-only MCP
+# service from the image entirely (keeps test/prod agent-free). The opt-in
+# delegate backend is configured separately in build/agent.env (default none),
+# so the ~/.katapult overlay can activate it without cloning this file.
+MCP_SERVER=on

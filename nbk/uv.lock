@@ -822,7 +822,7 @@ wheels = [
 
 [[package]]
 name = "katapult"
-version = "0.8.2"
+version = "0.11.1"
 source = { directory = "../lib" }
 dependencies = [
     { name = "click" },

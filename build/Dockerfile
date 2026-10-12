@@ -19,6 +19,7 @@ groupadd -g ${GID_} ${USERGROUP}
 useradd -m -l -u ${UID_} -g ${GID_} ${USERNAME}
 mkdir /content && chown ${USERNAME}:${USERGROUP} /content
 mkdir -p /content/nbk/.venv && chown ${USERNAME}:${USERGROUP} /content/nbk/.venv
+mkdir -p /content/mcp/.venv && chown ${USERNAME}:${USERGROUP} /content/mcp/.venv
 mkdir -p /tmp/supervisor/log && chown ${USERNAME}:${USERGROUP} /tmp/supervisor
 EOF
 
@@ -119,6 +120,15 @@ COPY --chown=${USERNAME}:${USERGROUP} . /content/
 # ------------------------------------------------------------------------------------------------------------------------------
 COPY ./build/conf/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY ./build/conf/supervisor/conf.d/* /etc/supervisor/conf.d/
+
+# Dev-only MCP service: when MCP_SERVER != on, disable it at build time so it
+# does not run under supervisor -- keeping test/prod images agent-free.
+ARG MCP_SERVER=on
+RUN if [ "${MCP_SERVER}" != "on" ]; then \
+        [ -f /etc/supervisor/conf.d/mcp.conf ] && mv /etc/supervisor/conf.d/mcp.conf /etc/supervisor/conf.d/mcp.conf_; \
+        rm -f /etc/nginx/conf.d/location_blocks/mcp.conf; \
+        true; \
+    fi
 
 # ------------------------------------------------------------------------------------------------------------------------------
 # - Silence uv complaining about not being able to use hard links,

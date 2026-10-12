@@ -86,6 +86,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "rmf" "\`docker rm -f ...\`."
       printf "$format" "run" "Shortcut for: katx build, katx up, katx render, katx status."
       printf "$format" "jlab" "lists the address (including token) of the currently running jupyter server."
+      printf "$format" "mcp" "prints the MCP server URL for this project and its service status."
       printf "$format" "status" "supervisorctl status."
       printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
       printf "$format" "update_context" "Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh)."
@@ -227,6 +228,18 @@ while (( "$#" )); do
         bash -c "$CMD" \
           | sed "s/\:8888//" \
           | sed "s/localhost/$HOST/" 
+      set +x
+      clear_last_line
+      shift
+      ;;
+    mcp)
+      echo "MCP endpoint: http://$HOST/$PROJECT_NAME/mcp"
+      CMD='supervisorctl status mcp 2>/dev/null || echo "mcp service not running (MCP_SERVER=off or not started)"'
+      set -x
+      docker exec \
+        -it \
+        $CONTAINER_NAME \
+        bash -c "$CMD"
       set +x
       clear_last_line
       shift
