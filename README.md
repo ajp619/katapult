@@ -107,6 +107,10 @@ kat init --yes --name "Lead Score" --python 3.12 --output-dir ~/git
 `--name`, `--python`, `--host`, and `--output-dir` are all optional; anything omitted falls
 back to the template default.
 
+The new project is created as a git repository with one initial commit (so `kat upgrade`
+works later). Pass `--no-git` to skip this; it is also skipped when the output directory is
+already inside a git repository.
+
 Change to the new project directory and use:
 
 ```bash

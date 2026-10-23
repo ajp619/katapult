@@ -289,6 +289,111 @@ def test_init_no_manifest_without_overrides(tmp_path: Path) -> None:
     assert "Applying overrides" not in result.output
 
 
+# --- kat init: git repository ---
+
+
+@pytest.fixture
+def git_identity(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("AUTHOR", "COMMITTER"):
+        monkeypatch.setenv(f"GIT_{var}_NAME", "Kat Test")
+        monkeypatch.setenv(f"GIT_{var}_EMAIL", "kat@example.com")
+
+
+def _generated_project(root: Path) -> Path:
+    """A generated project with the template ignore rules and a credentials file."""
+    project = root / "generated"
+    (project / ".katapult").mkdir(parents=True)
+    (project / "build").mkdir()
+    (project / "build" / "agent.env").write_text("AGENT_BACKEND=cursor\n")
+    (project / "build" / ".agent_credentials").write_text("SECRET=1\n")
+    (project / "build" / ".agent_credentials.example").write_text("SECRET=\n")
+    (project / ".gitignore").write_text(
+        "build/.*_credentials\n!build/.*_credentials.example\n"
+    )
+    return project
+
+
+def _init(home: Path, project: Path, *args: str):
+    with patch.object(commands.Path, "home", return_value=home):
+        with patch.object(commands, "cookiecutter", return_value=str(project)):
+            return CliRunner().invoke(main, ["init", *args])
+
+
+def _git(project: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", "-C", str(project), *args], capture_output=True, text=True, check=True
+    ).stdout
+
+
+def test_init_creates_git_repo_with_initial_commit(tmp_path: Path, git_identity) -> None:
+    project = _generated_project(tmp_path)
+
+    result = _init(tmp_path, project)
+
+    assert result.exit_code == 0, result.output
+    assert "initial commit" in result.output
+    tracked = _git(project, "ls-files").splitlines()
+    assert "build/agent.env" in tracked
+    assert "build/.agent_credentials.example" in tracked
+    assert ".katapult/manifest.json" in tracked
+    assert "build/.agent_credentials" not in tracked
+    assert _git(project, "status", "--porcelain") == ""
+    assert "Initial project from katapult" in _git(project, "log", "--format=%s")
+
+
+def test_init_no_git_skips_repo(tmp_path: Path, git_identity) -> None:
+    project = _generated_project(tmp_path)
+
+    result = _init(tmp_path, project, "--no-git")
+
+    assert result.exit_code == 0, result.output
+    assert not (project / ".git").exists()
+
+
+def test_init_skips_git_inside_existing_repo(tmp_path: Path, git_identity) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    project = _generated_project(tmp_path)
+
+    result = _init(tmp_path, project)
+
+    assert result.exit_code == 0, result.output
+    assert "already inside a git repository" in result.output
+    assert not (project / ".git").exists()
+
+
+def test_init_keeps_repo_when_commit_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for var in ("AUTHOR", "COMMITTER"):
+        monkeypatch.delenv(f"GIT_{var}_NAME", raising=False)
+        monkeypatch.delenv(f"GIT_{var}_EMAIL", raising=False)
+    monkeypatch.delenv("EMAIL", raising=False)
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", os.devnull)
+    monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "user.useConfigOnly")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "true")
+    project = _generated_project(tmp_path)
+
+    result = _init(tmp_path, project)
+
+    assert result.exit_code == 0, result.output
+    assert "initial commit failed" in result.output
+    assert "git commit" in result.output
+    assert (project / ".git").is_dir()
+
+
+def test_init_skips_git_when_not_installed(tmp_path: Path) -> None:
+    project = _generated_project(tmp_path)
+
+    with patch.object(commands.shutil, "which", return_value=None):
+        result = _init(tmp_path, project)
+
+    assert result.exit_code == 0, result.output
+    assert "git not found" in result.output
+    assert not (project / ".git").exists()
+
+
 def test_init_no_overrides_skips_merge_even_with_template_files(tmp_path: Path) -> None:
     kat = tmp_path / ".katapult"
     (kat / "template").mkdir(parents=True)

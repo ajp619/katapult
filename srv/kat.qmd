@@ -25,9 +25,20 @@ The `init` command creates a new project using the katapult template.
 
 #### Options
 
-Run `kat init --help` for the full usage. The main flag is:
+Run `kat init --help` for the full usage. The main flags are:
 
 - **`--no-overrides`** — Ignore the template override mechanism described below and use only the built-in katapult template.
+- **`--yes`** (with **`--name`**, **`--python`**, **`--host`**, **`--output-dir`**) — Create the project non-interactively from the given values and template defaults.
+- **`--no-git`** — Skip creating a git repository (see below).
+
+#### Git repository
+
+By default `kat init` makes the new project a git repository with one initial commit of exactly what was generated, including any template override files. `kat upgrade` needs a git repository, so a project that starts as one can be upgraded later without extra steps. Credential env files (`build/.*_credentials`) are git-ignored and docker-ignored by the template, so they never land in that commit or in the image.
+
+- If the output directory is already inside a git repository (for example a monorepo), the step is skipped with a message.
+- If git is not installed, the step is skipped with a message.
+- If the commit fails (typically because `user.name` / `user.email` are not configured), the repository is kept and `kat init` prints the command to finish the commit.
+- The default branch name follows your git configuration (`init.defaultBranch`).
 
 #### Template overrides (`~/.katapult/template/`)
 

@@ -138,6 +138,12 @@ def _write_context_manifest(override_dir: Path, project_dir: Path) -> None:
     default=False,
     help="Run non-interactively: use provided values + template defaults, no prompts.",
 )
+@click.option(
+    "--no-git",
+    is_flag=True,
+    default=False,
+    help="Do not create a git repository with an initial commit.",
+)
 def init(
     no_overrides: bool,
     project_name: str | None,
@@ -145,6 +151,7 @@ def init(
     host: str | None,
     output_dir: str | None,
     assume_yes: bool,
+    no_git: bool,
 ) -> None:
     """Initialize a new Katapult application.
 
@@ -154,6 +161,9 @@ def init(
 
     \b
         kat init --yes --name "Lead Score" --python 3.12
+
+    The new project is made a git repository with one initial commit (``kat upgrade``
+    requires a repo), unless ``--no-git`` is given or it is created inside an existing repo.
     """
     current_file_path = Path(__file__)
     template_dir = current_file_path.parent / "project_template"
@@ -194,26 +204,78 @@ def init(
         project_dir = cookiecutter(str(template_dir), **cc_kwargs)
 
     _stamp_new_project(project_dir)
+    if not no_git:
+        _git_init_project(project_dir)
+
+
+def _generated_dir(project_dir) -> Path | None:
+    """The generated project directory, or None for test doubles that return a mock."""
+    if not project_dir:
+        return None
+    try:
+        path = Path(str(project_dir))
+    except (TypeError, ValueError):
+        return None
+    return path if path.is_dir() else None
 
 
 def _stamp_new_project(project_dir) -> None:
     """Record the katapult version + mark all migrations applied on a fresh project.
 
     A newly generated project is already at the latest template, so nothing should be
-    pending on a later ``kat upgrade``. Guarded so test doubles (which return a mock
-    instead of a real path) are a no-op.
+    pending on a later ``kat upgrade``.
     """
-    if not project_dir:
-        return
-    try:
-        path = Path(str(project_dir))
-    except (TypeError, ValueError):
-        return
-    if not path.is_dir():
+    path = _generated_dir(project_dir)
+    if path is None:
         return
     from katapult.migrations.runner import stamp_fresh_project
 
     stamp_fresh_project(path)
+
+
+def _git_init_project(project_dir) -> None:
+    """Make a freshly generated project a git repo with one initial commit.
+
+    The commit holds exactly what was generated (template plus any ``~/.katapult``
+    overrides); the template ``.gitignore`` keeps credential files out. Skipped when git is
+    unavailable or the project already sits inside a repository. A failed commit (e.g. no
+    git identity configured) keeps the initialized repository and says how to finish.
+    """
+    path = _generated_dir(project_dir)
+    if path is None:
+        return
+    if shutil.which("git") is None:
+        click.echo("git not found; skipping repository setup (run `git init` yourself).")
+        return
+
+    def git(*args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["git", "-C", str(path), *args], capture_output=True, text=True
+        )
+
+    inside = git("rev-parse", "--is-inside-work-tree")
+    if inside.returncode == 0 and inside.stdout.strip() == "true":
+        click.echo(f"{path} is already inside a git repository; skipping git init.")
+        return
+
+    from katapult.migrations.runner import katapult_version
+
+    init_result = git("init", "-q")
+    if init_result.returncode != 0:
+        click.echo(f"git init failed; skipping repository setup:\n{init_result.stderr}")
+        return
+    git("add", "-A")
+    commit = git(
+        "commit", "-q", "-m", f"Initial project from katapult {katapult_version()}"
+    )
+    if commit.returncode == 0:
+        click.echo(f"Initialized git repository with an initial commit in {path}")
+    else:
+        click.echo(
+            "Initialized git repository, but the initial commit failed:\n"
+            f"  {commit.stderr.strip() or commit.stdout.strip()}\n"
+            f"Finish with: cd {path} && git commit -m 'Initial commit'"
+        )
 
 
 @click.command()
