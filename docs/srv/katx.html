@@ -102,6 +102,10 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="../srv/public-access.html"> 
+<span class="menu-text">Public apps</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="../srv/scans.html"> 
 <span class="menu-text">Scans</span></a>
   </li>  
@@ -125,7 +129,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#katx" id="toc-katx" class="nav-link active" data-scroll-target="#katx"><code>katx</code></a></li>
+  <li><a href="#katx" id="toc-katx" class="nav-link active" data-scroll-target="#katx"><code>katx</code></a>
+  <ul class="collapse">
+  <li><a href="#katx-pub-katx-private" id="toc-katx-pub-katx-private" class="nav-link" data-scroll-target="#katx-pub-katx-private"><code>katx pub</code> / <code>katx private</code></a></li>
+  <li><a href="#katx-update_context-moved" id="toc-katx-update_context-moved" class="nav-link" data-scroll-target="#katx-update_context-moved"><code>katx update_context</code> (moved)</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -150,7 +158,9 @@ positional commands:
   debug                Placeholder for custom docker run command intended for debugging.
   down                 `docker compose down`.
   jlab                 lists the address (including token) of the currently running jupyter server.
+  private              Unpublish: stop serving on the public entrypoint and recreate the container.
   ps                   Lists containers associated with this project.
+  pub                  Publish: serve this project on the public entrypoint (:8081) + dashboard. Remembers setting.
   render               Run 'quarto render' to create static site files.
   restart|rebuild      Shortcut for: katx down, katx build, katx up.
   rm                   `docker rm ...`.
@@ -158,9 +168,19 @@ positional commands:
   run                  Shortcut for: katx build, katx up, katx render, katx status.
   status               supervisorctl status.
   stop                 manual docker stop command. Generally better to use 'down'
+  update_context       Moved to the host: `kat sync` (template overrides + personal secrets).
   up                   `docker compose up -d`.</code></pre>
+<section id="katx-pub-katx-private" class="level3">
+<h3 class="anchored" data-anchor-id="katx-pub-katx-private"><code>katx pub</code> / <code>katx private</code></h3>
+<p><code>katx pub</code> publishes a project to the <strong>public-apps dashboard</strong>; <code>katx private</code> unpublishes it. See <a href="../srv/public-access.html">Public apps</a> for the full model.</p>
+<p><code>pub</code> layers <code>build/docker-compose.pub.yml</code> onto the base compose file, adding a second Traefik router on the hidden <code>public</code> entrypoint (<code>:8081</code>) plus <code>katapult.pub.*</code> metadata that the dashboard reads. The choice is remembered via <code>PUBLIC=true|false</code> in <code>.katapult/HOSTVARS</code> (host-local, not committed), so <code>up</code>/<code>restart</code>/<code>rebuild</code> keep serving it publicly until you run <code>katx private</code>.</p>
+</section>
+<section id="katx-update_context-moved" class="level3">
+<h3 class="anchored" data-anchor-id="katx-update_context-moved"><code>katx update_context</code> (moved)</h3>
+<p>Refreshing a project from your template overrides now lives on the host, in <strong><code>kat sync</code></strong>, so it can evolve with katapult while <code>katx</code> stays frozen with each project. <code>katx update_context</code> prints the replacement command and exits with an error. See <a href="../srv/kat.html#kat-sync">kat sync</a>.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

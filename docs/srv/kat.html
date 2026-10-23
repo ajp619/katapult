@@ -140,6 +140,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="../srv/public-access.html"> 
+<span class="menu-text">Public apps</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="../srv/scans.html"> 
 <span class="menu-text">Scans</span></a>
   </li>  
@@ -166,6 +170,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#kat" id="toc-kat" class="nav-link active" data-scroll-target="#kat"><code>kat</code></a>
   <ul class="collapse">
   <li><a href="#kat-init" id="toc-kat-init" class="nav-link" data-scroll-target="#kat-init"><code>kat init</code></a></li>
+  <li><a href="#kat-sync" id="toc-kat-sync" class="nav-link" data-scroll-target="#kat-sync"><code>kat sync</code></a></li>
   <li><a href="#kat-export-docs" id="toc-kat-export-docs" class="nav-link" data-scroll-target="#kat-export-docs"><code>kat export-docs</code></a></li>
   <li><a href="#kat-hub" id="toc-kat-hub" class="nav-link" data-scroll-target="#kat-hub"><code>kat hub</code></a></li>
   <li><a href="#kat-config" id="toc-kat-config" class="nav-link" data-scroll-target="#kat-config"><code>kat config</code></a></li>
@@ -193,19 +198,36 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  config       Add Katapult dynamic PATH augmentation to the user's .bashrc.
-  export-docs  Render a project's docs to a self-contained HTML zip in ~/outputs.
-  hub          Manage the Katapult hub and Traefik container.
-  init         Initialize a new Katapult application.
-  scan         Scan a katapult project for vulnerabilities (Trivy) and Dockerfile issues (Hadolint).</code></pre>
+  config         Add Katapult dynamic PATH augmentation to the user's...
+  export-docs    Render a project's docs to a self-contained HTML zip in...
+  hub            Manage the Katapult hub and Traefik container.
+  init           Initialize a new Katapult application.
+  install-agent  (Optional, dev-only) Install an MCP delegate backend...
+  register-mcp   (Optional, host-side) Register a project's /mcp endpoint...
+  scan           Scan a katapult project for vulnerabilities (Trivy) and...
+  sync           Refresh a project from your host layers.
+  upgrade        Upgrade a katapult project's scaffolding to the latest...</code></pre>
 <section id="kat-init" class="level3">
 <h3 class="anchored" data-anchor-id="kat-init"><code>kat init</code></h3>
 <p>The <code>init</code> command creates a new project using the katapult template.</p>
 <section id="options" class="level4">
 <h4 class="anchored" data-anchor-id="options">Options</h4>
-<p>Run <code>kat init --help</code> for the full usage. The main flag is:</p>
+<p>Run <code>kat init --help</code> for the full usage. The main flags are:</p>
 <ul>
 <li><strong><code>--no-overrides</code></strong> — Ignore the template override mechanism described below and use only the built-in katapult template.</li>
+<li><strong><code>--yes</code></strong> (with <strong><code>--name</code></strong>, <strong><code>--python</code></strong>, <strong><code>--host</code></strong>, <strong><code>--output-dir</code></strong>) — Create the project non-interactively from the given values and template defaults.</li>
+<li><strong><code>--no-git</code></strong> — Skip creating a git repository (see below).</li>
+<li><strong><code>--no-secrets</code></strong> — Do not copy credential files from your personal secrets folder (see below).</li>
+</ul>
+</section>
+<section id="git-repository" class="level4">
+<h4 class="anchored" data-anchor-id="git-repository">Git repository</h4>
+<p>By default <code>kat init</code> makes the new project a git repository with one initial commit of exactly what was generated, including any template override files. <code>kat upgrade</code> needs a git repository, so a project that starts as one can be upgraded later without extra steps. Credential env files (<code>build/.*_credentials</code>) are git-ignored and docker-ignored by the template, so they never land in that commit or in the image.</p>
+<ul>
+<li>If the output directory is already inside a git repository (for example a monorepo), the step is skipped with a message.</li>
+<li>If git is not installed, the step is skipped with a message.</li>
+<li>If the commit fails (typically because <code>user.name</code> / <code>user.email</code> are not configured), the repository is kept and <code>kat init</code> prints the command to finish the commit.</li>
+<li>The default branch name follows your git configuration (<code>init.defaultBranch</code>).</li>
 </ul>
 </section>
 <section id="template-overrides-.katapulttemplate" class="level4">
@@ -215,11 +237,29 @@ Commands:
 <li>The layout under <code>~/.katapult/template/</code> mirrors the <strong>generated project directory</strong> (the contents of <code>{cookiecutter.project_slug}/</code> in the stock template). Files and folders you place there are merged into that directory before cookiecutter runs, so they appear at the root of each new project (for example <code>cursor_context/</code>, <code>.cursor/rules/</code>, extra <code>docs/</code>, etc.).</li>
 </ul>
 <p>When overrides are applied, the CLI prints a line such as <code>Applying overrides from ...</code> so you know the merged template is in use.</p>
+<p>When overrides are applied, <code>kat init</code> also writes <strong><code>.katapult/.context_manifest</code></strong> in the generated project. This manifest records the relative paths copied from <code>~/.katapult/template/</code>, so <strong><code>kat sync</code></strong> can later remove stale managed files and copy the latest versions.</p>
+<p>Credential env files (<code>build/.*_credentials</code>) are never taken from the overrides: <code>kat init</code> skips them with a message and leaves them out of the manifest. Personal secrets have their own folder (next section).</p>
+</section>
+<section id="personal-secrets-.configkatapultsecrets" class="level4">
+<h4 class="anchored" data-anchor-id="personal-secrets-.configkatapultsecrets">Personal secrets (<code>~/.config/katapult/secrets/</code>)</h4>
+<p>Credentials belong to a person, not to a team template. Keep them in a local folder that mirrors the project tree, for example <code>~/.config/katapult/secrets/build/.agent_credentials</code> (folder mode 700, files mode 600). The location is <code>${XDG_CONFIG_HOME:-~/.config}/katapult/secrets</code>, or <code>$KATAPULT_SECRETS_DIR</code> when set. Never make this folder a git repository.</p>
+<p>After the git step, <code>kat init</code> copies each file from that folder into the new project, so the credentials are on disk but never in the initial commit. The copy is guarded:</p>
+<ul>
+<li>Only credential paths (<code>build/.&lt;name&gt;_credentials</code>, not <code>.example</code>) are copied; anything else is refused with a message.</li>
+<li>The target must be both git-ignored and docker-ignored in the project. If it is not, the file is refused and <code>kat upgrade</code> is suggested (it adds the ignore patterns).</li>
+<li>Existing files are kept (create-only); <code>kat sync --force-secrets</code> overwrites them, for example after a key rotation.</li>
+<li>Files are written with mode 600 and are never recorded in a manifest. Only names are printed, never content.</li>
+</ul>
+<p>Without a secrets folder, <code>kat init</code> says nothing about secrets.</p>
 </section>
 <section id="copy_without_render-.katapultcopy_without_render" class="level4">
 <h4 class="anchored" data-anchor-id="copy_without_render-.katapultcopy_without_render"><code>copy_without_render</code> (<code>~/.katapult/copy_without_render</code>)</h4>
 <p>If <strong><code>~/.katapult/copy_without_render</code></strong> exists, each non-empty, non-comment line is treated as a <strong>glob pattern</strong>. Those patterns are merged into the template’s <code>cookiecutter.json</code> <strong><code>_copy_without_render</code></strong> list for that run. Files matching those patterns are copied into the new project <strong>without</strong> Jinja rendering, which is useful for assets or files that would otherwise break if cookiecutter tried to template them.</p>
 <p>This merging happens only when template overrides are used (i.e.&nbsp;when <code>~/.katapult/template/</code> has content and you did not pass <strong><code>--no-overrides</code></strong>).</p>
+</section>
+<section id="updating-existing-projects" class="level4">
+<h4 class="anchored" data-anchor-id="updating-existing-projects">Updating existing projects</h4>
+<p>Use <strong><code>kat sync</code></strong> to bring an existing project up to date with your template overrides and personal secrets (see <code>kat sync</code> below). It replaces the old project-local <code>katx update_context</code>, which now only points here.</p>
 </section>
 <section id="plain-kat-init" class="level4">
 <h4 class="anchored" data-anchor-id="plain-kat-init">Plain <code>kat init</code></h4>
@@ -248,6 +288,21 @@ Commands:
 <p>There are a few commands we will run later that display, for instance, the landing page of your server. If you are just running on your local machine, then “localhost” is likely appropriate, however, if you are running on a network machine, you can enter the appropriate ip address or name and the addresses will be properly formatted. For example, locally you might want <a href="">http://localhost/my_project/</a>, but if you are running this on an aws vm you might want something like <a href="">http://10.0.1.25/my_project/</a>. In that case you would enter “10.0.1.25” for host. This is really just a convenience function.</p>
 </blockquote>
 </section>
+</section>
+<section id="kat-sync" class="level3">
+<h3 class="anchored" data-anchor-id="kat-sync"><code>kat sync</code></h3>
+<p><code>kat sync [PROJECT_DIR]</code> refreshes an existing project from your host layers. <code>PROJECT_DIR</code> is optional; without it <code>kat</code> walks up from the current directory to the nearest <code>.katapult/</code>.</p>
+<ol type="1">
+<li><strong>Template overrides.</strong> Files from <code>~/.katapult/template/</code> are copied when new or changed, files listed in <code>.katapult/.context_manifest</code> that the overrides no longer provide are removed, and the manifest is rewritten. Project files that are not listed are left alone.</li>
+<li><strong>Personal secrets.</strong> Credential files from your secrets folder are copied with the same guards as <code>kat init</code>: credential paths only, git- and docker-ignored targets only, create-only, mode 600.</li>
+</ol>
+<p>Credential files are never copied from, removed by, or recorded for the overrides. If an older manifest still lists one, <code>kat sync</code> drops it from the manifest and keeps the file.</p>
+<p>Flags:</p>
+<ul>
+<li><strong><code>--force-secrets</code></strong> — Overwrite credential files that already exist in the project (key rotation).</li>
+<li><strong><code>--dry-run</code></strong> — Show what would change without writing anything.</li>
+</ul>
+<p>Afterwards, review and commit the project’s git diff if overrides changed. If credential files were written, recreate the container so the new env files load (<code>.katapult/katx down &amp;&amp; .katapult/katx up</code>).</p>
 </section>
 <section id="kat-export-docs" class="level3">
 <h3 class="anchored" data-anchor-id="kat-export-docs"><code>kat export-docs</code></h3>

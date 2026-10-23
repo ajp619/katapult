@@ -137,6 +137,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="./srv/public-access.html"> 
+<span class="menu-text">Public apps</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="./srv/scans.html"> 
 <span class="menu-text">Scans</span></a>
   </li>  
@@ -177,6 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#project-structure" id="toc-project-structure" class="nav-link" data-scroll-target="#project-structure">Project Structure</a></li>
   <li><a href="#service-management" id="toc-service-management" class="nav-link" data-scroll-target="#service-management">Service Management</a></li>
+  <li><a href="#per-project-mcp-server-dev-only" id="toc-per-project-mcp-server-dev-only" class="nav-link" data-scroll-target="#per-project-mcp-server-dev-only">Per-project MCP server (dev-only)</a></li>
   <li><a href="#key-features" id="toc-key-features" class="nav-link" data-scroll-target="#key-features">Key Features</a></li>
   <li><a href="#version-history" id="toc-version-history" class="nav-link" data-scroll-target="#version-history">Version History</a></li>
   <li><a href="#license" id="toc-license" class="nav-link" data-scroll-target="#license">License</a></li>
@@ -258,8 +263,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Create a new project from the katapult template with:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> init</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Enter the project name and accept the rest of the defaults. This will create a new directory for your project.</p>
+<p>To create a project <strong>non-interactively</strong> (e.g.&nbsp;when an orchestrator or script drives creation), pass <code>--yes</code> with any values you want to set; the slug is derived from the name:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> init <span class="at">--yes</span> <span class="at">--name</span> <span class="st">"Lead Score"</span> <span class="at">--python</span> 3.12 <span class="at">--output-dir</span> ~/git</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>--name</code>, <code>--python</code>, <code>--host</code>, and <code>--output-dir</code> are all optional; anything omitted falls back to the template default.</p>
+<p>The new project is created as a git repository with one initial commit (so <code>kat upgrade</code> works later). Pass <code>--no-git</code> to skip this; it is also skipped when the output directory is already inside a git repository. Afterwards, credential files from your personal secrets folder (if you have one) are copied into <code>build/</code>, outside that commit; pass <code>--no-secrets</code> to skip (see <a href="#host-layers-template-overrides-and-personal-secrets">Host layers</a>).</p>
 <p>Change to the new project directory and use:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> run</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> run</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>This will build the container, launch it, render the static content, and show you the status of the services.</p>
 <p>You can now access the container at <code>http://localhost/&lt;project name&gt;/</code></p>
 </section>
@@ -294,17 +303,96 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td><code>kat export-docs</code></td>
 <td>Renders a project’s docs to a self-contained HTML zip in <code>~/outputs</code></td>
 </tr>
+<tr class="odd">
+<td><code>kat install-agent</code></td>
+<td>(dev-only) Installs a project’s opt-in MCP agent backend via <code>uv sync --extra &lt;backend&gt;</code> (see <a href="#per-project-mcp-server-dev-only">MCP server</a>)</td>
+</tr>
+<tr class="even">
+<td><code>kat register-mcp</code></td>
+<td>Registers a project’s <code>/mcp</code> endpoint into an MCP client config (e.g.&nbsp;<code>.cursor/mcp.json</code>)</td>
+</tr>
+<tr class="odd">
+<td><code>kat upgrade</code></td>
+<td>Upgrades an existing project’s scaffolding to the latest template via versioned migrations (see <a href="#upgrading-existing-projects">below</a>)</td>
+</tr>
+<tr class="even">
+<td><code>kat sync</code></td>
+<td>Refreshes a project from your template overrides and personal secrets (see <a href="#host-layers-template-overrides-and-personal-secrets">Host layers</a>)</td>
+</tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <section id="distributing-documentation" class="level4">
 <h4 class="anchored" data-anchor-id="distributing-documentation">Distributing documentation</h4>
 <p>Hand someone a runnable copy of a project’s documentation without giving them access to a server, Python, or Quarto:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> export-docs path/to/project</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> export-docs path/to/project</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>The first run builds a small Quarto-only Docker image (<code>katapult/export-docs:latest</code>); subsequent runs reuse it. The output lands at <code>~/outputs/&lt;project_name&gt;_docs_&lt;YYYYmmdd_HHMMSS&gt;.zip</code>. Unzip on any machine and open the pages directly from <code>file://</code> — no local web server required.</p>
 <blockquote class="blockquote">
 <p>An internet connection is needed for Mermaid diagrams (loaded from a CDN). Quarto’s local search box won’t function over <code>file://</code> because most browsers block its XHR; the rest of the site (navigation, cross-links, syntax highlighting, embedded notebook outputs) works regardless.</p>
 </blockquote>
+</section>
+<section id="upgrading-existing-projects" class="level4">
+<h4 class="anchored" data-anchor-id="upgrading-existing-projects">Upgrading existing projects</h4>
+<p>Projects generated by an older katapult release drift from the current template (for example, pre-MCP projects lack the <code>mcp/</code> server and its wiring, and older projects have no <code>.cursor/rules/</code>). <code>kat upgrade</code> closes that gap by applying ordered, <strong>idempotent, scaffolding-only</strong> migrations — it only ever touches <code>.katapult/</code>, <code>.cursor/</code>, <code>build/</code>, and <code>mcp/</code> (plus marker-guarded appends to <code>.gitignore</code> / <code>.dockerignore</code>), never your <code>lib/</code>, <code>nbk/</code>, <code>api/</code>, or <code>app/</code> code. The current migrations add the internal MCP server (<code>0001</code>), seed the project’s <code>.cursor/rules/</code> — engineering standards, conventions, and notebook/jupytext standards (<code>0002</code>), and git- and docker-ignore credential env files (<code>build/.*_credentials</code>) and the <code>.handoff/</code> exchange directory (<code>0003</code>).</p>
+<p>Each project records what it has received in <code>.katapult/manifest.json</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span> <span class="dt">"katapult_version"</span><span class="fu">:</span> <span class="st">"0.11.1"</span><span class="fu">,</span> <span class="dt">"applied_migrations"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"0001_add_internal_mcp"</span><span class="ot">]</span> <span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Fresh projects are stamped at <code>kat init</code>; an unstamped project is treated as a baseline so every migration is pending. Always preview first, then apply from a clean git tree:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> upgrade path/to/project <span class="at">--dry-run</span>   <span class="co"># show exactly what would change</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> upgrade path/to/project             <span class="co"># apply (refuses on a dirty git tree)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Behavior and flags:</p>
+<ul>
+<li><strong>Clean-git guard.</strong> Apply refuses to run on a dirty working tree (or a non-git directory) so you always have a <code>git restore</code> rollback. Override with <code>--allow-dirty</code>.</li>
+<li><strong>Never clobbers.</strong> Agnostic files (e.g.&nbsp;<code>.katapult/katx</code>) are refreshed wholesale, but a locally customized file is left untouched and the new version is written beside it as <code>&lt;file&gt;.katapult-new</code> (or <code>&lt;file&gt;.katapult-patch</code> for an in-place block whose anchor moved) for you to merge.</li>
+<li><strong>Idempotent.</strong> Re-running applies only what’s still pending; a fully upgraded project reports “Already up to date”.</li>
+<li><strong>katx follows katapult.</strong> Every upgrade also refreshes <code>.katapult/katx</code> from the installed katapult when it differs, even when no migration is pending (a standing step, not a migration).</li>
+<li><code>--to &lt;migration-id&gt;</code> stops after a specific migration instead of applying all pending.</li>
+</ul>
+<p>After upgrading, rebuild the container to pick up the new scaffolding, and (for the MCP migration) optionally wire the hub:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">path/to/project/.katapult/katx</span> rebuild</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ex">kat</span> register-mcp path/to/project</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>kat upgrade</code> only touches template scaffolding. To refresh your template overrides and personal secrets as well, run <code>kat sync path/to/project</code>.</p>
+</section>
+<section id="host-layers-template-overrides-and-personal-secrets" class="level4">
+<h4 class="anchored" data-anchor-id="host-layers-template-overrides-and-personal-secrets">Host layers: template overrides and personal secrets</h4>
+<p><code>kat</code> and <code>katx</code> split along one line: <strong><code>katx</code></strong> is vendored into each project and frozen with it, so it only operates that project (build, up/down, render, status, connect). Anything that reads your host setup belongs to <strong><code>kat</code></strong>, which evolves with katapult: <code>kat init</code> (create), <code>kat upgrade</code> (template scaffolding) and <code>kat sync</code> (host layers).</p>
+<p>Two optional host folders feed new and existing projects:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Folder</th>
+<th>Holds</th>
+<th>Shared?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>~/.katapult/template/</code></td>
+<td>Team or company defaults: extra rules, docs, config files. Mirrors the project tree.</td>
+<td>Yes (often its own git repo)</td>
+</tr>
+<tr class="even">
+<td><code>~/.config/katapult/secrets/</code></td>
+<td>Your credential env files, e.g.&nbsp;<code>build/.agent_credentials</code>. Mirrors the project tree.</td>
+<td>No: per person, per machine, never a git repo</td>
+</tr>
+</tbody>
+</table>
+<p>The secrets folder is <code>${XDG_CONFIG_HOME:-~/.config}/katapult/secrets</code>, or <code>$KATAPULT_SECRETS_DIR</code> when set. Keep it mode 700 and its files mode 600.</p>
+<p><code>kat init</code> applies both. <code>kat sync [PROJECT_DIR]</code> applies them to an existing project: it refreshes override files (removing ones the overrides no longer provide, tracked in <code>.katapult/.context_manifest</code>), then copies secrets. Secrets are copied only to <code>build/.*_credentials</code> paths that the project both git-ignores and docker-ignores, only when the file does not exist yet (<code>--force-secrets</code> overwrites, e.g.&nbsp;after a key rotation), with mode 600, and never into a manifest. Credential files placed in the template overrides are ignored. Use <code>--dry-run</code> to preview. After new env files are written, recreate the container (<code>katx down &amp;&amp; katx up</code>).</p>
+<section id="authoring-a-migration" class="level5">
+<h5 class="anchored" data-anchor-id="authoring-a-migration">Authoring a migration</h5>
+<p>Migrations live in <code>lib/src/katapult/migrations/</code>. To add one for a future release:</p>
+<ol type="1">
+<li>Create <code>mNNNN_&lt;slug&gt;.py</code> exposing a module-level <code>migration = Migration(...)</code> built from declarative <code>AddFile</code> / <code>EnsureBlock</code> actions.</li>
+<li>Append it (in order) to <code>REGISTRY</code> in <code>migrations/__init__.py</code>.</li>
+</ol>
+<p>Keep file <em>bodies</em> single-sourced from the project template via <code>AddFile</code> (rendered with the project’s reconstructed cookiecutter context when <code>templated=True</code>) rather than pasting content into the migration; use <code>EnsureBlock</code> for idempotent, anchored insertions into existing files. The runner handles dry-run, the clean-git guard, the scaffolding allowlist, and sidecars for you.</p>
+</section>
 </section>
 </section>
 <section id="katx-project-level-management" class="level3">
@@ -355,13 +443,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Lists JupyterLab access URLs with tokens</td>
 </tr>
 <tr class="odd">
+<td><code>katx mcp</code></td>
+<td>Prints the project’s MCP endpoint URL and service status</td>
+</tr>
+<tr class="even">
 <td><code>katx restart</code> / <code>katx rebuild</code></td>
 <td>Shortcuts for down, build, up</td>
 </tr>
 </tbody>
 </table>
 <p>From within the project directory or a subfolder:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">katx</span> <span class="at">--help</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="project-structure" class="level2">
@@ -371,8 +463,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><code>api/</code> — Quart API service code</li>
 <li><code>app/</code> — FastHTML webapp code</li>
 <li><code>lib/</code> — Python library code</li>
-<li><code>nbk/</code> — Jupyter notebooks directory</li>
+<li><code>nbk/</code> — Jupyter notebooks directory (report notebooks are <a href="https://jupytext.readthedocs.io">jupytext</a>-paired to percent <code>.py</code> under <code>nbk/reports/py/</code>)</li>
+<li><code>mcp/</code> — (dev-only) neutral MCP server exposing project operations as MCP tools (see <a href="#per-project-mcp-server-dev-only">below</a>)</li>
 <li><code>build/</code> — Docker configuration (Dockerfile, docker-compose.yml, supervisor configs)</li>
+<li><code>.cursor/rules/</code> — editor/agent rules shipped with the project: engineering standards (uv, docs, security), project conventions, and notebook standards</li>
 <li><code>.katapult/</code> — Contains the <code>katx</code> script (dynamically added to PATH when in the project directory)</li>
 <li><code>srv/</code> — Quarto documentation source files</li>
 <li><code>docs/</code> — Rendered documentation output</li>
@@ -388,6 +482,44 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Nginx reverse proxy</li>
 </ul>
 <p>All services are reachable through the unified interface at <code>http://localhost/&lt;project_name&gt;/</code> with different paths for each service.</p>
+</section>
+<section id="per-project-mcp-server-dev-only" class="level2">
+<h2 class="anchored" data-anchor-id="per-project-mcp-server-dev-only">Per-project MCP server (dev-only)</h2>
+<p>Each project ships a small, <strong>IDE-neutral</strong> <a href="https://modelcontextprotocol.io">MCP</a> server in its own <code>mcp/</code> environment. It exposes the operations every katapult project has — run tests, render docs, check/restart services, and exchange files through a <code>.handoff/</code> directory — as MCP tools over the existing Traefik route at <code>http://localhost/&lt;project_name&gt;/mcp</code>. Any MCP-capable client (Claude Desktop, a CLI, an SDK, Cursor) can drive a project through it. Check it with <code>katx mcp</code>.</p>
+<p>Like <code>katx</code>, the server is <strong>vendored and standalone</strong>: it is maintained once in the template, copied into each project at <code>kat init</code>, and runs on the project’s own files (<code>cd /content/mcp &amp;&amp; uv run project-mcp</code> under Supervisor) with no runtime dependency on the katapult library. Its core depends only on the open <code>mcp</code> package.</p>
+<p><strong>Optional “second brain” backend.</strong> When enabled, the server also exposes a <code>delegate(task)</code> tool that drives a project-local coding agent (e.g.&nbsp;the Cursor SDK) with the project’s own <code>.cursor/rules</code>/<code>cursor_context/</code> loaded. This backend is <strong>opt-in and pluggable</strong> — installed as an extra (<code>kat install-agent</code>, i.e.&nbsp;<code>uv sync --extra &lt;backend&gt;</code>) and absent by default, so the server stays vendor-neutral out of the box.</p>
+<p>Toggles (in <code>build/</code>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Setting</th>
+<th>File</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>MCP_SERVER</code></td>
+<td><code>build/BuildConfig</code></td>
+<td><code>on</code></td>
+<td>Build the MCP service into the dev image; <code>off</code> disables it</td>
+</tr>
+<tr class="even">
+<td><code>AGENT_BACKEND</code></td>
+<td><code>build/agent.env</code></td>
+<td><code>none</code></td>
+<td>Selects the opt-in <code>delegate</code> backend (<code>none</code> omits the tool)</td>
+</tr>
+</tbody>
+</table>
+<p>Everything here is <strong>dev-only</strong>: the MCP service and any agent backend are wired only on the dev compose path, so test/prod images stay agent-free. The backend credential (e.g. <code>CURSOR_API_KEY</code>) lives only in the gitignored <code>build/.agent_credentials</code> env_file and is never baked into the shared image. Opinionated/vendor activation (flipping <code>AGENT_BACKEND=cursor</code>, the credentials <code>.example</code> template, org-specific tools) belongs in the <code>~/.katapult/template/</code> overlay rather than the neutral public template; the key itself is personal and goes in your secrets folder, from which <code>kat init</code> / <code>kat sync</code> copy it.</p>
 </section>
 <section id="key-features" class="level2">
 <h2 class="anchored" data-anchor-id="key-features">Key Features</h2>

@@ -105,6 +105,10 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Documentation</span></a>
   </li>  
   <li class="nav-item">
+    <a class="nav-link" href="../srv/public-access.html"> 
+<span class="menu-text">Public apps</span></a>
+  </li>  
+  <li class="nav-item">
     <a class="nav-link" href="../srv/scans.html"> 
 <span class="menu-text">Scans</span></a>
   </li>  
@@ -325,6 +329,7 @@ ul.task-list li input[type="checkbox"] {
 <ul>
 <li><strong><code>~/.katapult/template/</code></strong> — Mirror the <strong>generated project tree</strong>. <code>kat init</code> merges these files into the template before Cookiecutter runs so every new project includes your additions (e.g.&nbsp;extra <code>srv/</code> pages, <code>.cursor/rules/</code>).</li>
 <li><strong><code>~/.katapult/copy_without_render</code></strong> — Non-empty lines are glob patterns appended to Cookiecutter’s <code>_copy_without_render</code> for that run, so matching files copy <strong>without</strong> Jinja templating (useful for assets containing <code>{{</code> <code>}}</code>).</li>
+<li><strong><code>kat sync</code></strong> — Refresh existing projects from <code>~/.katapult/template/</code>. It removes previously managed files listed in <code>.katapult/.context_manifest</code>, copies the current template override files, and leaves project-specific files alone. It also copies your personal credential files from <code>~/.config/katapult/secrets/</code> (see <a href="../srv/kat.html#kat-sync">kat sync</a>).</li>
 <li><strong>When it applies</strong> — Only if <code>~/.katapult/template/</code> has content and you do <strong>not</strong> pass <strong><code>kat init --no-overrides</code></strong>. See <a href="../srv/kat.html#kat-init">kat init</a> for details.</li>
 </ul>
 </section>
