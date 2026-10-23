@@ -30,7 +30,7 @@ _HANDOFF_BLOCK = """\
 
 migration = Migration(
     id="0003_ignore_credentials",
-    katapult_version="0.11.1",
+    katapult_version="0.12.0",
     description="Git- and docker-ignore build/.*_credentials; docker-ignore .handoff/.",
     actions=[
         EnsureBlock(
