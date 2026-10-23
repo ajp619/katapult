@@ -427,6 +427,53 @@ def test_stamp_fresh_project_marks_all_migrations_applied(tmp_path: Path) -> Non
 def test_pending_is_empty_after_fresh_stamp(tmp_path: Path) -> None:
     proj = _make_old_project(tmp_path)
     stamp_fresh_project(proj)
+    (proj / ".katapult" / "katx").write_text(_template_katx())
     result = _upgrade(proj, "--allow-dirty")
     assert result.exit_code == 0, result.output
     assert "Already up to date" in result.output
+    assert "kat sync" in result.output
+
+
+# --- standing katx refresh ------------------------------------------------------
+
+
+def _template_katx() -> str:
+    from katapult.migrations.runner import template_slug_dir
+
+    return (template_slug_dir() / ".katapult" / "katx").read_text()
+
+
+def test_upgrade_refreshes_stale_katx_with_no_pending_migrations(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)
+    stamp_fresh_project(proj)  # nothing pending; katx is still the old one
+    applied_before = read_manifest(proj)["applied_migrations"]
+
+    result = _upgrade(proj, "--allow-dirty")
+    assert result.exit_code == 0, result.output
+    assert "Already up to date" not in result.output
+    assert "[katx]" in result.output
+    katx = proj / ".katapult" / "katx"
+    assert katx.read_text() == _template_katx()
+    assert katx.stat().st_mode & 0o111
+    assert read_manifest(proj)["applied_migrations"] == applied_before
+    assert not (proj / "mcp").exists()  # no migration actions ran
+
+    r2 = _upgrade(proj, "--allow-dirty")
+    assert "Already up to date" in r2.output
+
+
+def test_upgrade_katx_refresh_dry_run_writes_nothing(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)
+    stamp_fresh_project(proj)
+    result = _upgrade(proj, "--dry-run")
+    assert result.exit_code == 0, result.output
+    assert "[katx]" in result.output
+    assert "# old katx" in (proj / ".katapult" / "katx").read_text()
+
+
+def test_upgrade_katx_refresh_respects_git_guard(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)  # not a git repo
+    stamp_fresh_project(proj)
+    result = _upgrade(proj)
+    assert result.exit_code != 0
+    assert "# old katx" in (proj / ".katapult" / "katx").read_text()

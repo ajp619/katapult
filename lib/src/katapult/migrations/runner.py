@@ -27,6 +27,10 @@ from katapult.migrations.base import (
 )
 
 MANIFEST_REL = Path(".katapult") / "manifest.json"
+KATX_REFRESH = AddFile(".katapult/katx", ".katapult/katx", overwrite_ok=True)
+SYNC_HINT = (
+    "To refresh template overrides and personal secrets as well, run `kat sync <project>`."
+)
 
 
 # --- version + manifest -------------------------------------------------------
@@ -328,22 +332,31 @@ def run_upgrade(
     to_id: str | None = None,
     echo=click.echo,
 ) -> list[ActionResult]:
-    """Apply pending migrations to ``project``. Returns the flattened action results."""
+    """Apply pending migrations to ``project``. Returns the flattened action results.
+
+    ``.katapult/katx`` is versioned with katapult and carries no project identity, so every
+    upgrade also refreshes it from the template (a standing step, not a migration).
+    """
     ctx = reconstruct_context(project)
     pending = pending_migrations(project, to_id)
+    katx_stale = apply_action(KATX_REFRESH, project, ctx, dry_run=True).changed
 
     cur = katapult_version()
     recorded = read_manifest(project).get("katapult_version", "(unstamped)")
     echo(f"Project: {project}")
     echo(f"Recorded katapult version: {recorded}; installed: {cur}")
 
-    if not pending:
+    if not pending and not katx_stale:
         echo("Already up to date; no migrations pending.")
+        echo(SYNC_HINT)
         return []
 
-    echo(f"Pending migrations ({len(pending)}):")
-    for mig in pending:
-        echo(f"  - {mig.id}  ({mig.katapult_version})  {mig.description}")
+    if pending:
+        echo(f"Pending migrations ({len(pending)}):")
+        for mig in pending:
+            echo(f"  - {mig.id}  ({mig.katapult_version})  {mig.description}")
+    if katx_stale:
+        echo(f"Refresh: {KATX_REFRESH.dst_rel} differs from katapult {cur}'s version.")
 
     if not dry_run:
         clean, reason = _git_is_clean(project)
@@ -360,6 +373,14 @@ def run_upgrade(
 
     results: list[ActionResult] = []
     newly_applied: list[str] = []
+    if katx_stale:
+        res = apply_action(KATX_REFRESH, project, ctx, dry_run=dry_run)
+        results.append(res)
+        if not dry_run:
+            katx = project / KATX_REFRESH.dst_rel
+            katx.chmod(katx.stat().st_mode | 0o111)
+        echo("[katx]")
+        echo(f"  {res.status:>11}  {res.target} -- {res.note or 'refreshed'}")
     for mig in pending:
         echo(f"[{mig.id}]")
         for action in mig.actions:
@@ -395,4 +416,5 @@ def run_upgrade(
     echo("")
     echo("Next steps: rebuild the container (`.katapult/katx rebuild`) to pick up the")
     echo("new scaffolding, then optionally `kat register-mcp <project>` to wire the hub.")
+    echo(SYNC_HINT)
     return results
