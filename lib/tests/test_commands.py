@@ -394,6 +394,220 @@ def test_init_skips_git_when_not_installed(tmp_path: Path) -> None:
     assert not (project / ".git").exists()
 
 
+def _secrets_folder(root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    src = root / "secrets"
+    (src / "build").mkdir(parents=True)
+    (src / "build" / ".agent_credentials").write_text("KEY=personal\n")
+    monkeypatch.setenv("KATAPULT_SECRETS_DIR", str(src))
+    return src
+
+
+def _with_dockerignore(project: Path) -> Path:
+    (project / ".dockerignore").write_text(
+        "build/.*_credentials\n!build/.*_credentials.example\n"
+    )
+    return project
+
+
+def test_init_seeds_secrets_after_initial_commit(
+    tmp_path: Path, git_identity, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _secrets_folder(tmp_path, monkeypatch)
+    project = _with_dockerignore(_generated_project(tmp_path))
+    (project / "build" / ".agent_credentials").unlink()
+
+    result = _init(tmp_path, project)
+
+    assert result.exit_code == 0, result.output
+    assert "secret copied: build/.agent_credentials" in result.output
+    assert "KEY=personal" not in result.output
+    creds = project / "build" / ".agent_credentials"
+    assert creds.read_text() == "KEY=personal\n"
+    assert oct(creds.stat().st_mode & 0o777) == "0o600"
+    assert "build/.agent_credentials" not in _git(project, "ls-files").splitlines()
+    assert _git(project, "status", "--porcelain") == ""
+
+
+def test_init_seeds_secrets_with_no_git(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _secrets_folder(tmp_path, monkeypatch)
+    project = _with_dockerignore(_generated_project(tmp_path))
+    (project / "build" / ".agent_credentials").unlink()
+
+    result = _init(tmp_path, project, "--no-git")
+
+    assert result.exit_code == 0, result.output
+    assert (project / "build" / ".agent_credentials").read_text() == "KEY=personal\n"
+
+
+def test_init_no_secrets_skips_seeding(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _secrets_folder(tmp_path, monkeypatch)
+    project = _with_dockerignore(_generated_project(tmp_path))
+    (project / "build" / ".agent_credentials").unlink()
+
+    result = _init(tmp_path, project, "--no-git", "--no-secrets")
+
+    assert result.exit_code == 0, result.output
+    assert not (project / "build" / ".agent_credentials").exists()
+
+
+def test_init_silent_without_secrets_folder(tmp_path: Path) -> None:
+    project = _with_dockerignore(_generated_project(tmp_path))
+    result = _init(tmp_path, project, "--no-git")
+    assert result.exit_code == 0, result.output
+    assert "secret" not in result.output.lower()
+
+
+def test_merge_overrides_skips_credentials(tmp_path: Path) -> None:
+    src = tmp_path / "src"
+    dst = tmp_path / "dst"
+    (src / "build").mkdir(parents=True)
+    (src / "build" / ".agent_credentials").write_text("KEY=x")
+    (src / "build" / ".agent_credentials.example").write_text("KEY=")
+    (src / "build" / "agent.env").write_text("AGENT_BACKEND=cursor")
+    dst.mkdir()
+
+    with patch.object(commands.click, "echo") as echo:
+        commands._merge_overrides(src, dst)
+
+    assert not (dst / "build" / ".agent_credentials").exists()
+    assert (dst / "build" / ".agent_credentials.example").is_file()
+    assert (dst / "build" / "agent.env").is_file()
+    assert "build/.agent_credentials" in str(echo.call_args_list)
+
+
+def test_write_context_manifest_excludes_credentials(tmp_path: Path) -> None:
+    override = tmp_path / "template"
+    (override / "build").mkdir(parents=True)
+    (override / "build" / ".agent_credentials").write_text("KEY=x")
+    (override / "build" / "agent.env").write_text("x")
+    project = tmp_path / "project"
+
+    commands._write_context_manifest(override, project)
+
+    assert (project / ".katapult" / ".context_manifest").read_text().splitlines() == [
+        "build/agent.env"
+    ]
+
+
+# --- kat sync ---
+
+
+def _sync_project(root: Path) -> tuple[Path, Path]:
+    """(home, project): an override folder under home and a project to sync into."""
+    home = root / "home"
+    tmpl = home / ".katapult" / "template"
+    (tmpl / ".cursor" / "rules").mkdir(parents=True)
+    (tmpl / ".cursor" / "rules" / "company.mdc").write_text("v2")
+    (tmpl / "build").mkdir()
+    (tmpl / "build" / "agent.env").write_text("AGENT_BACKEND=cursor\n")
+    (tmpl / "build" / ".agent_credentials").write_text("KEY=overlay\n")
+
+    project = _with_dockerignore(_generated_project(root))
+    (project / ".katapult" / ".context_manifest").write_text(
+        ".cursor/rules/company.mdc\nold/stale.txt\nbuild/.agent_credentials\n../escape\n"
+    )
+    (project / ".cursor" / "rules").mkdir(parents=True)
+    (project / ".cursor" / "rules" / "company.mdc").write_text("v1")
+    (project / "old").mkdir()
+    (project / "old" / "stale.txt").write_text("stale")
+    return home, project
+
+
+def _sync(home: Path, project: Path, *args: str):
+    with patch.object(commands.Path, "home", return_value=home):
+        return CliRunner().invoke(main, ["sync", str(project), *args])
+
+
+def test_sync_refreshes_overlay_and_releases_legacy_credentials(tmp_path: Path) -> None:
+    home, project = _sync_project(tmp_path)
+
+    result = _sync(home, project)
+
+    assert result.exit_code == 0, result.output
+    assert (project / ".cursor" / "rules" / "company.mdc").read_text() == "v2"
+    assert (project / "build" / "agent.env").read_text() == "AGENT_BACKEND=cursor\n"
+    assert not (project / "old" / "stale.txt").exists()
+    # credentials: neither copied from the overlay nor deleted, and no longer managed
+    assert (project / "build" / ".agent_credentials").read_text() == "SECRET=1\n"
+    assert (project / ".katapult" / ".context_manifest").read_text().splitlines() == [
+        ".cursor/rules/company.mdc",
+        "build/agent.env",
+    ]
+    assert "no longer managed (file kept): build/.agent_credentials" in result.output
+    assert "ignored: build/.agent_credentials" in result.output
+    assert "KEY=overlay" not in result.output
+    assert "commit" in result.output
+
+
+def test_sync_dry_run_writes_nothing(tmp_path: Path) -> None:
+    home, project = _sync_project(tmp_path)
+    manifest_before = (project / ".katapult" / ".context_manifest").read_text()
+
+    result = _sync(home, project, "--dry-run")
+
+    assert result.exit_code == 0, result.output
+    assert "updated: .cursor/rules/company.mdc" in result.output
+    assert (project / ".cursor" / "rules" / "company.mdc").read_text() == "v1"
+    assert (project / "old" / "stale.txt").exists()
+    assert (project / ".katapult" / ".context_manifest").read_text() == manifest_before
+
+
+def test_sync_is_idempotent(tmp_path: Path) -> None:
+    home, project = _sync_project(tmp_path)
+    assert _sync(home, project).exit_code == 0
+    result = _sync(home, project)
+    assert result.exit_code == 0, result.output
+    assert "up to date (2 file(s))" in result.output
+    assert "commit" not in result.output
+
+
+def test_sync_seeds_secrets_create_only_then_force(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home, project = _sync_project(tmp_path)
+    _secrets_folder(tmp_path, monkeypatch)
+    creds = project / "build" / ".agent_credentials"
+
+    r1 = _sync(home, project)
+    assert r1.exit_code == 0, r1.output
+    assert "secret kept" in r1.output
+    assert creds.read_text() == "SECRET=1\n"
+
+    r2 = _sync(home, project, "--force-secrets")
+    assert r2.exit_code == 0, r2.output
+    assert "secret copied: build/.agent_credentials" in r2.output
+    assert creds.read_text() == "KEY=personal\n"
+    assert "katx down" in r2.output
+
+
+def test_sync_refuses_secrets_when_not_docker_ignored(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    home, project = _sync_project(tmp_path)
+    _secrets_folder(tmp_path, monkeypatch)
+    (project / ".dockerignore").unlink()
+    (project / "build" / ".agent_credentials").unlink()
+
+    result = _sync(home, project)
+
+    assert result.exit_code == 0, result.output
+    assert "secret refused: build/.agent_credentials" in result.output
+    assert "kat upgrade" in result.output
+    assert not (project / "build" / ".agent_credentials").exists()
+
+
+def test_sync_without_layers_reports_both(tmp_path: Path) -> None:
+    project = _with_dockerignore(_generated_project(tmp_path))
+    result = _sync(tmp_path / "empty_home", project)
+    assert result.exit_code == 0, result.output
+    assert "no ~/.katapult/template/ folder" in result.output
+    assert "no personal secrets folder" in result.output
+
+
 def test_init_no_overrides_skips_merge_even_with_template_files(tmp_path: Path) -> None:
     kat = tmp_path / ".katapult"
     (kat / "template").mkdir(parents=True)

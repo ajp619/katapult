@@ -12,11 +12,15 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  config       Add Katapult dynamic PATH augmentation to the user's .bashrc.
-  export-docs  Render a project's docs to a self-contained HTML zip in ~/outputs.
-  hub          Manage the Katapult hub and Traefik container.
-  init         Initialize a new Katapult application.
-  scan         Scan a katapult project for vulnerabilities (Trivy) and Dockerfile issues (Hadolint).
+  config         Add Katapult dynamic PATH augmentation to the user's...
+  export-docs    Render a project's docs to a self-contained HTML zip in...
+  hub            Manage the Katapult hub and Traefik container.
+  init           Initialize a new Katapult application.
+  install-agent  (Optional, dev-only) Install an MCP delegate backend...
+  register-mcp   (Optional, host-side) Register a project's /mcp endpoint...
+  scan           Scan a katapult project for vulnerabilities (Trivy) and...
+  sync           Refresh a project from your host layers.
+  upgrade        Upgrade a katapult project's scaffolding to the latest...
 ```
 
 ### `kat init`
@@ -30,6 +34,7 @@ Run `kat init --help` for the full usage. The main flags are:
 - **`--no-overrides`** — Ignore the template override mechanism described below and use only the built-in katapult template.
 - **`--yes`** (with **`--name`**, **`--python`**, **`--host`**, **`--output-dir`**) — Create the project non-interactively from the given values and template defaults.
 - **`--no-git`** — Skip creating a git repository (see below).
+- **`--no-secrets`** — Do not copy credential files from your personal secrets folder (see below).
 
 #### Git repository
 
@@ -48,7 +53,22 @@ If your home directory contains **`~/.katapult/template/`** with at least one fi
 
 When overrides are applied, the CLI prints a line such as `Applying overrides from ...` so you know the merged template is in use.
 
-When overrides are applied, `kat init` also writes **`.katapult/.context_manifest`** in the generated project. This manifest records the relative paths copied from `~/.katapult/template/`, so the project-local **`katx update_context`** command can later remove stale managed files and copy the latest versions from `~/.katapult/template/`.
+When overrides are applied, `kat init` also writes **`.katapult/.context_manifest`** in the generated project. This manifest records the relative paths copied from `~/.katapult/template/`, so **`kat sync`** can later remove stale managed files and copy the latest versions.
+
+Credential env files (`build/.*_credentials`) are never taken from the overrides: `kat init` skips them with a message and leaves them out of the manifest. Personal secrets have their own folder (next section).
+
+#### Personal secrets (`~/.config/katapult/secrets/`)
+
+Credentials belong to a person, not to a team template. Keep them in a local folder that mirrors the project tree, for example `~/.config/katapult/secrets/build/.agent_credentials` (folder mode 700, files mode 600). The location is `${XDG_CONFIG_HOME:-~/.config}/katapult/secrets`, or `$KATAPULT_SECRETS_DIR` when set. Never make this folder a git repository.
+
+After the git step, `kat init` copies each file from that folder into the new project, so the credentials are on disk but never in the initial commit. The copy is guarded:
+
+- Only credential paths (`build/.<name>_credentials`, not `.example`) are copied; anything else is refused with a message.
+- The target must be both git-ignored and docker-ignored in the project. If it is not, the file is refused and `kat upgrade` is suggested (it adds the ignore patterns).
+- Existing files are kept (create-only); `kat sync --force-secrets` overwrites them, for example after a key rotation.
+- Files are written with mode 600 and are never recorded in a manifest. Only names are printed, never content.
+
+Without a secrets folder, `kat init` says nothing about secrets.
 
 #### `copy_without_render` (`~/.katapult/copy_without_render`)
 
@@ -56,9 +76,9 @@ If **`~/.katapult/copy_without_render`** exists, each non-empty, non-comment lin
 
 This merging happens only when template overrides are used (i.e. when `~/.katapult/template/` has content and you did not pass **`--no-overrides`**).
 
-#### Updating context in existing projects
+#### Updating existing projects
 
-Use **`katx update_context`** from an existing project to refresh files originally supplied by `~/.katapult/template/`. The command reads `.katapult/.context_manifest`, removes previously managed files, copies the current files from `~/.katapult/template/`, and writes a new manifest. Project-specific files that are not listed in the manifest are left alone.
+Use **`kat sync`** to bring an existing project up to date with your template overrides and personal secrets (see `kat sync` below). It replaces the old project-local `katx update_context`, which now only points here.
 
 #### Plain `kat init`
 
@@ -99,6 +119,22 @@ host:
   > [http://localhost/my_project/](), but if you are running this on an aws vm you 
   > might want something like [http://10.0.1.25/my_project/](). In that case you would 
   > enter "10.0.1.25"  for host. This is really just a convenience function.
+
+### `kat sync`
+
+`kat sync [PROJECT_DIR]` refreshes an existing project from your host layers. `PROJECT_DIR` is optional; without it `kat` walks up from the current directory to the nearest `.katapult/`.
+
+1. **Template overrides.** Files from `~/.katapult/template/` are copied when new or changed, files listed in `.katapult/.context_manifest` that the overrides no longer provide are removed, and the manifest is rewritten. Project files that are not listed are left alone.
+2. **Personal secrets.** Credential files from your secrets folder are copied with the same guards as `kat init`: credential paths only, git- and docker-ignored targets only, create-only, mode 600.
+
+Credential files are never copied from, removed by, or recorded for the overrides. If an older manifest still lists one, `kat sync` drops it from the manifest and keeps the file.
+
+Flags:
+
+- **`--force-secrets`** — Overwrite credential files that already exist in the project (key rotation).
+- **`--dry-run`** — Show what would change without writing anything.
+
+Afterwards, review and commit the project's git diff if overrides changed. If credential files were written, recreate the container so the new env files load (`.katapult/katx down && .katapult/katx up`).
 
 ### `kat export-docs`
 

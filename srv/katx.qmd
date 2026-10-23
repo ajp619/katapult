@@ -24,7 +24,7 @@ positional commands:
   run                  Shortcut for: katx build, katx up, katx render, katx status.
   status               supervisorctl status.
   stop                 manual docker stop command. Generally better to use 'down'
-  update_context       Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh).
+  update_context       Moved to the host: `kat sync` (template overrides + personal secrets).
   up                   `docker compose up -d`.
 ```
 
@@ -39,10 +39,6 @@ second Traefik router on the hidden `public` entrypoint (`:8081`) plus
 `PUBLIC=true|false` in `.katapult/HOSTVARS` (host-local, not committed), so
 `up`/`restart`/`rebuild` keep serving it publicly until you run `katx private`.
 
-### `katx update_context`
+### `katx update_context` (moved)
 
-`katx update_context` refreshes project files that are managed by the user's Katapult template overrides.
-
-The command reads **`.katapult/.context_manifest`**, removes those previously managed files if they still exist, copies the current files from **`~/.katapult/template/`**, and writes a new manifest. This makes file renames safe: old managed names are removed and new names are added.
-
-Files not listed in the manifest are not removed, so project-specific Cursor rules and other local files are preserved.
+Refreshing a project from your template overrides now lives on the host, in **`kat sync`**, so it can evolve with katapult while `katx` stays frozen with each project. `katx update_context` prints the replacement command and exits with an error. See [kat sync](kat.qmd#kat-sync).

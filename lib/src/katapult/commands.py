@@ -45,13 +45,23 @@ def rich():
 
 
 def _merge_overrides(src: Path, dst: Path) -> None:
-    """Copy override files into the template project directory."""
-    for item in src.rglob("*"):
-        if not item.is_file():
-            continue
-        target = dst / item.relative_to(src)
+    """Copy override files into the template project directory.
+
+    Credential files are personal secrets, never template content: they are skipped here
+    and seeded from the secrets folder instead (see :mod:`katapult.secrets`).
+    """
+    from katapult.overlay import override_files
+
+    managed, excluded = override_files(src)
+    for rel in excluded:
+        click.echo(
+            f"Skipping {rel} from the template overrides: personal secrets belong in "
+            "your secrets folder (see `kat sync --help`)."
+        )
+    for rel in managed:
+        target = dst / rel
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(item, target)
+        shutil.copy2(src / rel, target)
 
 
 def _apply_copy_without_render(ignore_file: Path, cookiecutter_json: Path) -> None:
@@ -88,11 +98,9 @@ def _override_template_has_content(override_dir: Path) -> bool:
 
 def _write_context_manifest(override_dir: Path, project_dir: Path) -> None:
     """Record which files were copied from the override template."""
-    files = sorted(
-        p.relative_to(override_dir).as_posix()
-        for p in override_dir.rglob("*")
-        if p.is_file()
-    )
+    from katapult.overlay import override_files
+
+    files, _ = override_files(override_dir)
     manifest = project_dir / ".katapult" / ".context_manifest"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text("\n".join(files) + "\n")
@@ -144,6 +152,12 @@ def _write_context_manifest(override_dir: Path, project_dir: Path) -> None:
     default=False,
     help="Do not create a git repository with an initial commit.",
 )
+@click.option(
+    "--no-secrets",
+    is_flag=True,
+    default=False,
+    help="Do not copy credential files from your personal secrets folder.",
+)
 def init(
     no_overrides: bool,
     project_name: str | None,
@@ -152,6 +166,7 @@ def init(
     output_dir: str | None,
     assume_yes: bool,
     no_git: bool,
+    no_secrets: bool,
 ) -> None:
     """Initialize a new Katapult application.
 
@@ -164,6 +179,8 @@ def init(
 
     The new project is made a git repository with one initial commit (``kat upgrade``
     requires a repo), unless ``--no-git`` is given or it is created inside an existing repo.
+    Credential files from your personal secrets folder are then copied into ``build/``
+    (git- and docker-ignored, so never committed) unless ``--no-secrets`` is given.
     """
     current_file_path = Path(__file__)
     template_dir = current_file_path.parent / "project_template"
@@ -206,6 +223,21 @@ def init(
     _stamp_new_project(project_dir)
     if not no_git:
         _git_init_project(project_dir)
+    if not no_secrets:
+        _seed_new_project(project_dir)
+
+
+def _seed_new_project(project_dir) -> None:
+    """Copy personal credential files into a new project; silent without a secrets folder."""
+    path = _generated_dir(project_dir)
+    if path is None:
+        return
+    from katapult.secrets import seed_secrets
+
+    result = seed_secrets(path)
+    if result is not None and (result.copied or result.refused):
+        click.echo(f"Personal secrets from {result.source}:")
+        _report_secrets(result)
 
 
 def _generated_dir(project_dir) -> Path | None:
@@ -901,6 +933,104 @@ def upgrade(
         allow_dirty=allow_dirty,
         to_id=to_id,
     )
+
+
+# --- Host layers: template overrides + personal secrets ------------------------
+
+
+def _report_secrets(result, *, dry_run: bool = False, quiet_if_none: bool = False) -> bool:
+    """Print a seed_secrets result (names only, never content). True if files were written."""
+    from katapult.secrets import secrets_dir
+
+    if result is None:
+        if not quiet_if_none:
+            click.echo(
+                f"  no personal secrets folder at {secrets_dir()}; nothing to seed. "
+                "Put credential files there mirroring the project tree "
+                "(e.g. build/.agent_credentials, mode 600)."
+            )
+        return False
+    verb = "would copy" if dry_run else "copied"
+    for rel in result.copied:
+        click.echo(f"  secret {verb}: {rel}")
+    for rel in result.kept:
+        click.echo(f"  secret kept (exists; --force-secrets to overwrite): {rel}")
+    for rel, reason in result.refused:
+        click.echo(f"  secret refused: {rel} -- {reason}")
+    return bool(result.copied) and not dry_run
+
+
+@click.command()
+@click.argument(
+    "project_dir",
+    type=click.Path(file_okay=False, exists=True),
+    required=False,
+    default=None,
+)
+@click.option(
+    "--force-secrets",
+    is_flag=True,
+    help="Overwrite credential files that already exist in the project (key rotation).",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Show what would change without writing anything.",
+)
+def sync(project_dir: str | None, force_secrets: bool, dry_run: bool) -> None:
+    """Refresh a project from your host layers.
+
+    \b
+    1. Template overrides: files from ~/.katapult/template/ are refreshed, ones it no
+       longer provides are removed, and .katapult/.context_manifest is rewritten.
+    2. Personal secrets: credential files from your secrets folder
+       (${XDG_CONFIG_HOME:-~/.config}/katapult/secrets, or $KATAPULT_SECRETS_DIR) are
+       copied create-only into build/, only where git and docker both ignore them.
+
+    Credential files are never taken from the template overrides and never removed.
+    """
+    from katapult.overlay import sync_overlay
+    from katapult.secrets import seed_secrets
+
+    project = _resolve_scan_project(project_dir, implicit_first_arg=None)
+    click.echo(f"Project: {project}" + ("  (dry run)" if dry_run else ""))
+
+    overlay = sync_overlay(project, dry_run=dry_run)
+    if overlay is None:
+        click.echo("Overrides: no ~/.katapult/template/ folder; skipped.")
+    else:
+        click.echo(f"Overrides from {overlay.source}:")
+        for label, items in (
+            ("added", overlay.added),
+            ("updated", overlay.updated),
+            ("removed", overlay.removed),
+        ):
+            for rel in items:
+                click.echo(f"  {label}: {rel}")
+        for rel in overlay.excluded:
+            click.echo(
+                f"  ignored: {rel} -- personal secrets belong in your secrets folder, "
+                "not the template overrides"
+            )
+        for rel in overlay.released:
+            click.echo(f"  no longer managed (file kept): {rel}")
+        if not overlay.changed:
+            click.echo(f"  up to date ({len(overlay.unchanged)} file(s))")
+
+    click.echo("Secrets:")
+    wrote = _report_secrets(
+        seed_secrets(project, force=force_secrets, dry_run=dry_run), dry_run=dry_run
+    )
+
+    if dry_run:
+        return
+    if overlay is not None and overlay.changed:
+        click.echo("Review the project's git diff and commit it.")
+    if wrote:
+        click.echo(
+            "Recreate the container so new env files load: "
+            "`.katapult/katx down && .katapult/katx up`."
+        )
 
 
 # --- Security scan (Trivy + Hadolint) -----------------------------------------

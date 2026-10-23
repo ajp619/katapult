@@ -119,7 +119,7 @@ while (( "$#" )); do #while there are still args to parse
       printf "$format" "services" "list | enable <name> | disable <name>: toggle supervisor programs (conf.d)."
       printf "$format" "status" "supervisorctl status."
       printf "$format" "stop" "manual docker stop command. Generally better to use 'down'"
-      printf "$format" "update_context" "Sync shared context files from ~/.katapult/template/ (removes stale, copies fresh)."
+      printf "$format" "update_context" "Moved to the host: \`kat sync\` (template overrides + personal secrets)."
       printf "$format" "up" "\`docker compose up -d\`."
       shift
       ;;
@@ -378,46 +378,9 @@ while (( "$#" )); do
       shift
       ;;
     update_context)
-      KATAPULT_HOME="$HOME/.katapult"
-      TEMPLATE_DIR="$KATAPULT_HOME/template"
-      MANIFEST="$PROJECT_DIR/.katapult/.context_manifest"
-
-      if [ ! -d "$TEMPLATE_DIR" ]; then
-        echo "Error: $TEMPLATE_DIR does not exist." >&2
-        exit 1
-      fi
-
-      if [ -f "$MANIFEST" ]; then
-        while IFS= read -r file; do
-          case "$file" in
-            ""|\#*)
-              continue
-              ;;
-            /*|../*|*/../*|..|*/..)
-              echo "  skipped unsafe manifest path: $file" >&2
-              continue
-              ;;
-          esac
-          target="$PROJECT_DIR/$file"
-          if [ -f "$target" ]; then
-            rm "$target"
-            echo "  removed: $file"
-          fi
-        done < "$MANIFEST"
-      fi
-
-      mkdir -p "$(dirname "$MANIFEST")"
-      > "$MANIFEST"
-      while IFS= read -r -d '' file; do
-        rel="${file#./}"
-        mkdir -p "$(dirname "$PROJECT_DIR/$rel")"
-        cp -p "$TEMPLATE_DIR/$rel" "$PROJECT_DIR/$rel"
-        echo "$rel" >> "$MANIFEST"
-        echo "  synced: $rel"
-      done < <(cd "$TEMPLATE_DIR" && find . -type f -print0 | sort -z)
-
-      echo "Context updated from $TEMPLATE_DIR"
-      shift
+      # Syncing from host layers moved to the host CLI, which evolves with katapult.
+      echo "katx update_context moved to the host: kat sync $PROJECT_DIR" >&2
+      exit 1
       ;;
     up)
       set -x

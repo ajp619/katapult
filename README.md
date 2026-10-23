@@ -109,7 +109,9 @@ back to the template default.
 
 The new project is created as a git repository with one initial commit (so `kat upgrade`
 works later). Pass `--no-git` to skip this; it is also skipped when the output directory is
-already inside a git repository.
+already inside a git repository. Afterwards, credential files from your personal secrets
+folder (if you have one) are copied into `build/`, outside that commit; pass `--no-secrets`
+to skip (see [Host layers](#host-layers-template-overrides-and-personal-secrets)).
 
 Change to the new project directory and use:
 
@@ -140,6 +142,7 @@ as path extensions (e.g. `http://localhost/<project name>/`).
 | `kat install-agent` | (dev-only) Installs a project's opt-in MCP agent backend via `uv sync --extra <backend>` (see [MCP server](#per-project-mcp-server-dev-only)) |
 | `kat register-mcp` | Registers a project's `/mcp` endpoint into an MCP client config (e.g. `.cursor/mcp.json`) |
 | `kat upgrade` | Upgrades an existing project's scaffolding to the latest template via versioned migrations (see [below](#upgrading-existing-projects)) |
+| `kat sync` | Refreshes a project from your template overrides and personal secrets (see [Host layers](#host-layers-template-overrides-and-personal-secrets)) |
 
 ```bash
 kat --help
@@ -200,6 +203,9 @@ Behavior and flags:
   moved) for you to merge.
 * **Idempotent.** Re-running applies only what's still pending; a fully upgraded project
   reports "Already up to date".
+* **katx follows katapult.** Every upgrade also refreshes `.katapult/katx` from the
+  installed katapult when it differs, even when no migration is pending (a standing step,
+  not a migration).
 * `--to <migration-id>` stops after a specific migration instead of applying all pending.
 
 After upgrading, rebuild the container to pick up the new scaffolding, and (for the MCP
@@ -209,6 +215,35 @@ migration) optionally wire the hub:
 path/to/project/.katapult/katx rebuild
 kat register-mcp path/to/project
 ```
+
+`kat upgrade` only touches template scaffolding. To refresh your template overrides and
+personal secrets as well, run `kat sync path/to/project`.
+
+#### Host layers: template overrides and personal secrets
+
+`kat` and `katx` split along one line: **`katx`** is vendored into each project and frozen
+with it, so it only operates that project (build, up/down, render, status, connect).
+Anything that reads your host setup belongs to **`kat`**, which evolves with katapult:
+`kat init` (create), `kat upgrade` (template scaffolding) and `kat sync` (host layers).
+
+Two optional host folders feed new and existing projects:
+
+| Folder | Holds | Shared? |
+| --- | --- | --- |
+| `~/.katapult/template/` | Team or company defaults: extra rules, docs, config files. Mirrors the project tree. | Yes (often its own git repo) |
+| `~/.config/katapult/secrets/` | Your credential env files, e.g. `build/.agent_credentials`. Mirrors the project tree. | No: per person, per machine, never a git repo |
+
+The secrets folder is `${XDG_CONFIG_HOME:-~/.config}/katapult/secrets`, or
+`$KATAPULT_SECRETS_DIR` when set. Keep it mode 700 and its files mode 600.
+
+`kat init` applies both. `kat sync [PROJECT_DIR]` applies them to an existing project: it
+refreshes override files (removing ones the overrides no longer provide, tracked in
+`.katapult/.context_manifest`), then copies secrets. Secrets are copied only to
+`build/.*_credentials` paths that the project both git-ignores and docker-ignores, only
+when the file does not exist yet (`--force-secrets` overwrites, e.g. after a key rotation),
+with mode 600, and never into a manifest. Credential files placed in the template overrides
+are ignored. Use `--dry-run` to preview. After new env files are written, recreate the
+container (`katx down && katx up`).
 
 ##### Authoring a migration
 
@@ -305,8 +340,9 @@ Everything here is **dev-only**: the MCP service and any agent backend are wired
 the dev compose path, so test/prod images stay agent-free. The backend credential (e.g.
 `CURSOR_API_KEY`) lives only in the gitignored `build/.agent_credentials` env_file and is
 never baked into the shared image. Opinionated/vendor activation (flipping
-`AGENT_BACKEND=cursor`, the credentials template, org-specific tools) belongs in the
-`~/.katapult/template/` overlay rather than the neutral public template.
+`AGENT_BACKEND=cursor`, the credentials `.example` template, org-specific tools) belongs in
+the `~/.katapult/template/` overlay rather than the neutral public template; the key itself
+is personal and goes in your secrets folder, from which `kat init` / `kat sync` copy it.
 
 ## Key Features
 
