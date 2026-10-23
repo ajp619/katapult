@@ -13,11 +13,15 @@ from katapult.migrations.m0001_add_internal_mcp import migration as m0001_add_in
 from katapult.migrations.m0002_seed_project_rules import (
     migration as m0002_seed_project_rules,
 )
+from katapult.migrations.m0003_ignore_credentials import (
+    migration as m0003_ignore_credentials,
+)
 
 # Applied in order; a project's manifest records the ids it has already received.
 REGISTRY: list[Migration] = [
     m0001_add_internal_mcp,
     m0002_seed_project_rules,
+    m0003_ignore_credentials,
 ]
 
 

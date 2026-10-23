@@ -33,7 +33,8 @@ htmlcov/
 !.env.example
 *.pem
 *.key
-build/.agent_credentials
+build/.*_credentials
+!build/.*_credentials.example
 
 # MCP handoff data-plane (transient inter-agent exchange)
 .handoff/

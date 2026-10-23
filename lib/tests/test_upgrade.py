@@ -256,12 +256,92 @@ def test_upgrade_to_stops_after_first_migration(tmp_path: Path) -> None:
     manifest = json.loads((proj / ".katapult" / "manifest.json").read_text())
     assert manifest["applied_migrations"] == [MCP_ID]
 
-    # a follow-up upgrade applies the remaining migration
+    # a follow-up upgrade applies the remaining migrations
     r2 = _upgrade(proj, "--allow-dirty")
     assert r2.exit_code == 0, r2.output
     assert (proj / ".cursor" / "rules" / "engineering-standards.mdc").is_file()
     manifest2 = json.loads((proj / ".katapult" / "manifest.json").read_text())
-    assert manifest2["applied_migrations"] == [MCP_ID, RULE_ID]
+    assert manifest2["applied_migrations"][:2] == [MCP_ID, RULE_ID]
+    assert manifest2["applied_migrations"] == all_ids()
+
+
+# --- 0003: ignore credentials -------------------------------------------------
+
+CRED_ID = "0003_ignore_credentials"
+
+
+def test_validate_action_path_allows_ensure_block_on_ignore_files() -> None:
+    for dst in (".gitignore", ".dockerignore"):
+        validate_action_path(EnsureBlock(dst, marker="m", block="b"))  # does not raise
+
+
+def test_validate_action_path_rejects_add_file_on_ignore_files() -> None:
+    for dst in (".gitignore", ".dockerignore"):
+        with pytest.raises(commands.click.ClickException):
+            validate_action_path(AddFile("x", dst))
+
+
+def test_upgrade_ignores_credentials_and_handoff(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)
+    (proj / ".gitignore").write_text("build/.agent_credentials\n")
+    (proj / ".dockerignore").write_text(".git\n.env\n")
+
+    result = _upgrade(proj, "--allow-dirty")
+    assert result.exit_code == 0, result.output
+
+    gitignore = (proj / ".gitignore").read_text()
+    assert gitignore.startswith("build/.agent_credentials\n")
+    assert "build/.*_credentials\n!build/.*_credentials.example\n" in gitignore
+    assert ".handoff" not in gitignore
+    dockerignore = (proj / ".dockerignore").read_text()
+    assert dockerignore.startswith(".git\n.env\n")
+    assert "build/.*_credentials\n!build/.*_credentials.example\n" in dockerignore
+    assert ".handoff/\n" in dockerignore
+
+
+def test_upgrade_ignore_blocks_are_idempotent(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)
+    (proj / ".gitignore").write_text("*.pyc\n")
+    (proj / ".dockerignore").write_text(".git\n")
+    assert _upgrade(proj, "--allow-dirty").exit_code == 0
+    gitignore, dockerignore = (
+        (proj / ".gitignore").read_text(),
+        (proj / ".dockerignore").read_text(),
+    )
+
+    # re-run the migration itself (not just "already applied" via the manifest)
+    manifest = proj / ".katapult" / "manifest.json"
+    data = json.loads(manifest.read_text())
+    data["applied_migrations"].remove(CRED_ID)
+    manifest.write_text(json.dumps(data))
+    assert _upgrade(proj, "--allow-dirty").exit_code == 0
+
+    assert (proj / ".gitignore").read_text() == gitignore
+    assert (proj / ".dockerignore").read_text() == dockerignore
+    assert dockerignore.count(".handoff/") == 1
+
+
+def test_upgrade_leaves_already_patched_ignore_files(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)
+    gitignore = "build/.*_credentials\n"
+    dockerignore = ".handoff/\nbuild/.*_credentials\n"
+    (proj / ".gitignore").write_text(gitignore)
+    (proj / ".dockerignore").write_text(dockerignore)
+
+    assert _upgrade(proj, "--allow-dirty").exit_code == 0
+
+    assert (proj / ".gitignore").read_text() == gitignore
+    assert (proj / ".dockerignore").read_text() == dockerignore
+
+
+def test_upgrade_does_not_create_missing_ignore_files(tmp_path: Path) -> None:
+    proj = _make_old_project(tmp_path)  # no .gitignore / .dockerignore
+
+    result = _upgrade(proj, "--allow-dirty")
+
+    assert result.exit_code == 0, result.output
+    assert not (proj / ".gitignore").exists()
+    assert not (proj / ".dockerignore").exists()
 
 
 # --- idempotency --------------------------------------------------------------

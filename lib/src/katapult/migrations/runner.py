@@ -18,6 +18,7 @@ import click
 
 from katapult.migrations import REGISTRY, all_ids
 from katapult.migrations.base import (
+    ENSURE_BLOCK_FILES,
     SCAFFOLDING_PREFIXES,
     Action,
     AddFile,
@@ -164,10 +165,13 @@ def validate_action_path(action: Action) -> None:
         raise click.ClickException(
             f"Migration action targets an unsafe path: {action.target!r}"
         )
+    if isinstance(action, EnsureBlock) and rel in ENSURE_BLOCK_FILES:
+        return
     if not any(rel == p.rstrip("/") or rel.startswith(p) for p in SCAFFOLDING_PREFIXES):
         raise click.ClickException(
             f"Migration action targets {action.target!r}, outside the scaffolding "
-            f"allowlist {SCAFFOLDING_PREFIXES}."
+            f"allowlist {SCAFFOLDING_PREFIXES} (EnsureBlock may also append to "
+            f"{ENSURE_BLOCK_FILES})."
         )
 
 

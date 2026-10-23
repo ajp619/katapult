@@ -10,8 +10,10 @@ essentially data.
 Design invariants:
 
 - **Scaffolding only.** Every action's destination must live under one of the
-  scaffolding prefixes (``.katapult/``, ``build/``, ``mcp/``). The runner rejects any
-  action that would touch user code (``lib/src``, ``nbk``, ``api/src``, ``app`` ...).
+  scaffolding prefixes (``.katapult/``, ``.cursor/``, ``build/``, ``mcp/``), except that
+  ``EnsureBlock`` may append to the root ignore files (``.gitignore``, ``.dockerignore``).
+  The runner rejects any action that would touch user code (``lib/src``, ``nbk``,
+  ``api/src``, ``app`` ...).
 - **Idempotent.** Re-running a migration is a no-op: ``AddFile`` skips when the target
   already matches, ``EnsureBlock`` skips when its ``marker`` is already present.
 - **Never clobber.** When a target was locally customized, the runner writes a sidecar
@@ -28,6 +30,10 @@ from dataclasses import dataclass, field
 # user code and must never be modified by an upgrade. `.cursor/` holds generated
 # agent rules/config (not user source); `mcp/` is the dev-only MCP service.
 SCAFFOLDING_PREFIXES: tuple[str, ...] = (".katapult/", ".cursor/", "build/", "mcp/")
+
+# Root files a migration may append to with ``EnsureBlock`` only (never replace via
+# ``AddFile``): the ignore files that keep secrets out of git and out of the image.
+ENSURE_BLOCK_FILES: tuple[str, ...] = (".gitignore", ".dockerignore")
 
 
 @dataclass(frozen=True)

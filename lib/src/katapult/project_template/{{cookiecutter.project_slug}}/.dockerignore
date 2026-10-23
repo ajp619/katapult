@@ -7,6 +7,11 @@
 *.pem
 *.key
 .ssh/
+build/.*_credentials
+!build/.*_credentials.example
+
+# MCP handoff data-plane (transient inter-agent exchange)
+.handoff/
 
 # Python-generated files
 __pycache__/
