@@ -28,6 +28,14 @@ positional commands:
   up                   `docker compose up -d`.
 ```
 
+### Chained commands, exit codes and scripts
+
+Commands run left to right (`katx down build up`, and the `rebuild` / `run`
+shortcuts). If `docker build` or `quarto render` fails, `katx` stops there and exits
+with that command's status, so a failed build never starts a container. The
+`docker exec` commands (`render`, `status`, `mcp`, `jlab`) only request a TTY when
+stdin is a terminal, so `katx` also works from scripts, CI and agents.
+
 ### `katx pub` / `katx private`
 
 `katx pub` publishes a project to the **public-apps dashboard**; `katx private`
