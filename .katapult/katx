@@ -54,7 +54,16 @@ function set_public_hostvar {
 # create a place holder for positional args
 POS_ARGS=""
 
+# docker exec refuses -t when stdin is not a terminal, so only request a TTY when
+# there is one; katx then also works from scripts, CI and agents.
+EXEC_TTY="-i"
+if [ -t 0 ]; then
+  EXEC_TTY="-it"
+fi
+
 function clear_last_line {
+  # cursor movement only makes sense on a terminal; keep logs free of escape codes
+  [ -t 1 ] && [ -t 2 ] || return 0
   tput cuu 1
   tput ed
   tput sc
@@ -180,7 +189,13 @@ while (( "$#" )); do
         $BUILD_ARGS \
         $SECRET_ARGS \
         $PROJECT_DIR
+      rc=$?
       set +x
+      # stop here so `rebuild` / `run` never start a container from a failed build
+      if [ $rc -ne 0 ]; then
+        echo "error: docker build failed (exit $rc)" >&2
+        exit $rc
+      fi
       clear_last_line
       shift
       ;;
@@ -228,7 +243,7 @@ while (( "$#" )); do
       CMD='cd /content/nbk && uv run jupyter server list'
       set -x
       docker exec \
-        -it \
+        $EXEC_TTY \
         $CONTAINER_NAME \
         bash -c "$CMD" \
           | sed "s/\:8888//" \
@@ -242,7 +257,7 @@ while (( "$#" )); do
       CMD='supervisorctl status mcp 2>/dev/null || echo "mcp service not running (MCP_SERVER=off or not started)"'
       set -x
       docker exec \
-        -it \
+        $EXEC_TTY \
         $CONTAINER_NAME \
         bash -c "$CMD"
       set +x
@@ -280,10 +295,15 @@ while (( "$#" )); do
       CMD="quarto render && uvx --refresh --with lib/. pdoc -o docs/lib $PROJECT_NAME"
       set -x
       docker exec \
-        -it \
+        $EXEC_TTY \
         $CONTAINER_NAME \
         bash -c "$CMD"
+      rc=$?
       set +x
+      if [ $rc -ne 0 ]; then
+        echo "error: render failed (exit $rc)" >&2
+        exit $rc
+      fi
       clear_last_line
       shift
       ;;
@@ -372,7 +392,7 @@ while (( "$#" )); do
       CMD='supervisorctl status'
       set -x
       docker exec \
-        -it \
+        $EXEC_TTY \
         $CONTAINER_NAME \
         bash -c "$CMD"
       set +x
