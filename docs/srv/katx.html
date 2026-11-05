@@ -131,6 +131,7 @@ ul.task-list li input[type="checkbox"] {
   <ul>
   <li><a href="#katx" id="toc-katx" class="nav-link active" data-scroll-target="#katx"><code>katx</code></a>
   <ul class="collapse">
+  <li><a href="#chained-commands-exit-codes-and-scripts" id="toc-chained-commands-exit-codes-and-scripts" class="nav-link" data-scroll-target="#chained-commands-exit-codes-and-scripts">Chained commands, exit codes and scripts</a></li>
   <li><a href="#katx-pub-katx-private" id="toc-katx-pub-katx-private" class="nav-link" data-scroll-target="#katx-pub-katx-private"><code>katx pub</code> / <code>katx private</code></a></li>
   <li><a href="#katx-update_context-moved" id="toc-katx-update_context-moved" class="nav-link" data-scroll-target="#katx-update_context-moved"><code>katx update_context</code> (moved)</a></li>
   </ul></li>
@@ -170,6 +171,10 @@ positional commands:
   stop                 manual docker stop command. Generally better to use 'down'
   update_context       Moved to the host: `kat sync` (template overrides + personal secrets).
   up                   `docker compose up -d`.</code></pre>
+<section id="chained-commands-exit-codes-and-scripts" class="level3">
+<h3 class="anchored" data-anchor-id="chained-commands-exit-codes-and-scripts">Chained commands, exit codes and scripts</h3>
+<p>Commands run left to right (<code>katx down build up</code>, and the <code>rebuild</code> / <code>run</code> shortcuts). If <code>docker build</code> or <code>quarto render</code> fails, <code>katx</code> stops there and exits with that command’s status, so a failed build never starts a container. The <code>docker exec</code> commands (<code>render</code>, <code>status</code>, <code>mcp</code>, <code>jlab</code>) only request a TTY when stdin is a terminal, so <code>katx</code> also works from scripts, CI and agents.</p>
+</section>
 <section id="katx-pub-katx-private" class="level3">
 <h3 class="anchored" data-anchor-id="katx-pub-katx-private"><code>katx pub</code> / <code>katx private</code></h3>
 <p><code>katx pub</code> publishes a project to the <strong>public-apps dashboard</strong>; <code>katx private</code> unpublishes it. See <a href="../srv/public-access.html">Public apps</a> for the full model.</p>
