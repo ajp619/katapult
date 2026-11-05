@@ -162,6 +162,9 @@ subsequent runs reuse it. The output lands at
 `~/outputs/<project_name>_docs_<YYYYmmdd_HHMMSS>.zip`. Unzip on any machine and
 open the pages directly from `file://` — no local web server required.
 
+The snapshot is rendered without running any code: code in `.qmd` pages appears as source
+and notebooks show their stored outputs. Re-run code with `katx render` in the project.
+
 > An internet connection is needed for Mermaid diagrams (loaded from a CDN).
 > Quarto's local search box won't function over `file://` because most browsers
 > block its XHR; the rest of the site (navigation, cross-links, syntax
@@ -176,8 +179,10 @@ scaffolding-only** migrations — it only ever touches `.katapult/`, `.cursor/`,
 and `mcp/` (plus marker-guarded appends to `.gitignore` / `.dockerignore`), never your
 `lib/`, `nbk/`, `api/`, or `app/` code. The current migrations add the internal MCP server
 (`0001`), seed the project's `.cursor/rules/` — engineering standards, conventions, and
-notebook/jupytext standards (`0002`), and git- and docker-ignore credential env files
-(`build/.*_credentials`) and the `.handoff/` exchange directory (`0003`).
+notebook/jupytext standards (`0002`), git- and docker-ignore credential env files
+(`build/.*_credentials`) and the `.handoff/` exchange directory (`0003`), and add a
+Dockerfile step that fetches [private git dependencies](srv/private-git-deps.qmd) with a
+read-only key (`0004`).
 
 Each project records what it has received in `.katapult/manifest.json`:
 
@@ -245,6 +250,11 @@ with mode 600, and never into a manifest. Credential files placed in the templat
 are ignored. Use `--dry-run` to preview. After new env files are written, recreate the
 container (`katx down && katx up`).
 
+Besides `build/.agent_credentials`, the secrets folder can hold
+`build/.git_ssh_credentials`, a read-only SSH key that lets a project install a private
+repository as a pinned `git+ssh` dependency; see
+[Private git dependencies](srv/private-git-deps.qmd).
+
 ##### Authoring a migration
 
 Migrations live in `lib/src/katapult/migrations/`. To add one for a future release:
@@ -276,6 +286,11 @@ allowlist, and sidecars for you.
 | `katx jlab` | Lists JupyterLab access URLs with tokens |
 | `katx mcp` | Prints the project's MCP endpoint URL and service status |
 | `katx restart` / `katx rebuild` | Shortcuts for down, build, up |
+
+Commands chain left to right. If `build` or `render` fails, `katx` stops there and exits
+with that command's status, so a failed build never starts a container. `katx` also works
+without a terminal (scripts, CI, agents); see
+[Chained commands, exit codes and scripts](srv/katx.qmd#chained-commands-exit-codes-and-scripts).
 
 From within the project directory or a subfolder:
 
@@ -354,8 +369,12 @@ is personal and goes in your secrets folder, from which `kat init` / `kat sync` 
 
 ## Version History
 
-* 0.1
-  * Initial Release
+The version is set in `lib/pyproject.toml`; each release ends with a
+`chore: bump katapult to <version>` commit. To see what changed between releases:
+
+```bash
+git log --oneline
+```
 
 ## License
 
