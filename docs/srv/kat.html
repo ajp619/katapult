@@ -307,6 +307,7 @@ Commands:
 <section id="kat-export-docs" class="level3">
 <h3 class="anchored" data-anchor-id="kat-export-docs"><code>kat export-docs</code></h3>
 <p>The <code>export-docs</code> command renders the project website with Quarto (inside a small Docker image) and writes a <strong>self-contained HTML zip</strong> to <code>~/outputs</code> by default (or to <strong><code>--output-dir</code></strong> if you pass it).</p>
+<p>This is a <strong>portable snapshot</strong> of docs that have already been produced: the export runs with execution disabled, so <code>.ipynb</code> notebooks render from their stored outputs and code-containing <code>.qmd</code> files render as source. The lightweight export image ships Quarto only (no Jupyter or project dependencies), so it never starts a kernel. To re-run computations, render inside the project container with <code>katx render</code> (full <code>nbk</code> environment) before exporting.</p>
 <section id="project-directory" class="level4">
 <h4 class="anchored" data-anchor-id="project-directory">Project directory</h4>
 <p><code>PROJECT_DIR</code> is optional. If omitted, <code>kat</code> walks up from the current directory until it finds a <strong><code>.katapult/</code></strong> directory (the same marker used by <code>kat scan</code> and <code>kat config</code>). If you pass a path, it must be a katapult project root (contain <strong><code>.katapult/</code></strong>) and a Quarto project root (contain <strong><code>_quarto.yml</code></strong>).</p>
