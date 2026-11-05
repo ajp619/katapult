@@ -165,11 +165,20 @@ while (( "$#" )); do
   case "$1" in
     build)
       echo "building image $IMAGE_NAME"
+      # Private git dependencies: hand the read-only key to the build as a BuildKit
+      # secret (mounted only for the venv-bake step, never stored in a layer), and
+      # only when some uv.lock actually has a git-over-ssh source.
+      SECRET_ARGS=""
+      GIT_SSH_KEY_FILE="$PROJECT_DIR/build/.git_ssh_credentials"
+      if [ -f "$GIT_SSH_KEY_FILE" ] && grep -qs 'git = "ssh://' "$PROJECT_DIR"/*/uv.lock; then
+        SECRET_ARGS="--secret id=git_ssh_key,src=$GIT_SSH_KEY_FILE"
+      fi
       set -x
       docker build \
         --tag $IMAGE_NAME \
         -f $PROJECT_DIR/build/Dockerfile \
         $BUILD_ARGS \
+        $SECRET_ARGS \
         $PROJECT_DIR
       set +x
       clear_last_line
