@@ -140,6 +140,8 @@ Afterwards, review and commit the project's git diff if overrides changed. If cr
 
 The `export-docs` command renders the project website with Quarto (inside a small Docker image) and writes a **self-contained HTML zip** to `~/outputs` by default (or to **`--output-dir`** if you pass it).
 
+This is a **portable snapshot** of docs that have already been produced: the export runs with execution disabled, so `.ipynb` notebooks render from their stored outputs and code-containing `.qmd` files render as source. The lightweight export image ships Quarto only (no Jupyter or project dependencies), so it never starts a kernel. To re-run computations, render inside the project container with `katx render` (full `nbk` environment) before exporting.
+
 #### Project directory
 
 `PROJECT_DIR` is optional. If omitted, `kat` walks up from the current directory until it finds a **`.katapult/`** directory (the same marker used by `kat scan` and `kat config`). If you pass a path, it must be a katapult project root (contain **`.katapult/`**) and a Quarto project root (contain **`_quarto.yml`**).

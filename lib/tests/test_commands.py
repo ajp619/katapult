@@ -1107,6 +1107,46 @@ def test_export_docs_blocks_known_slow_render_hosts(tmp_path: Path) -> None:
         assert f"{host}:127.0.0.1" in blocked, f"missing block for {host}"
 
 
+def test_export_docs_profile_disables_execution(tmp_path: Path) -> None:
+    """The copied export profile must disable execution so the Jupyter-free
+    export image can render code-containing `.qmd` files (as source) and
+    `.ipynb` files (from stored outputs) without starting a kernel."""
+    proj = _make_project(tmp_path)
+    out = tmp_path / "out"
+    client = _patched_docker_env()
+
+    captured: dict[str, str] = {}
+
+    def _capture_profile(cmd, check=True, **kwargs):  # noqa: ARG001
+        for i, a in enumerate(cmd):
+            if a == "-v" and i + 1 < len(cmd) and ":/work" in cmd[i + 1]:
+                work_host = Path(cmd[i + 1].split(":/work", 1)[0])
+                profile = work_host / "_quarto-export-docs.yml"
+                if profile.is_file():
+                    captured["yml"] = profile.read_text()
+                (work_host / "export-docs-build").mkdir(parents=True, exist_ok=True)
+                break
+        result = MagicMock()
+        result.returncode = 0
+        return result
+
+    with (
+        patch.object(commands.docker, "from_env", return_value=client),
+        patch.object(commands.subprocess, "run", side_effect=_capture_profile),
+        patch.object(commands.shutil, "make_archive"),
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            main, ["export-docs", str(proj), "--output-dir", str(out)]
+        )
+
+    assert result.exit_code == 0, result.output
+    from ruamel.yaml import YAML
+
+    data = YAML(typ="safe").load(captured["yml"])
+    assert data["execute"]["enabled"] is False
+
+
 # --- kat scan ---
 
 

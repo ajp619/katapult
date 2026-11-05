@@ -1,6 +1,17 @@
 project:
   output-dir: export-docs-build
 
+# `export-docs` renders a *portable snapshot* of docs that have already been
+# produced; it does not recompute. The lightweight export-docs image ships
+# Quarto only (no Jupyter / project dependencies), so disabling execution:
+#   - lets code-containing `.qmd` files render as source instead of forcing a
+#     Jupyter kernel to start (which fails with ModuleNotFoundError: yaml), and
+#   - renders `.ipynb` notebooks from their stored outputs.
+# Re-executing docs is the job of `katx render` inside the project container,
+# which has the full nbk environment.
+execute:
+  enabled: false
+
 format:
   html:
     embed-resources: true
