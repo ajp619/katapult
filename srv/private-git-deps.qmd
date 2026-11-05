@@ -1,0 +1,95 @@
+---
+title: "Private git dependencies"
+---
+
+A project can depend on code in another private repository, for example a shared
+library that several projects import, by pinning it as a **git dependency** instead of
+copying it or publishing wheels. The container fetches it with a **read-only key** that
+can see only that repository.
+
+## How it works
+
+```{mermaid}
+flowchart LR
+  keyFile["build/.git_ssh_credentials"] --> gate{"a uv.lock has a git-over-ssh source?"}
+  gate -->|no| plain["katx build: unchanged"]
+  gate -->|yes| secret["katx build --secret id=git_ssh_key"]
+  secret --> bake["venv bake: uv sync --frozen, secret mounted for that step only"]
+  keyFile --> dev["dev container: GIT_SSH_COMMAND for uv add / uv lock"]
+```
+
+* **Image build.** `katx build` passes `build/.git_ssh_credentials` to BuildKit as the
+  `git_ssh_key` secret, but only when that file exists **and** some `*/uv.lock` has a
+  `git = "ssh://...` source. The Dockerfile mounts the secret for the venv-bake step only:
+  it is never written to an image layer and does not appear in `docker history`. Projects
+  without such a dependency build exactly as before, even if the key file is present.
+* **Host keys.** The build connects with `StrictHostKeyChecking=yes` against the
+  project's committed `build/conf/ssh/known_hosts`. Public host keys are safe to commit.
+* **Running image.** The dependency is baked into the image's venv, so test and prod
+  containers never need the key.
+* **Dev container.** `uv add` / `uv lock` fetch from the repository at runtime, so the
+  project's dev compose points git at the key (the project directory is already
+  bind-mounted, so no extra mount is needed).
+
+## Setting it up in a project
+
+1. **Create a read-only key** for the dependency repository, one per host, and add its
+   public half as a read-only access key on **that repository only** (Bitbucket: *Access
+   keys*; GitHub: *Deploy keys*). Each host's key can be revoked on its own.
+
+   ```bash
+   ssh-keygen -t ed25519 -N "" -C "<host> read-only" \
+     -f ~/.config/katapult/secrets/build/.git_ssh_credentials
+   chmod 600 ~/.config/katapult/secrets/build/.git_ssh_credentials
+   # keep only credential files in the secrets folder (kat sync refuses anything else)
+   mv ~/.config/katapult/secrets/build/.git_ssh_credentials.pub ~/.config/katapult/git_ssh_credentials.pub
+   ```
+
+   `kat sync <project>` copies it into the project as `build/.git_ssh_credentials`
+   (git-ignored and docker-ignored by the `build/.*_credentials` patterns).
+
+2. **Commit the host keys** in `build/conf/ssh/known_hosts`, e.g.
+   `ssh-keyscan <git host> > build/conf/ssh/known_hosts`. Check the fingerprints against
+   the provider's published values.
+
+3. **Point the dev container at the key** in `build/docker-compose.yml`:
+
+   ```yaml
+       environment:
+         GIT_SSH_COMMAND: "ssh -i /content/build/.git_ssh_credentials -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/content/build/conf/ssh/known_hosts"
+   ```
+
+4. **Add the dependency pinned to a tag** inside the container (`katx connect`):
+
+   ```bash
+   cd /content/lib
+   uv add "<pkg> @ git+ssh://git@<git host>/<org>/<repo>.git@v1.0.0#subdirectory=lib"
+   ```
+
+   `#subdirectory=lib` is needed when the dependency is itself a katapult project (its
+   package lives in `lib/`). `uv.lock` records the exact commit, so `--frozen` builds are
+   reproducible. To upgrade, tag a new release in the dependency and re-run `uv add` with
+   the new tag.
+
+5. **Rebuild**: `katx rebuild`. If a `uv.lock` has a git-over-ssh source but the key is
+   missing, the build stops with a message naming `build/.git_ssh_credentials`.
+
+Projects created before this feature get it with `kat upgrade` (migration
+`0004_private_git_deps`, which also refreshes `katx`).
+
+## What not to do
+
+* **No secrets in build args.** `--build-arg` values are recorded in `docker history`.
+* **No tokens in dependency URLs.** `uv.lock` records the URL, so the token would be
+  committed.
+* **No personal keys or SSH agent forwarding into containers.** That hands the container
+  everything the person can reach, usually with write access. Use a per-repository,
+  read-only key.
+* **No personal app passwords** for fetching dependencies; they are tied to a person and
+  usually broader than one repository.
+
+## Rotating or revoking the key
+
+Remove the host's access key from the repository (revokes it immediately), create a new
+key in `~/.config/katapult/secrets/build/`, add its public half to the repository, then
+`kat sync --force-secrets <project>` and `katx rebuild`.

@@ -8,6 +8,8 @@ A detailed guide to using katapult.
 
 ## [katx](katx.qmd)
 
+## [Private git dependencies](private-git-deps.qmd)
+
 ## [JupyterLab](../nbk/docs/jupyterlab.ipynb)
 
 JupyterLab runs inside the project container with working directory **`/content/`** (the project root). The host project directory is bind-mounted into the container (see `build/docker-compose.yml`), so all files under **`/content/`** persist on your machine.
@@ -100,6 +102,7 @@ Typical path prefixes (replace `katapult` with your `PROJECT_NAME` / repo slug):
 * **`build/docker-compose.yml`** — Builds/runs image `${IMAGE_ROOT}/${PROJECT_NAME}`, attaches to external network **`katapult`**, mounts **`../.:/content/`**, and uses **anonymous volumes** for `api/.venv`, `app/.venv`, `lib/.venv`, `nbk/.venv` so container virtualenvs are not overwritten by the host mount.
 * **`build/Dockerfile`** — Ubuntu base, **nginx**, **supervisor**, **uv**, **Quarto**, copies project to `/content/`, installs nginx and supervisor configs, runs **`supervisord`** as the container user.
 * **Changing versions** — Edit `BuildConfig`, then **`katx build`** (and **`katx up`**) so the image is rebuilt.
+* **Private git dependencies** — A pinned `git+ssh` dependency on a private repository is fetched with a read-only key passed to the build as a BuildKit secret; see [Private git dependencies](private-git-deps.qmd).
 
 ## Supervisor / service management
 

@@ -39,6 +39,7 @@ apt-get install -qy --no-install-recommends --no-install-suggests \
     git \
     gnupg2 \
     lsb-release \
+    openssh-client \
     supervisor \
     tree \
     ubuntu-keyring \
@@ -127,11 +128,19 @@ ENV SHELL=/bin/bash
 # validated and used to reconcile conf.d for this build only (thin per-service
 # images, e.g. `katx build -b SERVICES=api`); when unset, the committed conf.d
 # state governs.
+# Private git dependencies: `katx build` passes the read-only key as the
+# `git_ssh_key` secret only when a uv.lock has a git-over-ssh source. The secret
+# exists only while this step runs; host keys come from the committed
+# build/conf/ssh/known_hosts.
 ARG SERVICES=""
-RUN --mount=type=cache,target=/home/${USERNAME}/.cache/uv,uid=${UID_},gid=${GID_} <<'EOF'
+RUN --mount=type=cache,target=/home/${USERNAME}/.cache/uv,uid=${UID_},gid=${GID_} \
+    --mount=type=secret,id=git_ssh_key,uid=${UID_},required=false <<'EOF'
 set -euo pipefail
 shopt -s nullglob
 confd=/etc/supervisor/conf.d
+if [ -f /run/secrets/git_ssh_key ]; then
+  export GIT_SSH_COMMAND="ssh -i /run/secrets/git_ssh_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/content/build/conf/ssh/known_hosts"
+fi
 
 # Programs present now (enabled .conf + disabled .conf_), used to validate an override.
 present=( "$confd"/*.conf "$confd"/*.conf_ )
@@ -165,6 +174,10 @@ if [ ${#enabled[@]} -gt 0 ]; then
 fi
 for d in $dirs /content/lib; do
   if [ -f "$d/pyproject.toml" ] && [ -f "$d/uv.lock" ]; then
+    if grep -qs 'git = "ssh://' "$d/uv.lock" && [ ! -f /run/secrets/git_ssh_key ]; then
+      echo "error: $d/uv.lock has a git-over-ssh dependency but no build/.git_ssh_credentials was passed to the build (see the katapult docs: private git dependencies)" >&2
+      exit 1
+    fi
     (cd "$d" && uv sync --frozen)
   fi
 done

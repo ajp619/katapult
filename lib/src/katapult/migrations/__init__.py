@@ -16,12 +16,16 @@ from katapult.migrations.m0002_seed_project_rules import (
 from katapult.migrations.m0003_ignore_credentials import (
     migration as m0003_ignore_credentials,
 )
+from katapult.migrations.m0004_private_git_deps import (
+    migration as m0004_private_git_deps,
+)
 
 # Applied in order; a project's manifest records the ids it has already received.
 REGISTRY: list[Migration] = [
     m0001_add_internal_mcp,
     m0002_seed_project_rules,
     m0003_ignore_credentials,
+    m0004_private_git_deps,
 ]
 
 
